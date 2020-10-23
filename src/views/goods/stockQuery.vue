@@ -1,106 +1,68 @@
 <template>
-  <el-container>
-    <el-header style="height: 50px">
-      <headerPage></headerPage>
-    </el-header>
     <el-container>
-      <el-aside width="100px">
-        <section style="min-width: 100px">
-          <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
-        </section>
-      </el-aside>
-      <el-container>
-        <div class="content-new-fex">
-            <div class="content-eighty">
-              <div class="content-center">
-                <el-input
-                  type="default"
-                  size="small"
-                  v-model="searchText"
-                  clearable
-                  @keyup.enter.native="
-                    pageData.Filter = searchText;
-                    pageData.PN = 1;
-                    getStockData();
-                  "
-                  placeholder="请输入商品名称或编码"
-                  style="width: 400px"
-                >
-                  <el-button
-                    slot="append"
-                    type="primary"
-                    icon="el-icon-search"
-                    size="small"
-                    @click="
-                      pageData.Filter = searchText;
-                      pageData.PN = 1;
-                      getStockData();
-                    "
-                  >
-                    查询
-                  </el-button>
-                </el-input>
-              </div>
-            </div>
-            <div class="content-table4">
-              <div class="content-table-center">
-                <el-table
-                  size="small"
-                  :data="tableData"
-                  :height="tableHeight"
-                  header-row-class-name="bg-theme2 text-white"
-                  class="full-width"
-                  v-loading="loading"
-                >
-                  <el-table-column
-                    align="center"
-                    prop="RN"
-                    label="序号"
-                    width="70"
-                  ></el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="GOODSNAME"
-                    sortable
-                    label="商品名称"
-                  ></el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="GOODSCODE"
-                    label="商品编码"
-                  ></el-table-column>
-                  <el-table-column align="center" prop="PRICE" label="商品价格"></el-table-column>
-                  <el-table-column align="center" label="商品成本">
-                    <template slot-scope="scope">
-                      {{ isPurViewFun(210040601) ? scope.row.PURPRICE : "****" }}
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="QTY"
-                    sortable
-                    label="库存数"
-                  ></el-table-column>
-                </el-table>
-                <!-- 分页 -->
-                <div class="m-top-smts clearfix elpagination">
-                  <el-pagination
-                    background
-                    @size-change="handlePageChange"
-                    @current-change="handlePageChange"
-                    :current-page.sync="pagination.PN"
-                    :page-size="pagination.PageSize"
-                    layout="total, prev, pager, next, jumper"
-                    :total="pagination.TotalNumber"
-                    class="text-right"
-                  ></el-pagination>
+        <el-header style="height:50px;" >
+            <headerPage></headerPage>
+        </el-header>
+        <el-container>
+            <el-aside width="100px">
+                <section style="min-width:100px;">
+                    <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+                </section>
+            </el-aside>
+            <el-container>
+                <div class="content-new-fex">
+                    <div class="shopquery">
+                    <div class="content-eighty">
+                        <div class="content-center">
+                          <el-input type="default" size="small" v-model="searchText" clearable @keyup.enter.native="pageData.Filter=searchText;pageData.PN=1;getStockData()"
+                          placeholder="请输入商品名称或编码" style="width: 400px;">
+                              <el-button slot="append" type="primary" icon="el-icon-search" size="small"
+                              @click="pageData.Filter=searchText;pageData.PN=1;getStockData()"
+                              >查询</el-button>
+                          </el-input>
+                        </div>
+                    </div>
+                    <div class="content-table4">
+                      <div class="content-table-center">
+                        <el-table
+                            size='small'
+                            :data="tableData"
+                            :height="tableHeight"
+                            header-row-class-name="bg-theme2 text-white"
+                            class="full-width"
+                            v-loading="loading"
+                        >
+                            <el-table-column align="center" prop="RN" label="序号" width="70"></el-table-column>
+                            <el-table-column align='center' prop="GOODSNAME" sortable label="商品名称"></el-table-column>
+                            <el-table-column align='center' prop="GOODSCODE" label="商品编码"></el-table-column>
+                            <el-table-column align='center' prop="PRICE" label="商品价格"></el-table-column>
+                            <el-table-column align='center' label="商品成本">
+                            <template slot-scope='scope'>
+                                {{isPurViewFun(210040601) ? scope.row.PURPRICE : '****'}}
+                            </template>
+                            </el-table-column>
+                            <el-table-column align='center' prop="QTY" sortable label="库存数"></el-table-column>
+                        </el-table>
+                        <!-- 分页 -->
+                        <div class="m-top-smts clearfix elpagination">
+                            <el-pagination
+                            background
+                            @size-change="handlePageChange"
+                            @current-change="handlePageChange"
+                            :current-page.sync="pagination.PN"
+                            :page-size="pagination.PageSize"
+                            layout="total, prev, pager, next, jumper"
+                            :total="pagination.TotalNumber"
+                            class="text-right"
+                            ></el-pagination>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
                 </div>
-              </div>
-            </div>
-        </div>
-      </el-container>
+            </el-container>
+        </el-container>
     </el-container>
-  </el-container>
 </template>
 
 <script>
@@ -108,50 +70,50 @@ import { mapState, mapGetters } from "vuex";
 import { getHomeData } from "@/api/index";
 import MIXINS_GOOD from "@/mixins/good.js";
 export default {
-  props: {
-    dataType: {
-      type: Object,
-      default: function () {
-        return { dealState: "reset" };
-      }
-    }
-  },
-  mixins: [MIXINS_GOOD.GOOD_MENU],
-  data() {
-    return {
-      loading: false,
-      searchText: "",
-      pagination: {
-        TotalNumber: 0,
-        PageNumber: 0,
-        PageSize: 20,
-        PN: 1
-      },
-      tableData: [],
-      pageData: {
-        ShopId: getHomeData().shop.SHOPID,
-        CategoryId: "",
-        Satus: -1, //  -1=全部，0=停用，1=启用
-        ZeroQty: 1, //  -1=全部，1=不显示零库存
-        Filter: "",
-        PN: 1,
-        OrderType: 3,
-        OrderMode: 0
-      },
-      tableHeight: document.body.clientHeight - 250
-    };
-  },
-  computed: {
-    ...mapGetters({
-      stockqueryList: "stockqueryList",
-      stockqueryiState: "stockqueryiState"
-    })
-  },
+    props: {
+        dataType: {
+            type: Object,
+            default: function() {
+                return { dealState: "reset" };
+            }
+        }
+    },
+    mixins: [MIXINS_GOOD.GOOD_MENU],
+    data() {
+        return {
+            loading: false,
+            searchText: '',
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 1
+            },
+            tableData:[],
+            pageData: {
+                ShopId: getHomeData().shop.SHOPID,
+                CategoryId: "",
+                Satus: -1,  //  -1=全部，0=停用，1=启用
+                ZeroQty: 1, //  -1=全部，1=不显示零库存
+                Filter: '',
+                PN: 1,
+                OrderType: 3,
+                OrderMode: 0
+            },
+            tableHeight: document.body.clientHeight - 250
+        };
+    },
+    computed: {
+        ...mapGetters({
+            stockqueryList: "stockqueryList",
+            stockqueryiState: "stockqueryiState"
+        })
+    },
   watch: {
     stockqueryiState(data) {
       this.loading = false;
       if (data.success) {
-        this.tableData = [...this.stockqueryList];
+        this.tableData = [...this.stockqueryList]
         this.pagination = {
           TotalNumber: data.paying.TotalNumber,
           PageNumber: data.paying.PageNumber,
@@ -159,10 +121,10 @@ export default {
           PN: data.paying.PN
         }
       }
-    }
+    },
   },
   methods: {
-    handlePageChange: function (currentPage) {
+    handlePageChange: function(currentPage) {
       if (this.pageData.PN == currentPage || this.loading) {
         return;
       }
@@ -171,48 +133,48 @@ export default {
     },
     getStockData() {
       this.$store.dispatch("getsqueryItem", this.pageData).then(() => {
-        this.loading = true;
-      });
+        this.loading = true
+      })
     }
   },
   mounted() {
-    this.getStockData();
+    this.getStockData()
   },
   components: {
-    headerPage: () => import("@/components/header")
+      headerPage: () => import("@/components/header"),
   }
 };
 </script>
 
 <style scoped>
-.member-header {
+.member-header{
   display: flex;
   align-items: center;
   height: 50px;
 }
-.center-title {
+.center-title{
   width: 100px;
   text-align: center;
   height: 50px;
   line-height: 50px;
   border: solid 1px #d7d7d7;
 }
-.center-cont {
+.center-cont{
   width: 100px;
   text-align: center;
   height: 50px;
   line-height: 50px;
 }
-.el-header {
+.el-header{
   padding: 0 !important;
 }
-.shop {
+.shop{
   display: flex;
   align-items: center;
   height: 50px;
   position: relative;
 }
-.shop .name {
+.shop .name{
   position: absolute;
   right: 50px;
   height: 50px;
@@ -222,20 +184,20 @@ export default {
   top: 0;
   /* background: rebeccapurple; */
 }
-.el-header,
-.el-footer {
-  background-color: #fff;
-  color: #333;
-}
+  .el-header, .el-footer {
+    background-color: #fff;
+    color: #333;
+  }
 
-.el-aside {
-  background-color: #d3dce6;
-  color: #333;
-  text-align: center;
-  line-height: 200px;
-}
+  .el-aside {
+    background-color: #D3DCE6;
+    color: #333;
+    text-align: center;
+    line-height: 200px;
+  }
 
-.el-main {
-  padding: 5px !important;
-}
+  .el-main{
+    padding: 5px !important;
+  }
+
 </style>
