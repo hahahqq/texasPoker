@@ -531,12 +531,10 @@ export default {
             ChargesMoney: this.ruleForm.ChargesType == 0 ? "" : this.ruleForm.ChargesMoney,
             ChargesRate:
               this.ruleForm.ChargesType == 1 ? "" : Number(this.ruleForm.ChargesRate) / 100,
-
             RebuyMoney: this.ruleForm.RebuyMoney,
             AddonMoney: this.ruleForm.AddonMoney,
             ChipsQty2: this.ruleForm.ChipsQty2,
             ChipsQty3: this.ruleForm.ChipsQty3
-
           };
           this.$store.dispatch("saveMttGame", sendData).then(() => {
             this.loadingBtn = true;
