@@ -1,20 +1,12 @@
 <template>
   <div>
-    <el-form
-      :inline="false"
-      :model="ruleForm"
-      :rules="rules"
-      ref="ruleForm"
-      label-width="100px"
-      v-loading="pageLoading"
-      element-loading-spinner="el-icon-loading"
-      element-loading-text="数据加载中..."
-    >
+    <!-- {{dataType}} -->
+    <el-form :inline="false" :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px">
       <el-row :gutter="10">
         <el-col :xs="24" :sm="24">
-          <el-form-item label="赛事名称" prop="Name">
+          <el-form-item label="项目名称" prop="Name">
             <el-input
-              placeholder="请输入MTT赛事名称"
+              placeholder="请输入MTT项目名称"
               v-model.trim="ruleForm.Name"
               clearable
               size="small"
@@ -23,77 +15,15 @@
         </el-col>
       </el-row>
 
+      <!-- Buyin -->
       <el-row :gutter="10">
         <el-col :xs="24" :sm="12">
-          <el-form-item label="比赛项目" prop="EventId">
-            <el-select
-              size="small"
-              v-model="ruleForm.EventId"
-              @change="selectEventFun(ruleForm.EventId)"
-              placeholder="请选择比赛项目"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in eventsList"
-                :key="item.ID"
-                :value="item.ID"
-                :label="item.NAME"
-              ></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="开赛时间" prop="PlayTime">
-            <el-date-picker
-              v-model="ruleForm.PlayTime"
-              size="small"
-              type="datetime"
-              format="yyyy-MM-dd HH:mm"
-              placeholder="选择日期时间"
-              style="width: 100%"
-            ></el-date-picker>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="10">
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="比赛桌号" prop="DeskId">
-            <el-select
-              size="small"
-              v-model="ruleForm.DeskId"
-              placeholder="请选择比赛桌号"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in tableList"
-                :key="item.ID"
-                :value="item.ID"
-                :label="item.NAME"
-              ></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="启动线上报名">
-            <el-switch
-              v-model="ruleForm.IsOnLine"
-              active-color="#409eff"
-              inactive-color="#ccc"
-            ></el-switch>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="10">
-        <el-col :xs="24" :sm="12">
-          <el-form-item label="Buyin积分" prop="BuyinMoney">
+          <el-form-item label="Buyin积分">
             <el-input
-              placeholder="请输入参赛报名积分"
+              placeholder="请输入Buyin积分"
               size="small"
-              v-model.trim="ruleForm.BuyinMoney"
+              oninput="value=value.replace(/\D/g,'')"
+              v-model="ruleForm.BuyinMoney"
             >
               <template slot="append">积分</template>
             </el-input>
@@ -105,6 +35,7 @@
             <el-input
               placeholder="请输入Buyin记分牌"
               size="small"
+              oninput="value=value.replace(/\D/g,'')"
               v-model="ruleForm.ChipsQty"
             ></el-input>
           </el-form-item>
@@ -116,7 +47,7 @@
         <el-col :xs="24" :sm="12">
           <el-form-item label="Rebuy积分">
             <el-input
-              placeholder="请输入重复买入积分"
+              placeholder="请输入Rebuy积分"
               size="small"
               oninput="value=value.replace(/\D/g,'')"
               v-model="ruleForm.RebuyMoney"
@@ -143,7 +74,7 @@
         <el-col :xs="24" :sm="12">
           <el-form-item label="Addon积分">
             <el-input
-              placeholder="请输入最后买入积分"
+              placeholder="请输入Addon积分"
               size="small"
               oninput="value=value.replace(/\D/g,'')"
               v-model="ruleForm.AddonMoney"
@@ -186,13 +117,23 @@
 
         <el-col :xs="24" :sm="12">
           <el-form-item label="服务费比例" v-if="ruleForm.ChargesType == 0">
-            <el-input placeholder="请输入服务费比例" size="small" v-model="ruleForm.ChargesRate">
+            <el-input
+              placeholder="请输入服务费比例"
+              size="small"
+              oninput="value=value.replace(/\D/g,'')"
+              v-model="ruleForm.ChargesRate"
+            >
               <template slot="append">%</template>
             </el-input>
           </el-form-item>
 
           <el-form-item label="服务费金额" v-if="ruleForm.ChargesType == 1">
-            <el-input placeholder="请输入服务费金额" size="small" v-model="ruleForm.ChargesMoney">
+            <el-input
+              placeholder="请输入服务费金额"
+              size="small"
+              oninput="value=value.replace(/\D/g,'')"
+              v-model="ruleForm.ChargesMoney"
+            >
               <template slot="append">元</template>
             </el-input>
           </el-form-item>
@@ -310,7 +251,6 @@
 
 <script>
 import Vue from "vue";
-import dayjs from "dayjs";
 import { mapState, mapGetters } from "vuex";
 import { getHomeData, getUserInfo } from "@/api/index";
 
@@ -319,15 +259,14 @@ export default {
     dataType: {
       type: Object,
       default: function () {
-        return { EventId: 1, dealState: "edit", info: {} };
+        return { EventId: 1, dealState: "add", info: {} };
       }
     }
   },
   data() {
     return {
       ruleForm: {
-        PlayTime: "",
-        IsOnLine: false,
+        Id: "",
         Name: "",
         BuyinMoney: "",
         ChipsQty: "",
@@ -340,8 +279,7 @@ export default {
         ChargesRate: "",
         ChargesMoney: "",
         Remark: "",
-        RewardType: 0,
-        EventId: ""
+        RewardType: 0
       },
       rewardWayList: [],
       serviceChargeMethod: [
@@ -355,58 +293,72 @@ export default {
       DelArr: [],
       loadingBtn: false,
       rules: {
-        Name: [{ required: true, message: "请输入MTT赛事名称", trigger: "blur" }],
-        BuyinMoney: [{ required: true, message: "请输入参赛报名积分", trigger: "blur" }],
-        EventId: [{ required: true, message: "请选择比赛项目", trigger: "change" }],
-        PlayTime: [{ type: "date", required: true, message: "请选择日期", trigger: "change" }],
-        DeskId: [{ required: true, message: "请选择比赛桌号", trigger: "change" }]
+        Name: [{ required: true, message: "请输入MTT赛事项目名称", trigger: "blur" }],
+        BuyinMoney: [{ required: true, message: "请输入参赛报名积分", trigger: "blur" }]
       },
-      eventsList: [],
-      tableList: [],
-      pageLoading: false,
       levelList: []
     };
   },
   computed: {
     ...mapGetters({
-      saveMttGameState: "saveMttGameState",
-      getEventsListAllState: "getEventsListAllState",
-      getEventsDetailsState: "getEventsDetailsState",
-      getTableListState: "getTableListState"
+      saveEventsState: "saveEventsState",
+      saveRewardWayState: "saveRewardWayState"
     })
   },
   watch: {
-    getTableListState(data) {
-      console.log(data);
+    saveEventsState(data) {
       if (data.success) {
-        this.tableList = data.data.List;
-      }
-    },
-    getEventsListAllState(data) {
-      if (data.success) {
-        this.eventsList = data.data.List;
+        let arr = this.rewardWayList.concat(this.DelArr);
+        let newArr = this.rewardWayList.filter((item) => item.Name != "" && item.RewardRate != "");
+
+        if (arr.length != 0) {
+          this.$store.dispatch("saveRewardWay", {
+            RewardList: newArr,
+            EventId: this.ruleForm.Id == "" ? data.data.OutId : this.ruleForm.Id,
+            RewardType: this.ruleForm.RewardType
+          });
+        } else {
+          this.loadingBtn = false;
+          this.cleanData();
+          this.$refs["ruleForm"].resetFields();
+          this.$emit("resetList");
+        }
       } else {
         this.$message({ message: data.message, type: "error" });
       }
     },
-    getEventsDetailsState(data) {
-      this.pageLoading = false;
+    saveRewardWayState(data) {
+      this.loadingBtn = false;
       if (data.success) {
-        console.log(data.data);
-        let obj = data.data.EventObj;
-        this.ruleForm.EventId = obj.ID;
-        this.ruleForm.BuyinMoney = obj.BUYINMONEY;
-        this.ruleForm.RebuyMoney = obj.REBUYMONEY;
-        this.ruleForm.AddonMoney = obj.ADDONMONEY;
-        this.ruleForm.ChipsQty = obj.CHIPSQTY;
-        this.ruleForm.ChipsQty2 = obj.CHIPSQTY2;
-        this.ruleForm.ChipsQty3 = obj.CHIPSQTY3;
-        this.ruleForm.ChargesType = obj.CHARGESTYPE;
-        this.ruleForm.ChargesRate = Number(obj.CHARGESRATE) * 100;
-        this.ruleForm.ChargesMoney = obj.CHARGESMONEY;
-        this.ruleForm.RewardType = obj.REWARDTYPE;
+        this.cleanData();
+        this.$refs["ruleForm"].resetFields();
+        this.$emit("resetList");
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
+    },
+    dataType(data) {
+      this.cleanData();
 
-        let param = data.data.RewardObj,
+      if (this.dataType.dealState == "edit") {
+        let obj = this.dataType.info.EventObj;
+        this.ruleForm = {
+          Id: obj.ID,
+          Name: obj.NAME,
+          BuyinMoney: obj.BUYINMONEY,
+          ChipsQty: obj.CHIPSQTY,
+          ChargesType: obj.CHARGESTYPE,
+          ChargesRate: Number(obj.CHARGESRATE) * 100,
+          ChargesMoney: obj.CHARGESMONEY,
+          RebuyMoney: obj.REBUYMONEY,
+          AddonMoney: obj.ADDONMONEY,
+          ChipsQty2: obj.CHIPSQTY2,
+          ChipsQty3: obj.CHIPSQTY3,
+          Remark: obj.REMARK != undefined ? obj.REMARK : "",
+          RewardType: obj.REWARDTYPE
+        };
+
+        let param = this.dataType.info.RewardObj,
           newParam = [];
         for (var i = 0; i < param.length; i++) {
           newParam.push({
@@ -421,17 +373,7 @@ export default {
         }
         this.rewardWayList = newParam;
       } else {
-        this.$message({ message: data.message, type: "error" });
-      }
-    },
-    saveMttGameState(data) {
-      if (data.success) {
-        this.loadingBtn = false;
         this.cleanData();
-        this.$refs["ruleForm"].resetFields();
-        this.$emit("resetList");
-      } else {
-        this.$message({ message: data.message, type: "error" });
       }
     }
   },
@@ -441,39 +383,44 @@ export default {
         Id: "",
         Name: "",
         Rate: 0,
-        RewardRate: "",
+        RewardRate: 0,
         Integral: 0,
-        ContestQty: "",
+        ContestQty: 0,
         Remark: "",
         IsCancel: 0
-      });
-    },
-    selectEventFun(ID) {
-      this.$store.dispatch("getEventsDetails", { Id: ID }).then(() => {
-        this.pageLoading = true;
       });
     },
     cleanData() {
       this.DelArr = [];
       this.ruleForm = {
-        EventId: "",
-        DeskId: "",
+        Id: "",
         Name: "",
-        PlayTime: "",
-        IsOnLine: false,
         BuyinMoney: "",
         ChipsQty: "",
-        RebuyMoney: "",
-        AddonMoney: "",
-        ChipsQty2: "",
-        ChipsQty3: "",
         ChargesType: 0,
         ChargesRate: "",
         ChargesMoney: "",
         Remark: "",
-        RewardType: 0
+
+        RebuyMoney: "",
+        AddonMoney: "",
+        ChipsQty2: "",
+        ChipsQty3: ""
       };
-      this.defaultRewardWayList();
+
+      this.defaultRewardWayList()
+    },
+    closeDialog() {
+      this.cleanData();
+      this.$refs["ruleForm"].resetFields();
+      this.$emit("closeModal");
+    },
+    delCurItem(row, idx) {
+      if (row.Id != "") {
+        row.IsCancel = 1;
+        this.DelArr.push(row);
+      }
+      this.rewardWayList.splice(idx, 1);
     },
     defaultRewardWayList() {
       let arr = [];
@@ -493,52 +440,30 @@ export default {
       arr[2].Name = "第 3 名";
       this.rewardWayList = arr;
     },
-    closeDialog() {
-      this.cleanData();
-      this.$refs["ruleForm"].resetFields();
-      this.$emit("closeModal");
-    },
-    delCurItem(row, idx) {
-      if (row.Id != "") {
-        row.IsCancel = 1;
-        this.DelArr.push(row);
-      }
-      this.rewardWayList.splice(idx, 1);
-    },
     submitBtn() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          let arr = this.rewardWayList.concat(this.DelArr);
-          let newArr = this.rewardWayList.filter(
-            (item) => item.Name != "" && item.RewardRate != ""
-          );
-
           let sendData = {
+            Id: this.ruleForm.Id,
+            Type: 1,
             Name: this.ruleForm.Name,
             Status: 0,
-
-            EventId: this.ruleForm.EventId,
-            DeskId: this.ruleForm.DeskId,
-            PlayTime: dayjs(this.ruleForm.PlayTime).valueOf(),
-            IsOnLine: this.ruleForm.IsOnLine ? 1 : 0,
+            Category: "",
             Remark: this.ruleForm.Remark,
-            RewardType: this.ruleForm.RewardType,
-            RewardList: newArr,
-
-            ChipsQty: this.ruleForm.ChipsQty,
             BuyinMoney: this.ruleForm.BuyinMoney,
+            ChipsQty: Number(this.ruleForm.ChipsQty),
             ChargesType: this.ruleForm.ChargesType,
             ChargesMoney: this.ruleForm.ChargesType == 0 ? "" : this.ruleForm.ChargesMoney,
             ChargesRate:
               this.ruleForm.ChargesType == 1 ? "" : Number(this.ruleForm.ChargesRate) / 100,
+            RewardType: this.ruleForm.RewardType,
 
             RebuyMoney: this.ruleForm.RebuyMoney,
             AddonMoney: this.ruleForm.AddonMoney,
             ChipsQty2: this.ruleForm.ChipsQty2,
             ChipsQty3: this.ruleForm.ChipsQty3
-
           };
-          this.$store.dispatch("saveMttGame", sendData).then(() => {
+          this.$store.dispatch("saveEvents", sendData).then(() => {
             this.loadingBtn = true;
           });
         }
@@ -552,8 +477,7 @@ export default {
     }
     this.levelList = levelList;
 
-    // 初始化奖池列表
-    this.defaultRewardWayList();
+    this.defaultRewardWayList()
   }
 };
 </script>

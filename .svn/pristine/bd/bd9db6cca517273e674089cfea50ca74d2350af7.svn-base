@@ -14,7 +14,7 @@
         <el-col :xs="24" :sm="24">
           <el-form-item label="赛事名称" prop="Name">
             <el-input
-              placeholder="请输入积分赛事名称"
+              placeholder="请输入SNG赛事名称"
               v-model.trim="ruleForm.Name"
               clearable
               size="small"
@@ -158,6 +158,71 @@
       </el-row>
 
       <el-row>
+        <el-col :xs="24" :sm="224">
+          <el-form-item label="奖池分配方案">
+            <div>
+              <el-button type="text" @click="addRanking">添加名次</el-button>
+              <span style="color: #aaa; margin-left: 6px">设置比赛选手奖池分配方案</span>
+            </div>
+            <el-table
+              v-if="rewardWayList.length > 0"
+              size="small"
+              border
+              :data="rewardWayList"
+              header-row-class-name="bg-F1F2F3"
+            >
+              <el-table-column label="比赛名次" align="center">
+                <template slot-scope="scope">
+                  <el-select v-model="scope.row.Name" size="small" placeholder="请选择比赛名次">
+                    <el-option
+                      v-for="item in levelList"
+                      :key="item.name"
+                      :label="item.name"
+                      :value="item.name"
+                    ></el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="奖金比例" align="center">
+                <template slot-scope="scope">
+                  <el-input
+                    v-model="scope.row.RewardRate"
+                    size="small"
+                    oninput="value=value.replace(/\D/g,'')"
+                    placeholder="请输入奖金比例"
+                    class="textCenter"
+                  >
+                    <template slot="append">%</template>
+                  </el-input>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="大师分" align="center">
+                <template slot-scope="scope">
+                  <el-input
+                    v-model="scope.row.ContestQty"
+                    placeholder="请输入大师分"
+                    oninput="value=value.replace(/\D/g,'')"
+                    size="small"
+                    class="textCenter"
+                  ></el-input>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" align="center">
+                <template slot-scope="scope">
+                  <el-button size="small" type="text" @click="delCurItem(scope.row, scope.$index)">
+                    删除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
         <el-col :xs="24" :sm="24">
           <el-form-item label="">
             <el-button plain @click="closeDialog">取消</el-button>
@@ -196,15 +261,18 @@ export default {
         ChargesRate: "",
         ChargesMoney: "",
         Remark: "",
+        RewardType: 0,
         EventId: ""
       },
+      rewardWayList: [],
       serviceChargeMethod: [
         { value: 0, label: "从报名费按比例扣除" },
         { value: 1, label: "服务费不计入奖池" }
       ],
+      DelArr: [],
       loadingBtn: false,
       rules: {
-        Name: [{ required: true, message: "请输入积分赛事名称", trigger: "blur" }],
+        Name: [{ required: true, message: "请输入SNG赛事名称", trigger: "blur" }],
         BuyinMoney: [{ required: true, message: "请输入参赛报名积分", trigger: "blur" }],
         EventId: [{ required: true, message: "请选择比赛项目", trigger: "change" }],
         PlayTime: [{ type: "date", required: true, message: "请选择日期", trigger: "change" }],
@@ -212,12 +280,13 @@ export default {
       },
       eventsList: [],
       tableList: [],
-      pageLoading: false
+      pageLoading: false,
+      levelList: []
     };
   },
   computed: {
     ...mapGetters({
-      saveIntegralGameState: "saveIntegralGameState",
+      saveSngGameState: "saveSngGameState",
       getEventsListAllState: "getEventsListAllState",
       getEventsDetailsState: "getEventsDetailsState",
       getTableListState: "getTableListState"
@@ -248,11 +317,27 @@ export default {
         this.ruleForm.ChargesType = obj.CHARGESTYPE;
         this.ruleForm.ChargesRate = Number(obj.CHARGESRATE) * 100;
         this.ruleForm.ChargesMoney = obj.CHARGESMONEY;
+        this.ruleForm.RewardType = 0;
+
+        let param = data.data.RewardObj,
+          newParam = [];
+        for (var i = 0; i < param.length; i++) {
+          newParam.push({
+            Id: param[i].ID,
+            Name: param[i].NAME,
+            ContestQty: param[i].CONTESTQTY,
+            RewardRate: Number(param[i].REWARDRATE) * 100,
+            Integral: 0,
+            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
+            IsCancel: 0
+          });
+        }
+        this.rewardWayList = newParam;
       } else {
         this.$message({ message: data.message, type: "error" });
       }
     },
-    saveIntegralGameState(data) {
+    saveSngGameState(data) {
       if (data.success) {
         this.loadingBtn = false;
         this.cleanData();
@@ -264,12 +349,25 @@ export default {
     }
   },
   methods: {
+    addRanking() {
+      this.rewardWayList = this.rewardWayList.concat({
+        Id: "",
+        Name: "",
+        Rate: 0,
+        RewardRate: "",
+        Integral: 0,
+        ContestQty: "",
+        Remark: "",
+        IsCancel: 0
+      });
+    },
     selectEventFun(ID) {
       this.$store.dispatch("getEventsDetails", { Id: ID }).then(() => {
         this.pageLoading = true;
       });
     },
     cleanData() {
+      this.DelArr = [];
       this.ruleForm = {
         EventId: "",
         DeskId: "",
@@ -281,25 +379,61 @@ export default {
         ChargesType: 0,
         ChargesRate: "",
         ChargesMoney: "",
-        Remark: ""
+        Remark: "",
+        RewardType: 0
       };
+
+      this.defaultRewardWayList()
+    },
+    defaultRewardWayList(){
+       let arr = [];
+      for (var i = 1; i <= 3; i++) {
+        arr.push({
+          Id: "",
+          Name: "第 1 名",
+          Rate: 0,
+          RewardRate: "",
+          Integral: 0,
+          ContestQty: "",
+          Remark: "",
+          IsCancel: 0
+        });
+      }
+      arr[1].Name = "第 2 名";
+      arr[2].Name = "第 3 名";
+      this.rewardWayList = arr;
     },
     closeDialog() {
       this.cleanData();
       this.$refs["ruleForm"].resetFields();
       this.$emit("closeModal");
     },
+    delCurItem(row, idx) {
+      if (row.Id != "") {
+        row.IsCancel = 1;
+        this.DelArr.push(row);
+      }
+      this.rewardWayList.splice(idx, 1);
+    },
     submitBtn() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
+          let arr = this.rewardWayList.concat(this.DelArr);
+          let newArr = this.rewardWayList.filter(
+            (item) => item.Name != "" && item.RewardRate != ""
+          );
+
           let sendData = {
             Name: this.ruleForm.Name,
             Status: 0,
+
             EventId: this.ruleForm.EventId,
             DeskId: this.ruleForm.DeskId,
             PlayTime: dayjs(this.ruleForm.PlayTime).valueOf(),
             IsOnLine: this.ruleForm.IsOnLine ? 1 : 0,
             Remark: this.ruleForm.Remark,
+            RewardType: 0,
+            RewardList: newArr,
 
             ChipsQty: this.ruleForm.ChipsQty,
             BuyinMoney: this.ruleForm.BuyinMoney,
@@ -308,14 +442,23 @@ export default {
             ChargesRate:
               this.ruleForm.ChargesType == 1 ? "" : Number(this.ruleForm.ChargesRate) / 100
           };
-          this.$store.dispatch("saveIntegralGame", sendData).then(() => {
+          this.$store.dispatch("saveSngGame", sendData).then(() => {
             this.loadingBtn = true;
           });
         }
       });
     }
   },
-  mounted() {}
+  mounted() {
+    let levelList = [];
+    for (var i = 1; i <= 30; i++) {
+      levelList.push({ name: "第 " + i + " 名" });
+    }
+    this.levelList = levelList;
+
+    this.defaultRewardWayList()
+
+  }
 };
 </script>
 
