@@ -1,0 +1,173 @@
+<template>
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm paddingTB-sm">
+			<div class="marginLR-md">
+				<div
+					v-for="(item, i) in pageList"
+					:key="i"
+					class="inline-block border padding-sm marginTB-sm m-right-sm pointer"
+					:class="{ 'border-theme': echartAct == i }"
+					style="min-width: 150px"
+					@click="chooseType(i)"
+				>
+					<p>{{ item.label }}</p>
+					<div class="font-16 font-600">{{ item.value }}</div>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm-">
+			<div class="marginLR-md">
+				<echartLine
+					ref="memberEchart"
+					:idName="'memberEchart'"
+					:typeData="echartData"
+					unit="人"
+					class="padding-sm marginTB-sm"
+				></echartLine>
+			</div>
+		</div>
+		<!-- 数据导出 -->
+		<el-dialog
+			append-to-body
+			:close-on-click-modal="false"
+			:close-on-press-escape="false"
+			:show-close="false"
+			title="数据导出"
+			:visible.sync="exportData.show"
+			width="400px"
+		>
+			<exportPage
+				:dataType="exportData"
+				:isPage="true"
+				@closeModal="exportData.show = false"
+			></exportPage>
+		</el-dialog>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", Type: 0 },
+			pageList: [
+				{ label: "会员总数", value: 0 },
+				{ label: "新增会员", value: 0 },
+				{ label: "到店客次", value: 0 },
+				{ label: "到店会员数", value: 0 }
+			],
+			echartData: {
+				show: false,
+				data: {
+					title: "会员总数",
+					legend: ["人数"],
+					xAxis: [],
+					series: [[0]]
+				}
+			},
+			echartAct: 0,
+			exportData: { show: false }
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataState: "actionsDataState",
+			dataListState: "commonListState"
+		})
+	},
+	watch: {
+		dataState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.pageList[0].value = data.data.SumQty;
+					this.pageList[1].value = data.data.AddQty;
+					this.pageList[2].value = data.data.ComeinCount;
+					this.pageList[3].value = data.data.ComeinQty;
+					this.setEchartNewData(data.data.List);
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({}, this.formData, data);
+			this.getNewData();
+		},
+		getNewData() {
+			this.loading = true;
+			indexQuery.member(this, "member", this.formData);
+		},
+		chooseType(i) {
+			this.echartAct = i;
+			this.formData.Type = i;
+			this.getNewData();
+		},
+		setEchartNewData(arr) {
+			let idx = this.echartAct,
+				item = this.pageList[idx],
+				arr1 = [],
+				arr2 = [];
+			if (!arr || arr.length == 0) return;
+			arr.forEach((element) => {
+				//   "FSUMCOUNT": 274,
+				//    "FCOUNT": 2,
+				//    "DATENAME": "2020-08-15"
+				arr1.push(element.DATENAME);
+				arr2.push(element.FCOUNT);
+			});
+
+			this.echartData = {
+				show: true,
+				data: {
+					title: item.label,
+					legend: ["人数"],
+					xAxis: [...arr1],
+					series: [arr2]
+				}
+			};
+		},
+		defaultData() {}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime(),
+			Type: 0
+		};
+		this.getNewData();
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		echartLine: () => import("@/components/echart/echartLine.vue"),
+		exportPage: () => import("@/components/export/common.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

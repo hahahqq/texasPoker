@@ -1,0 +1,39 @@
+<template>
+  <div class="report row-flex flex-start">
+    <section style="min-width:130px;margin-left:-10px;">
+      <sidebarMenu :activePath="activePath" :routesList="routesList" :width="130"></sidebarMenu>
+    </section>
+    <section class="bg-white marginLR-sm paddingTB-sm paddingLR-md full-width block overflowX-hidden">
+      <!-- page -->
+      <el-tabs v-model="activeName">
+        <el-tab-pane name="first">
+          <span slot="label">
+            <i class="el-icon-date"></i> 余额积分
+          </span>
+          <integralPage :pageState="activeName=='first'?true:false"></integralPage>
+        </el-tab-pane>
+        <el-tab-pane label="会员余次" name="second">
+          <number-page :pageState="activeName=='second'?true:false"></number-page>
+        </el-tab-pane>
+      </el-tabs>
+    </section>
+  </div>
+  <!--  -->
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+export default {
+  mixins: [MIXINS_REPORT.SIDERBAR_MENU, MIXINS_INDEX.IS_SHOW_POPUP],
+  data() {
+    return {
+      activeName: "first",
+    };
+  },
+  components: {
+    'integralPage': () => import("@/components/reports/member/integralBalance.vue"),
+    'numberPage': () => import("@/components/reports/member/numberBalance.vue")
+  }
+};
+</script>

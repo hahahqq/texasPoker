@@ -1,0 +1,78 @@
+import commonSend from '@/api/api'
+import {
+    GET_GAME_LIST,
+    GET_GAME_DETAILS
+} from '@/store/mutation-types'
+import { getUserInfo, getHomeData } from '@/api/index'
+
+// init state
+const state = {
+    getGameListState: {},
+    getGameDetailsState: {},
+    gameDetailsBillObj:{}
+}
+
+// getters
+const getters = {
+    getGameListState: state => state.getGameListState,
+    getGameDetailsState: state => state.getGameDetailsState,
+    gameDetailsBillObj: state => state.gameDetailsBillObj
+}
+
+// actions
+const actions = {
+    // 比赛项目
+    getGameList({commit}, data){  // 赛事列表
+        let userInfo = getUserInfo();
+        let sendData = {
+            'InterfaceCode': '920201001',
+            'CompanyId': userInfo.CompanyID,
+            'ShopId': getHomeData().shop.ID,
+            UserId: '',
+            Filter: '',
+            Type: data.Type ? data.Type : -1,
+            PN: data.PN ? data.PN : 1
+        }
+        commonSend.commonSend('get', data => {
+            commit(GET_GAME_LIST, { data })
+        }, sendData)
+    },
+    getGameDetails({commit}, data){   // 赛事详情
+        let userInfo = getUserInfo()
+        let sendData = {
+            InterfaceCode: '920201002',
+            'CompanyId': userInfo.CompanyID,
+            'ShopId': getHomeData().shop.ID,
+            UserId: '',
+            BillId: data.BillId
+        }
+        commonSend.commonSend('get', data => {
+            commit(GET_GAME_DETAILS, { data })
+        }, sendData)
+    }
+}
+
+// mutations
+const mutations = {
+    [GET_GAME_LIST](state, { data }) {
+        state.getGameListState = data
+    },
+    [GET_GAME_DETAILS](state, { data }) {
+      //  if(data.success){
+      //     console.log(data)
+      //     this.gameDetailsBillObj = data.data.BillObj
+      //     this.gameDetailsBuyVipList = data.data.buyVipList
+      //     this.gameDetailsRewardObj = data.data.RewardObj
+      //     this.gameDetailsEventRewardObj = data.data.EventRewardObj
+      //  }
+        state.getGameDetailsState = data
+    }
+}
+
+
+export default {
+    state,
+    getters,
+    actions,
+    mutations
+}

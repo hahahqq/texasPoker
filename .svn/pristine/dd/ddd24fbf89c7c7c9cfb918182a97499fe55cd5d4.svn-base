@@ -1,0 +1,316 @@
+<template>
+  <!-- <el-container> -->
+    <div class="">
+      <div class="content-eighty">
+        <div class="content-center">
+          <span>
+            日期：
+            <el-date-picker
+              size="small"
+              v-model="dateList"
+              type="daterange"
+              align="right"
+              @change="dateListFun"
+              style="width: 260px"
+              range-separator="至"
+              value-format="yyyy-MM-dd"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+            ></el-date-picker>
+          </span>
+
+          <span style="margin-left: 20px">
+            赛事类型：
+            <el-select
+              size="small"
+              style="width: 150px"
+              clearable
+              v-model="ruleFrom.Type"
+              @change="getNewData"
+              placeholder="请选择赛事类型"
+            >
+              <el-option value="0" label="SNG"></el-option>
+              <el-option value="1" label="MTT"></el-option>
+              <el-option value="3" label="自由积分赛" v-if="IsIntegralMatch"></el-option>
+            </el-select>
+          </span>
+
+          <span style="margin-left: 20px">
+            状态：
+            <el-select
+              size="small"
+              style="width: 150px"
+              clearable
+              v-model="ruleFrom.IsCheck"
+              @change="getNewData"
+              placeholder="请选择状态"
+            >
+              <el-option value="0" label="待核销"></el-option>
+              <el-option value="1" label="已核销"></el-option>
+            </el-select>
+          </span>
+
+          <span style="margin-left: 20px">
+            店铺：
+            <el-select size="small" style="width: 150px" placeholder="请选择店铺"></el-select>
+          </span>
+
+          <el-button
+            style="float: right"
+            type="primary"
+            size="small"
+            @click="scanVerificationFun()"
+          >
+            扫码核销
+          </el-button>
+        </div>
+      </div>
+
+      <div class="content-table-center">
+         <el-table
+         size="small"
+         :data="tableData"
+         style="width: 100%"
+         :height="tableHeight"
+         header-row-class-name="bg-F1F2F3"
+         >
+         <el-table-column prop="MATCHNAME" label="赛事名称"></el-table-column>
+         <el-table-column prop="MATCHTYPENAME" label="比赛类型"></el-table-column>
+         <el-table-column prop="PAYINTEGRAL" label="报名积分"></el-table-column>
+
+         <el-table-column prop="" label="开赛时间">
+            <template slot-scope="scope">
+               {{ new Date(scope.row.PLAYTIME) | timehf }}
+            </template>
+         </el-table-column>
+
+         <el-table-column label="报名时间">
+            <template slot-scope="scope">
+               {{ new Date(scope.row.WRITETIME) | timehf }}
+            </template>
+         </el-table-column>
+
+         <el-table-column label="核销时间">
+            <template slot-scope="scope">
+               {{ new Date(scope.row.CHECKTIME) | timehf }}
+            </template>
+         </el-table-column>
+
+         <el-table-column prop="COUPONCODE" label="核销券码"></el-table-column>
+         <el-table-column prop="VIPNAME" label="会员名"></el-table-column>
+         <el-table-column prop="VIPCODE" label="卡号"></el-table-column>
+         <el-table-column prop="MOBILENO" label="手机号"></el-table-column>
+         <el-table-column label="状态">
+            <template slot-scope="scope">
+               <span>{{ scope.row.ISCHECK ? "已核销" : "待核销" }}</span>
+            </template>
+         </el-table-column>
+
+         <!-- <el-table-column label="操作">
+                  <template slot-scope="scope">
+                     <el-button @click="printFun(scope.row)">打印</el-button>
+                  </template>
+               </el-table-column> -->
+         </el-table>
+
+         <!-- 分页 -->
+         <div v-show="tableData.length > 0" class="m-top-sm clearfix elpagination">
+         <el-pagination
+            @size-change="handlePageChange"
+            @current-change="handlePageChange"
+            :current-page.sync="pagination.PN"
+            :page-size="pagination.PageSize"
+            layout="total, prev, pager, next, jumper"
+            :total="pagination.TotalNumber"
+            class="text-center"
+         ></el-pagination>
+         </div>
+      </div>
+
+      <el-dialog title="扫码核销" :visible.sync="showScanVerification" width="600px">
+        <div
+          class="barCodePay"
+          style="overflow: hidden; margin-top: -20px"
+          @click="chufaininputfocus"
+        >
+          <div class="modal-body">
+            <input type="hidden" id="isShowbarCodePayWindows" value="true" />
+            <div class="barcodeLeft pull-left">
+              <img src="static/images/barCode.jpg" />
+            </div>
+            <div class="barcodeRight">
+              <div class="barcodeRight_top">
+                <p style="margin-top: 20px">请使用扫码枪扫码客人券码进行核销</p>
+                <p id="errorMsg" style="position: absolute; bottom: 20px; color: red"></p>
+              </div>
+              <div class="barcodeRight_bottom">
+                <el-input
+                  type="default"
+                  v-model="authcodeValue"
+                  placeholder="请用扫描枪扫码客户二维码"
+                  style="width: 240px"
+                  ref="mark"
+                  @keyup.enter.native="inputbarcodepay"
+                ></el-input>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-dialog>
+    </div>
+  <!-- </el-container> -->
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from "dayjs";
+export default {
+  data() {
+    return {
+      dateList: "",
+      ruleFrom: {
+        ShopId: "",
+        BeginDate: "1",
+        EndDate: "9999999999999",
+        IsCheck: "",
+        Type: ""
+      },
+      pagination: {
+        TotalNumber: 0,
+        PageNumber: 0,
+        PageSize: 20,
+        PN: 1
+      },
+      tableHeight: document.body.clientHeight - 280,
+      tableData: [],
+      showScanVerification: false,
+      authcodeValue: "",
+      bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE,
+      IsIntegralMatch: getUserInfo().CompanyConfig.ISINTEGRALMATCH
+    };
+  },
+  computed: {
+    ...mapGetters({
+      signUpScanListState: "signUpScanListState"
+    })
+  },
+  watch: {
+    signUpScanListState(data) {
+      this.loading = false;
+      if (data.success) {
+        let _data = data.data.PageData;
+        this.tableData = _data.DataArr;
+        this.pagination = {
+          TotalNumber: _data.TotalNumber,
+          PageNumber: _data.PageNumber,
+          PageSize: _data.PageSize,
+          PN: _data.PN
+        };
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
+    }
+  },
+  methods: {
+    dateListFun() {
+      this.ruleFrom.BeginDate = dayjs(this.dateList[0] + " " + this.bussinessTime).valueOf();
+      this.ruleFrom.EndDate = dayjs(this.dateList[1] + " " + this.bussinessTime).valueOf();
+      this.ruleFrom.PN = 1;
+      this.getNewData();
+    },
+    scanVerificationFun() {
+      this.showScanVerification = true;
+    },
+    chufaininputfocus() {
+      this.getinputfocus();
+    },
+    handlePageChange: function (currentPage) {
+      if (this.ruleFrom.PN == currentPage || this.loading) {
+        return;
+      }
+      this.ruleFrom.PN = parseInt(currentPage);
+      this.getNewData();
+    },
+    getinputfocus() {
+      this.$refs.mark.$el.querySelector("input").focus();
+    },
+    inputbarcodepay() {
+      this.$store
+        .dispatch("signUpScanVerifition", {
+          CouponCode: this.authcodeValue
+        })
+        .then(() => {});
+    },
+    getNewData() {
+      this.$store.dispatch("getSignUpScanList", this.ruleFrom).then(() => {
+        this.loading = true;
+      });
+    }
+  },
+  mounted() {
+    let bussinessTimeToNumber = Number(this.bussinessTime.replace(":", ""));
+    let curMonth = Number(dayjs().month()) + 1;
+    let todayDate = dayjs(new Date().getTime());
+    let nowHourMius = todayDate.format("HH:mm");
+    let yesterdayDate = dayjs().subtract(30, "day").format("YYYY-MM-DD");
+    let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+    let beginFormat =
+      nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format("YYYY-MM-DD") : yesterdayDate;
+
+    let beginTime = beginFormat + " " + this.bussinessTime + ":00";
+    let endTime = todayDate.format("YYYY-MM-DD HH:mm");
+
+    let firstDate = new Date(beginTime).getTime();
+    let lastDate = new Date(endTime).getTime();
+    this.ruleFrom = {
+      ShopId: getHomeData().shop.ID,
+      BeginDate: firstDate,
+      EndDate: lastDate,
+      IsCheck: "",
+      PN: 1,
+      Type: ""
+    };
+
+    this.getNewData();
+  },
+  components: {
+    // filtePage: () => import("@/views/member/vipFilterPage"),
+  },
+  created() {}
+};
+</script>
+
+<style>
+.barCodePay .modal-body {
+  position: relative;
+  padding: 15px;
+}
+
+.barcodeLeft {
+  width: 260px;
+  position: relative;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.barcodeRight {
+  /* width: 220px; */
+  position: relative;
+  float: left;
+  margin: 0;
+  padding: 0;
+  height: 301px;
+}
+
+.barcodeRight_bottom {
+  position: absolute;
+  bottom: 0;
+}
+
+.modal-body input {
+  font-size: 12px;
+}
+</style>

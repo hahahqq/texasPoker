@@ -1,0 +1,112 @@
+<template>
+    <div v-loading="loading">
+        <el-button type="primary" @click="aaa()">aaa</el-button>
+        <div>{{msg}}</div>
+        <div id="allmap" class="allmap"></div>
+    </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import BMap from "BMap";
+export default {
+    props: ["pageState"],
+    data() {
+        return {
+            msg: "",
+
+            map: null,
+            loading: false,
+            mapZoom: 15,
+            mapCenter: { lng: 0, lat: 0 },
+            mapLocation: {
+                address: undefined,
+                coordinate: undefined
+            }
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataItem: "mallFreightItem",
+            dataState: "mallFreightState"
+        })
+    },
+    watch: {
+        pageState(v) {
+            if (v) {
+                let type = Object.keys(this.dataItem).length > 0 ? 1 : 0;
+                this.defaultData(type);
+                this.$refs.form.clearValidate();
+            }
+        },
+        dataState(data) {
+            if (this.loading) {
+                if (data.success) {
+                    this.$emit("resetModal");
+                }
+                this.$message({
+                    type: data.success ? "success" : "error",
+                    message: data.message
+                });
+                this.loading = false;
+            }
+        }
+    },
+    methods: {
+        aaa() {
+            // this.locationbtn();
+            let _this = this;
+
+            let test = "新年鸿大夏";
+
+            var myGeo = new BMap.Geocoder();
+            // 将地址解析结果显示在地图上,并调整地图视野
+            myGeo.getPoint(
+                test,
+                function(point) {
+                    if (point) {
+                        _this.map.centerAndZoom(point, 16);
+                        
+                        _this.map.addOverlay(new BMap.Marker(point));
+                    } else {
+                        this.msg = "您选择地址没有解析到结果!";
+                    }
+                },
+                "广州市"
+            );
+        },
+
+        locationbtn() {
+            let _this = this;
+            _this.map = new BMap.Map("allmap");
+            var point = new BMap.Point(116.331398, 39.897445);
+            _this.map.centerAndZoom(point, 15);
+            _this.map.enableScrollWheelZoom(true);
+            _this.map.enableDoubleClickZoom(true);
+            var geolocation = new BMap.Geolocation();
+            geolocation.getCurrentPosition(
+                function(r) {
+                    if (r.point) {
+                        var mk = new BMap.Marker(r.point);
+                        _this.map.addOverlay(mk);
+                        _this.map.panTo(r.point);
+                        _this.msg =
+                            "您的位置：" + r.point.lng + "," + r.point.lat;
+                    } else {
+                        console.log(r);
+                    }
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+    },
+    mounted() {
+        this.locationbtn();
+    }
+};
+</script>
+<style scoped>
+#allmap {
+    width: 100%;
+    height: 15rem;
+}
+</style>

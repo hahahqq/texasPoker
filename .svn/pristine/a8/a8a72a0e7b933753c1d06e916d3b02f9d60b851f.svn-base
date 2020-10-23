@@ -1,0 +1,33 @@
+<template>
+	<div>
+		<!-- 销售分析 -->
+		<component :is="componentName"></component>
+	</div>
+</template>
+<script>
+import page1 from "./list.vue";
+import page2 from "@/views/reports/goods/list.vue";
+import page3 from "@/views/reports/shop/index.vue";
+
+export default {
+	props: ["activePageIdx"],
+	data() {
+		return {
+			componentName: "page1"
+		};
+	},
+	watch: {
+		activePageIdx(v) {
+			this.componentName = "page" + v;
+		}
+	},
+	components: {
+		page1,
+		page2,
+		page3
+	},
+	mounted() {
+		console.log("aaa", this.activePageIdx);
+	}
+};
+</script>

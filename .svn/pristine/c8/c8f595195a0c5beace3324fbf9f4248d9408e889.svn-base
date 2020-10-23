@@ -1,0 +1,685 @@
+<template>
+    <div class="memberAdd">
+        <el-form :inline="false" :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px">
+           <el-row :gutter="10">
+               <el-col :span="18">
+                  <el-row>
+                     <el-col :xs="24" :sm="12" >
+                        <el-form-item label="姓名" prop="Name">
+                              <el-input
+                                 v-model="ruleForm.Name"
+                                 autocomplete="off"
+                                 clearable
+                                 size="small"
+                                 placeholder="请输入名称"
+                              ></el-input>
+                        </el-form-item>
+                     </el-col>
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="手机" prop="PhoneNo">
+                              <el-input
+                                 v-model.number="ruleForm.PhoneNo"
+                                 type="number"
+                                 clearable
+                                 size="small"
+                                 placeholder="请输入手机号码"
+                              ></el-input>
+                        </el-form-item>
+                     </el-col>
+
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="卡号" prop="Code">
+                              <el-input size="small" v-model="ruleForm.Code" placeholder="请输入卡号" clearable></el-input>
+                        </el-form-item>
+                     </el-col>
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="等级" prop="LevelId">
+                              <el-select v-model="ruleForm.LevelId" placeholder="请选择会员等级" class="full-width" size="small">
+                                 <el-option
+                                    v-for="(item,i) in memberLevelList"
+                                    :key="i"
+                                    :label="item.NAME"
+                                    :value="item.ID"
+                                 ></el-option>
+                              </el-select>
+                        </el-form-item>
+                     </el-col>
+
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="顾问">
+                              <el-select
+                                 v-model="ruleForm.SaleEmpId"
+                                 placeholder="请选择销售顾问"
+                                 size="small"
+                                 :disabled='dealType.type=="edit"'
+                                 class="full-width"
+                              >
+                                 <el-option
+                                    v-for="(item,i) in employeeList"
+                                    :key="i"
+                                    :label="item.NAME"
+                                    :value="item.ID"
+                                 ></el-option>
+                              </el-select>
+                        </el-form-item>
+                     </el-col>
+                     <el-col :xs="24" :sm="12" >
+                        <el-form-item label="身份证">
+                              <el-input
+                                 v-model="ruleForm.IdCardNo"
+                                 size="small"
+                                 autocomplete="off"
+                                 clearable
+                                 @blur="isIDCard(ruleForm.IdCardNo);"
+                                 placeholder="请输入会员身份证号"
+                              ></el-input>
+                        </el-form-item>
+                     </el-col>
+
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="性别">
+                              <el-select v-model="ruleForm.Sex" size="small" style="width: 100%">
+                              <el-option label="男" value="0"></el-option>
+                              <el-option label="女" value="1"></el-option>
+                              </el-select>
+                        </el-form-item>
+                     </el-col>
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="生日">
+                              <el-date-picker
+                                 v-model="ruleForm.BirthDate"
+                                 type="date"
+                                 size="small"
+                                 value-format="timestamp"
+                                 placeholder="选择日期"
+                                 style="width:100%;"
+                                 :picker-options="pickerOptions"
+                              ></el-date-picker>
+                        </el-form-item>
+                     </el-col>
+
+                     <el-col :xs="24" :sm="12" v-show="IsUsePassWd">
+                        <el-form-item label="密码">
+                              <el-input size="small" v-model="ruleForm.Passwd" placeholder="请输入6位数字密码" clearable></el-input>
+                        </el-form-item>
+                     </el-col>
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="标识">
+                              <el-input
+                                 placeholder="请输入或选择标识"
+                                 v-model="VipFlag"
+                                 size="small"
+                                 @change="ruleForm.VipFlag=''"
+                                 clearable
+                                 class="input-with-select"
+                              >
+                                 <el-select
+                                    slot="append"
+                                    v-model="ruleForm.VipFlag"
+                                    @change="VipFlag=''"
+                                    placeholder="选择"
+                                    size="small"
+                                    style="width:100px"
+                                 >
+                                    <el-option value>全部</el-option>
+                                    <el-option
+                                          v-for="(item,i) in flagList"
+                                          :key="i"
+                                          v-if="i>0"
+                                          :label="item.VIPFLAG"
+                                          :value="item.VIPFLAG"
+                                    ></el-option>
+                                 </el-select>
+                              </el-input>
+                        </el-form-item>
+                     </el-col>
+                  <!-- </el-row>
+                  <el-row> -->
+                     <el-col :xs="24" :sm="12">
+                        <el-form-item label="有效期">
+                              <el-date-picker
+                                 v-model="ruleForm.InvalidDate"
+                                 type="date"
+                                 size="small"
+                                 value-format="timestamp"
+                                 placeholder="选择日期"
+                                 style="width:100%;"
+                              ></el-date-picker>
+                        </el-form-item>
+                     </el-col>
+                  </el-row>
+                  <el-row>
+                     <el-col :xs="24" :sm="24">
+                        <el-form-item label="地址">
+                              <el-input
+                                 size="small"
+                                 v-model="ruleForm.Address"
+                                 clearable
+                                 class="full-width"
+                                 placeholder="请填写会员详细地址"
+                              ></el-input>
+                        </el-form-item>
+                     </el-col>
+                  </el-row>
+
+                  <el-row>
+                        <el-col :xs="24" :sm="24">
+                        <el-form-item label="备注" class="clearfix">
+                           <el-input size="small" placeholder="请输入备注" v-model="ruleForm.Remark"></el-input>
+                        </el-form-item>
+                        </el-col>
+                  </el-row>
+               </el-col>
+
+               <el-col :span="6" style="padding-left: 20px">
+                  <el-upload
+                    style="height: 140px;"
+                    action
+                    class="avatar-uploader"
+                    ref="upload"
+                    :show-file-list="false"
+                    :auto-upload="false"
+                    :on-change="changeFile"
+                  >
+                  <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                  <i v-else class="el-icon-plus avatar-uploader-icon" ></i>
+                  </el-upload>
+                  <div style="text-align:center; width:140px; margin-top: 10px; color:#aaa">点击上传会员头像</div>
+
+               </el-col>
+            </el-row>
+
+            <el-form-item>
+                <el-button :disabled="memberLevelList.length==0" type="primary" @click="submitForm" :loading="loading">保 存</el-button>
+                <el-button @click="closeModal">取 消</el-button>
+            </el-form-item>
+        </el-form>
+
+        <!-- 业绩员工选择 -->
+        <el-dialog width="560px" title="业绩员工选择" :visible.sync="isShowRoyalty" append-to-body>
+            <royalty-sel
+                @closeModal="isShowRoyalty=false"
+                :pageState="isShowRoyalty"
+                :money="0"
+                @resultArr="selRoyaltyFun"
+            ></royalty-sel>
+        </el-dialog>
+
+        <el-dialog width="70%" title="选择推荐会员" :visible.sync="isShowFirstPopup" append-to-body style="max-width:100%;">
+            <selmember @closeModal="isShowFirstPopup=false"></selmember>
+        </el-dialog>
+    </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { CityInfo } from "@/assets/js/area.js";
+import CRYPTO from "crypto-js";
+import { getUserInfo,getHomeData } from '@/api/index'
+import dayjs from 'dayjs'
+import { VIPIMAGESIMG } from "@/util/define";
+const imageConversion = require("image-conversion");
+
+export default {
+    props: {
+        dealType: {
+            type: Object,
+            default: function() {
+               return {
+                  type: "add",
+                  state: false
+               }
+            }
+        }
+    },
+    data() {
+        var checkTel = (rule, value, callback) => {
+            if (!value) {
+                return callback(new Error("手机号码不能为空"));
+            }
+            setTimeout(() => {
+                if (!Number.isInteger(value)) {
+                    callback(new Error("请输入数字值"));
+                } else {
+                    var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+                    if (!myreg.test(value)) {
+                        callback(new Error("请输入正确的手机号码"));
+                    } else {
+                        callback();
+                    }
+                }
+            }, 800);
+        };
+        return {
+            pickerOptions: {
+                disabledDate: time =>{
+                    return time.getTime() < -2209040515000;
+                }
+            },
+            isShowFirstPopup: false,
+            ruleForm: {
+                Code: "",
+                Name: "",
+                Sex: "0",
+                PhoneNo: "",
+                LevelId: "-1",
+                BirthDate: "",
+                VipFlag: "",
+                Passwd: "",
+                Address: "",
+                Remark: "",
+                InvalidDate: "",
+                SaleEmpId: "",
+                QQ:"",
+                WeChat:"",
+                DepositMoney:"",
+                IdCardNo: '',
+                CreateDate: new Date().getTime(),
+            },
+            rules: {
+                Name: [
+                    {
+                        required: true,
+                        message: "请输入姓名",
+                        trigger: "blur"
+                    }
+                ],
+                PhoneNo: [
+                    {
+                        required: true,
+                        validator: checkTel,
+                        trigger: "blur"
+                    }
+                ],
+                Code: [
+                    {
+                        required: true,
+                        message: "请输入卡号",
+                        trigger: "blur"
+                    }
+                ],
+                LevelId: [
+                    {
+                        required: true,
+                        validator: '请选择会员等级',
+                        trigger: "change"
+                    }
+                ],
+                Sex: [
+                  {
+                      required: true,
+                      message: '请选择会员性别',
+                      trigger: 'change'
+                  }
+                ]
+            },
+            areaOptions: CityInfo,
+            selectedAreaOptions: [],
+            IsUsePassWd: false,
+            loading: false,
+            isShowRoyalty: false,
+            royaltyData: [],
+            VipFlag: "",
+            imageUrl: '',
+            imgFile: {},
+            vipID: ''
+        };
+    },
+
+    computed: {
+        ...mapGetters({
+            employeeList: "employeeList",
+            memberLevelList: "memberLevelList",
+            dealMemberState: "dealMemberState",
+            itemInfo: "memberItemInfo",
+            flagList: "memberFlagList",
+            autoVipCodeState: "getAutoVipCodeState",
+            goodsImgUploadState: 'goodsImgUploadState',
+            selmember: "selmember", //选择的会员
+            saveVipImgState : 'saveVipImgState'
+        })
+    },
+    watch: {
+       itemInfo(data){
+          console.log(data)
+
+         if (this.dealType.state && this.dealType.type == "edit") {
+            for (let key in this.ruleForm) {
+               let kk = key.toUpperCase();
+               this.ruleForm[key] = data[kk];
+               this.ruleForm.Sex = data.SEX+''
+               this.ruleForm.Name = data.NAME
+            }
+            this.ruleForm.PhoneNo = parseInt(this.itemInfo.MOBILENO);
+            // this.IsUsePassWd = this.itemInfo.ISUSEPASSWD;
+            this.ruleForm.Address = this.itemInfo.ADDRESS == undefined ? '' : this.itemInfo.ADDRESS
+            console.log(this.itemInfo)
+            this.imageUrl = this.itemInfo.IMAGEURL != undefined ? this.itemInfo.IMAGEURL : ''
+            this.imgFile = {}
+         }
+       },
+       saveVipImgState(data){
+         this.$message({ message: data.message, type: data.success ? 'success' : "error"  })
+         if(data.success){
+            this.loading = false;
+            this.$refs.ruleForm.resetFields();
+            this.imgFile = {}
+            this.closeModal("resetList");
+         }
+       },
+       goodsImgUploadState(data){
+         //  this.closeModal("resetList");
+       },
+        autoVipCodeState(data) {
+            console.log("编辑会员详情")
+            if (data.success) {
+                this.ruleForm.Code = data.data.Code;
+            }
+        },
+        selmember(data){
+            console.log(data)
+        },
+        dealMemberState(data) {
+           console.log(data)
+            if (data.success) {
+               if(this.dealType.type == 'edit'){
+                  this.vipID = data.data.VipID
+               }else{
+                  this.vipID = data.data.ID
+               }
+
+               if(this.imgFile.size != undefined){
+                  let vipImg = VIPIMAGESIMG + this.vipID + ".png";
+                  let that = this
+                  this.blobToBase64(this.imgFile, function(dataUrl) {
+                     console.log(that.vipID)
+                     let sendData = {
+                        name: that.vipID + `.png`,
+                        filePath: "vipimages",
+                        file: dataUrl
+                     }
+                     that.$store.dispatch("uploadGoodsImg", sendData).then(() =>{
+                        that.$store.dispatch('saveVipImg', { VipId: that.vipID, ImageUrl: vipImg })
+                     })
+                  });
+               }else{
+                  this.loading = false;
+                  this.$refs.ruleForm.resetFields();
+                  this.$message({ message: data.message, type: "success"  })
+                  this.closeModal("resetList");
+               }
+            }else{
+               this.$message({ message: data.message, type: "error"  })
+            }
+        }
+    },
+    methods: {
+         changeFile(file, fileList){
+            const isPNG =
+                file.name.substring(file.name.lastIndexOf(".") + 1) === "png" ||
+                file.name.substring(file.name.lastIndexOf(".") + 1) === "jpg" ||
+                file.name.substring(file.name.lastIndexOf(".") + 1) === "jpeg";
+            if (!isPNG) {
+                this.$message.error("上传头像图片只能是 PNG、jpg、jpeg 格式!");
+                file = {};
+            }
+
+            let p = new Promise(function(resolve, reject) {
+                let isLt2M = file.size / 1024 / 1024 < 1; // 判定图片大小是否小于1MB
+                if (isLt2M) {
+                    resolve(file.raw);
+                }
+                // 压缩到100KB,这里的100就是要压缩的大小,可自定义
+                imageConversion
+                    .compressAccurately(file.raw, {
+                        size: 100,
+                        scale: 0.4
+                    })
+                    .then(res => {
+                        resolve(res);
+                    });
+            });
+
+            p.then(data => {
+                this.imgFile = data;
+                let that = this;
+                this.blobToBase64(data, function(dataUrl) {
+                    that.imageUrl = dataUrl;
+                });
+            });
+         },
+        closeModal(type) {
+            Object.assign(this.$data, this.$options.data());
+            this.$store.dispatch('clearMember', 8)
+            if (type == "resetList") {
+                this.$emit("resetList");
+            } else {
+                this.$emit("closeModal");
+            }
+        },
+        blobToBase64(blob, callback) {
+            // Blob对象转Base64
+            let reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onload = function(e) {
+                callback(e.target.result);
+            };
+        },
+        isIDCard(idCard){
+          if(idCard != ''){
+            var reg=/^[1-9]{1}[0-9]{14}$|^[1-9]{1}[0-9]{16}([0-9]|[xX])$/;
+            if(!reg.test(idCard)){
+                this.$message.warning("身份证号码不正确");
+            }
+          }
+        },
+        submitForm() {
+            var _this = this;
+            this.$refs.ruleForm.validate(valid => {
+                if (valid) {
+                    _this.submitfun();
+                } else {
+                    console.log("error submit!!");
+                    return false;
+                }
+            })
+        },
+        submitfun() {
+            if(this.ruleForm.Passwd==null || this.ruleForm.Passwd=='' || this.ruleForm.Passwd==undefined){
+                 console.log("可以保存")
+            }else{
+                let Passwd=this.ruleForm.Passwd
+                if(Passwd.length==6){
+                    console.log("可以保存")
+                }else{
+                    this.$message("请重新输入以数字组成的六位数的密码");
+                    return;
+                }
+            }
+            console.log(this.dealType.type)
+            let address = this.getAreaLabel() + this.ruleForm.Address;
+            let sendData = Object.assign({}, this.ruleForm, {
+                Address: address
+            });
+            sendData.ShareVipId = this.selmember.ID
+            let methodName = "addNewMember";
+            if(this.VipFlag){
+              sendData.VipFlag = this.VipFlag;
+            }
+            if (this.dealType.type == "add") {
+                sendData.Passwd = this.ruleForm.Passwd
+                    ? CRYPTO.MD5(this.ruleForm.Passwd).toString()
+                    : "";
+                sendData.IsUsePassWd = 0;
+                if (this.royaltyData.length > 0) {
+                    // 员工提成信息
+                    let rObj = {};
+                    for (let i = 0; i < this.royaltyData.length; i++) {
+                        rObj[i] = {
+                            EmpId: this.royaltyData[i].EmpId,
+                            Money: this.royaltyData[i].Money
+                        };
+                    }
+                    sendData.SaleEmpMoney = JSON.stringify(rObj);
+                }
+            }
+            if (this.dealType.type == "edit") {
+                sendData.CreateDate=this.ruleForm.CreateDate
+                sendData.InvalidDate = this.ruleForm.InvalidDate,
+                sendData.id = this.itemInfo.ID;
+                sendData.STATUS = this.itemInfo.STATUS;
+                sendData.IsUsePassWd = this.IsUsePassWd;
+                sendData.Passwd = this.ruleForm.Passwd ? CRYPTO.MD5(this.ruleForm.Passwd).toString() : this.itemInfo.PASSWORD;
+                methodName = "editTheMember";
+            }
+
+            sendData.BirthDate = this.ruleForm.BirthDate == '' ? '' : dayjs(this.ruleForm.BirthDate).format('YYYY-MM-DD')
+
+            this.$store.dispatch(methodName, sendData).then(()=>{
+                this.loading = true
+            })
+        },
+        getAreaLabel() {
+            let seled = [...this.selectedAreaOptions];
+            let areaStr = "";
+            if (seled.length == 0) return areaStr;
+            for (let i = 0; i < this.areaOptions.length; i++) {
+                if (this.areaOptions[i].value == seled[0]) {
+                    areaStr += this.areaOptions[i].label + " ";
+                    for (
+                        let j = 0;
+                        j < this.areaOptions[i].children.length;
+                        j++
+                    ) {
+                        if (this.areaOptions[i].children[j].value == seled[1]) {
+                            areaStr +=
+                                this.areaOptions[i].children[j].label + " ";
+                            let karr = [
+                                ...this.areaOptions[i].children[j].children
+                            ];
+                            for (let k = 0; k < karr.length; k++) {
+                                if (karr[k].value == seled[2]) {
+                                    areaStr += karr[k].label + " ";
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            return areaStr;
+        },
+        setAddress(address) {
+            let seled = address.split(" ");
+            let areaStr = [];
+            let defauleArr = [...this.areaOptions];
+            for (let i = 0; i < defauleArr.length; i++) {
+                if (defauleArr[i].label == seled[0]) {
+                    areaStr.push(defauleArr[i].value);
+                    for (let j = 0; j < defauleArr[i].children.length; j++) {
+                        if (defauleArr[i].children[j].label == seled[1]) {
+                            areaStr.push(defauleArr[i].children[j].value);
+                            let karr = [...defauleArr[i].children[j].children];
+                            for (let k = 0; k < karr.length; k++) {
+                                if (karr[k].label == seled[2]) {
+                                    areaStr.push(karr[k].value);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            this.selectedAreaOptions = [...areaStr];
+            this.ruleForm.Address = seled[3];
+        },
+        selRoyaltyFun: function(arr) {
+            this.royaltyData = [...arr];
+            this.isShowRoyalty = false;
+        }
+    },
+    mounted() {
+        if (this.memberLevelList.length > 0) {
+            this.ruleForm.LevelId = this.memberLevelList[0].ID;
+        }
+        if (this.dealType.state && this.dealType.type == "edit") {
+            for (let key in this.ruleForm) {
+                let kk = key.toUpperCase();
+                this.ruleForm[key] = this.itemInfo[kk];
+                this.ruleForm.Sex = this.itemInfo.SEX+''
+            }
+            this.ruleForm.PhoneNo = parseInt(this.itemInfo.MOBILENO);
+            // this.IsUsePassWd = this.itemInfo.ISUSEPASSWD ? true : false;
+            console.log(this.itemInfo)
+            this.imageUrl = this.itemInfo.IMAGEURL != undefined ? this.itemInfo.IMAGEURL : ''
+            // if (this.itemInfo.ADDRESS) {
+            //     this.setAddress(this.itemInfo.ADDRESS);
+            // }
+        }
+    },
+    beforeCreate() {
+        let list1 = this.$store.state.employee.employeeList;
+        let list2 = this.$store.state.member.memberLevelList;
+        let list3 = this.$store.state.member.memberFlagList;
+        if (list1.length == 0) {
+            this.$store.dispatch("getEmployeeList", {}).then(() => {});
+        }
+        if (list2.length == 0) {
+            this.$store.dispatch("getMemberLevel").then(() => {});
+        }
+        if (list3.length == 0) {
+            this.$store.dispatch("getMemberFlag");
+        }
+    },
+    components: {
+        royaltySel: () => import("@/components/selected/selroyalty.vue"),
+        selmember: () => import("@/components/selected/selmember.vue")
+    }
+};
+</script>
+<style>
+.memberAdd .half {
+    width: 33.33%;
+    margin-right: 0px;
+    float: left;
+}
+
+.memberAdd .half .el-date-editor.el-input {
+    width: 100% !important;
+}
+.memberAdd .el-form-item__content {
+    line-height: 40px;
+}
+.memberAdd{
+    /* overflow: auto;
+    height: 600px; */
+    width: 100%;
+}
+
+.avatar-uploader .el-upload {
+   border: 1px dashed #d9d9d9;
+   border-radius: 6px;
+   cursor: pointer;
+   position: relative;
+   overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+   border-color: #409EFF;
+}
+.avatar-uploader-icon {
+   font-size: 28px;
+   color: #8c939d;
+   width: 140px;
+   height: 140px;
+   line-height: 140px;
+   text-align: center;
+}
+.avatar {
+   width: 140px;
+   height: 140px;
+   display: block;
+}
+</style>

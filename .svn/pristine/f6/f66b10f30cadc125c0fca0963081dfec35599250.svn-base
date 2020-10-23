@@ -1,0 +1,162 @@
+<template>
+  <div class="shop-list">
+    <div class="content-eighty">
+        <div class="content-center">
+          <div class="shop-bottom">
+            <el-button size="small" type="primary" @click="handleDeal({})">添加店铺</el-button>
+            <div class="seach-input">
+              <el-input size="small" placeholder="请输入内容" v-model="input2">
+                <template slot="append"><span class="overall-font">搜索</span></template>
+              </el-input>
+            </div>
+        </div>
+      </div>
+  </div>
+    <!--列表-->
+        <div class="content-table">
+          <div class="content-table-center">
+        <el-table
+          :data="pagelist"
+          v-loading="loading"
+          height="500"
+          size='small'
+          header-row-class-name="bg-theme2 text-white"
+        >
+          <el-table-column prop="SHOPNAME" label="店铺名称" width="120"></el-table-column>
+          <el-table-column prop="MANAGER" label="联系人"></el-table-column>
+          <el-table-column prop="PHONENO" label="联系电话"></el-table-column>
+          <el-table-column prop="ADDRESS" label="地址"></el-table-column>
+          <el-table-column label="到期时间">
+            <template slot-scope="scope">
+                <span>{{new Date(scope.row.INVALIDDATE) | time}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="right">
+            <template slot-scope="scope">
+              <el-button-group>
+                <el-button type="text" size="small" @click="handleDeal(scope.row)" icon="el-icon-edit">编辑</el-button>
+                <!-- <el-button
+                  size="small"
+                  type="text"
+                  v-if="!scope.row.ISINIT"
+                  @click="handleDel(scope.$index, scope.row)"
+                  icon="el-icon-delete"
+                >删除</el-button> -->
+              </el-button-group>
+              <div class="hide">{{scope.row}}</div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+
+    <!-- deal -->
+    <el-dialog :title="dealType=='add'?'新增店铺':'编辑店铺'" :visible.sync="dialogVisible" width="600px">
+      <editShopPage
+        @closeModal="dialogVisible=false"
+        @resetList="dialogVisible=false;getNewData()"
+        :propsData="{state:dialogVisible}"
+      ></editShopPage>
+    </el-dialog>
+  </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+  data() {
+    return {
+      pagelist: [],
+      loading: false,
+      dialogVisible: false,
+      dealType: "add",
+      input2:'',
+    };
+  },
+  computed: {
+    ...mapGetters({
+      dataList: "shopList",
+      dataListState: "shopListState",
+      dataState: "shopState",
+      dealState: "dealShopState"
+    })
+  },
+  watch: {
+    dataListState(data) {
+      this.loading = false;
+      if (data.success) {
+        this.pagelist = [...this.dataList];
+      }
+    },
+    dealState(data) {
+      if (data.success) {
+        this.getNewData();
+      }
+      this.$message({
+        message: data.message,
+        type: data.success ? "success" : "error"
+      });
+    }
+  },
+  methods: {
+    getNewData() {
+      this.$store.dispatch("getShopList").then(() => {
+        this.loading = true;
+      });
+    },
+    handleDeal(item) {
+      this.$store.dispatch("selectingShop", item).then(() => {
+        this.dialogVisible = true;
+        this.dealType = Object.keys(item).length > 0 ? "edit" : "add";
+      });
+    },
+    handleDel(index, item) {
+      console.log(item);
+      this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$store
+            .dispatch("delShopItem", { index: index, data: item })
+            .then(() => {
+              this.loading = false;
+              this.dealType = "del";
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    }
+  },
+  components: {
+    editShopPage: () => import("@/components/setup/editShop")
+  },
+  mounted() {
+    this.getNewData();
+  }
+};
+</script>
+<style scoped>
+.shop-list{
+  width: 100%;
+  position: relative;
+}
+.shop-bottom{
+  display: flex;
+  align-items: center;
+  height: 80px;
+  background: #fff;
+}
+.seach-input{
+  position: absolute;
+  right: 30px;
+}
+.shop-table{
+  margin-top: 20px;
+  background: #fff;
+}
+</style>

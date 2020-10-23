@@ -1,0 +1,515 @@
+<template>
+  <div>
+    <div style=" padding: 16px; background:#f8f8f8; width: 100%; ">
+      <div style="float:left; width: 100%; margin-bottom: 10px;">
+          <span>
+              <span style="padding: 2px 6px; border-radius: 6px; background:#f00; color:#fff">积分</span>
+              <span class="MATCHNAME" style="color:#333; font-size: 14px; font-weight:bold; margin-left: 6px">{{BillObj.MATCHNAME}}</span>
+          </span>
+      </div>
+      <div style="font-size: 12px; width: 100%; display:table">
+          <el-row :gutter="10" style="margin-bottom: 10px">
+              <el-col :span="8">
+                  开赛时间：{{new Date(BillObj.PLAYTIME) | timehf}}
+              </el-col>
+              <el-col :span="8">
+                  比赛桌号：{{BillObj.DESKNAME}}
+              </el-col>
+
+              <el-col :span="7">
+                参赛情况：{{BillObj.VIPCOUNT}} 人
+              </el-col>
+          </el-row>
+
+          <el-row :gutter="10" style="margin-bottom: 10px">
+              <el-col :span="8">
+                  买入总积分：{{BillObj.TOTALMONEY}}
+              </el-col>
+
+              <el-col :span="8">
+                  {{ BillObj.CHARGESTYPE == 0 ? '服务费积分：' : '服务费金额：' }} {{ BillObj.CHARGESTYPE == 0 ? BillObj.TOTALMONEY * BillObj.CHARGESRATE + " ( 比例 "+ BillObj.CHARGESRATE * 100 +"% ) " : BillObj.CHARGESMONEY+' 元' }}
+              </el-col>
+
+              <el-col :span="7">
+                奖池总积分：{{ BillObj.REWARDMONEY}}
+              </el-col>
+          </el-row>
+
+          <el-row :gutter="10">
+            <el-col :span="8">
+              已兑换积分：{{BillObj.EXCHANGEINTEGRAL}}
+            </el-col>
+
+            <el-col :span="7">
+              未兑换积分：{{BillObj.NOTEXCHANGEINTEGRAL}}
+            </el-col>
+          </el-row>
+      </div>
+    </div>
+
+    <!-- 会员选择 -->
+    <div class="vue-dropdown default-theme m-top-sm">
+      <div class="search-module clearfix" v-if="inputShow == true">
+          <input class="search-text" v-model="searchText" @keyup="search_mb" placeholder="输入会员手机号/姓名/卡号">
+      </div>
+      <div class="ssmemberul" v-if="inputShow == false" style="border: 1px solid #f2f2f2; padding: 10px 0">
+        <div class="ssmemberul-cont" >
+          <div class="ssmemberul-imgUrl">
+          <img :src="memberdetails.IMAGEURL" onerror="this.src='static/images/merberpic.png'">
+          </div>
+          <div class="ssmemberul-massge">
+            <div>
+                <span class="ssmemberul-cont-name">{{memberdetails.NAME}}</span>
+                <!-- <span class="ssmemberul-cont-ka">{{memberdetails.LEVELNAME}}</span> -->
+            </div>
+            <div class="ssmemberul-cont-text">
+                <span style="width: 120px;float:left">卡号 : {{memberdetails.CODE}}</span>
+                <span style="margin-left:20px;">手机号 : {{memberdetails.MOBILENO}}</span>
+            </div>
+            <div class="ssmemberul-cont-text">
+                <span style="width: 120px; float:left"> 储值积分 : <i style="color:#f00">{{memberdetails.MONEY}}</i> </span>
+                <span style="margin-left:20px;">竞技积分 : <i style="color:#f00"> {{memberdetails.INTEGRAL}}</i>  </span>
+            </div>
+          </div>
+
+          <i class="el-icon-delete" style="position:absolute; right: 15px" @click="cancelSignUp"></i>
+        </div>
+      </div>
+      <ul class="list-module" v-if="datalist.length != 0">
+          <li v-for="(item,index) in datalist" @click="appClick(item)" :key="index">
+              <img :src="item.showgoodsimg" onerror="this.src='static/images/merberpic.png'">
+              <div class="itmeright">
+                  <div class="item_dright-left">
+                      <div class="name">{{item.NAME}}</div>
+                      <div class="phone">{{item.MOBILENO}}</div>
+                  </div>
+                  <div class="item_dright-right" style="line-height:24px">
+                      <div>储值积分：{{item.MONEY}}</div>
+                      <div>竞技积分：{{item.INTEGRAL}}</div>
+                  </div>
+              </div>
+          </li>
+      </ul>
+    </div>
+
+    <el-form :inline="false" :model="ruleForm" ref="ruleForm" label-width="110px" class="ruleFormStyle">
+      <el-row :gutter="10" style="margin-top: 10px">
+          <el-col :xs="24" :sm="12">
+              <el-form-item label="买入积分">
+                  <el-input v-model="ruleForm.buyInPrice" disabled placeholder="买入积分" size="small" style="width: 100%">
+                  </el-input>
+              </el-form-item>
+          </el-col>
+
+          <el-col :xs="24" :sm="12">
+              <el-form-item label="已兑积分">
+                  <el-input v-model="ruleForm.ContestQty" disabled placeholder="已兑积分" size="small" style="width: 100%">
+                  </el-input>
+              </el-form-item>
+          </el-col>
+      </el-row>
+
+      <el-row :gutter="10" style="margin-top: 10px">
+          <el-col :xs="24" :sm="12">
+              <el-form-item label="退还记分牌">
+                  <el-input v-model="ruleForm.returnChipsQty" @input="getRateFun(ruleForm.returnChipsQty)" placeholder="请输入退还记分牌" size="small" style="width: 100%">
+                  </el-input>
+              </el-form-item>
+          </el-col>
+
+          <el-col :xs="24" :sm="12">
+              <el-form-item label="返还积分">
+                  <el-input v-model="ruleForm.RewardMoney" @input="getIntegralFun(ruleForm.RewardMoney)" placeholder="请输入兑换比例" size="small" style="width: 100%">
+                  </el-input>
+              </el-form-item>
+          </el-col>
+      </el-row>
+
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="24">
+          <el-form-item label="备注说明">
+              <el-input v-model="ruleForm.Remark" placeholder="请输入备注" class="coupons" size="small" style="width: 100%">
+              </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <div style="text-align:right; width: 100%; margin-top: 10px; display:table" >
+      <el-button @click="closeDialog()"> 取消</el-button>
+      <el-button type="success" :lading="loadingReward" @click="submitReward(1)">确定并继续兑换</el-button>
+      <el-button type="primary" :lading="loadingReward" @click="submitReward(0)">确定兑换</el-button>
+    </div>
+  </div>
+</template>
+
+<script>
+import Vue from "vue";
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import { VIPIMAGESIMG } from "@/util/define";
+
+export default {
+    props: ["dataType"],
+    data(){
+        return {
+          BillObj: {
+            MATCHNAME: ''
+          },
+          levelList: [],
+          ruleForm:{
+            RewardName: '',
+            buyInPrice: '',
+            ContestQty:'',
+            RewardIntegral: '',
+            REWARDRATE: '',
+            returnChipsQty:'',
+            Remark: ''
+          },
+          searchText: "",
+          inputShow:true,
+          datalist: [],
+          pageData: {
+            PN: 1,
+            Filter: ""
+          },
+          memberdetails: {},
+          isshowtatus: false,
+          loadingReward: false,
+          rewardType: 0,
+          rechargeRate: 1,
+          buyVipList: []
+
+        }
+    },
+    computed:{
+        ...mapGetters({
+          getssmemberdListState: "ssmemberdListState",
+          integralSubmitRewardState: 'integralSubmitRewardState',
+          getGameDetailsState: 'getGameDetailsState'
+        })
+    },
+    watch:{
+      getGameDetailsState(data){
+        if(data.success){
+          this.BillObj = data.data.BillObj
+          this.buyVipList = data.data.buyVipList
+          this.rechargeRate = this.BillObj.CHIPSQTY / this.BillObj.BUYINPRICE
+        }else{
+          this.$message({ message: data.message , type: "error" })
+        }
+      },
+      integralSubmitRewardState(data){
+        this.loadingReward = false
+        if(data.success){
+          this.$message({ message: '领奖成功 ！' , type: "success" })
+          this.clearDataFun()
+          if(this.rewardType == 0){
+            this.$emit('resetCloseModalReward')
+          }else{
+            this.$store.dispatch('getGameDetails', { BillId : this.BillObj.BILLID })
+          }
+        }else{
+          this.$message({ message: data.message , type: "error" })
+        }
+      },
+      getssmemberdListState(data) {
+        if (data.success) {
+          if (this.isshowtatus) {
+            this.datalist = [...data.data.PageData.DataArr];
+            for (let i = 0; i < this.datalist.length; i++) {
+              if(this.datalist[i].IMAGEURL==undefined || this.datalist[i].IMAGEURL=='' ){
+                this.datalist[i].showgoodsimg = VIPIMAGESIMG + this.datalist[i].ID + '.png';
+              }else{
+                this.datalist[i].showgoodsimg = this.datalist[i].IMAGEURL;
+              }
+            };
+          } else {
+            this.datalist = [];
+          }
+        }
+      },
+      dataType(data){
+          this.defaultItem()
+      },
+    },
+    methods:{
+      getRateFun(returnChipsQty){
+        this.ruleForm.RewardMoney = (this.ruleForm.returnChipsQty / this.rechargeRate).toFixed(2)
+      },
+      getIntegralFun(rate){
+        console.log(this.rechargeRate)
+        this.ruleForm.returnChipsQty = this.ruleForm.RewardMoney * this.rechargeRate
+      },
+      submitReward(type){
+        this.rewardType = type
+        if(this.memberdetails.ID == undefined){
+          this.$message({ message: '请先选择要兑换的会员 ！', type: "warning" })
+          return
+        }
+
+        let sendData = {
+          VipId: this.memberdetails.ID,
+          BillId: this.BillObj.BILLID,
+          Remark: this.ruleForm.Remark,
+          RewardMoney: this.ruleForm.RewardMoney,
+          ContestQty: 0
+        }
+        this.$store.dispatch('integralSubmitReward', sendData).then(() =>{
+          this.loadingReward = true
+        })
+      },
+      clearDataFun(){
+        this.ruleForm = {
+          RewardName: '',
+          ContestQty:'',
+          RewardIntegral: '',
+          REWARDRATE: '',
+          Remark: ''
+        }
+        this.memberdetails = {}
+        this.inputShow = true
+        this.searchText = ''
+      },
+      closeDialog(){
+        this.clearDataFun()
+        this.$emit('closeModalReward')
+      },
+      defaultItem(){
+        this.BillObj = this.dataType.BillObj
+        this.buyVipList = this.dataType.buyVipList
+        console.log(this.buyVipList)
+        this.rechargeRate = this.BillObj.CHIPSQTY / this.BillObj.BUYINPRICE
+        let vipInfo = this.dataType.vipInfo
+        if(vipInfo.VIPID != undefined){
+          this.memberdetails = {
+            ID : vipInfo.VIPID,
+            IMAGEURL: vipInfo.IMAGEURL,
+            NAME: vipInfo.VIPNAME,
+            MOBILENO: vipInfo.VIPMOBILENO,
+            CODE: vipInfo.VIPCODE,
+            INTEGRAL: vipInfo.VIPINTEGRAL,
+            MONEY: vipInfo.VIPMONEY
+          }
+          this.ruleForm.buyInPrice = vipInfo.MONEY
+          this.ruleForm.ContestQty = vipInfo.CHARGESMONEY
+          this.inputShow = false
+        }
+
+      },
+      search_mb() {
+        this.isshowtatus = true;
+        this.searchfun2();
+      },
+      getMemberData() {
+        this.$store.dispatch("getSsmemberdList", this.pageData)
+      },
+      searchfun2() {
+        if (!this.searchText) {
+          return;
+        }
+        this.pageData.Filter = this.searchText;
+        this.getMemberData();
+      },
+      appClick(data) {
+        this.inputShow=false;
+        this.searchText = "";
+        this.datalist = [];
+        this.memberdetails = data;
+        let sameVipObj = this.buyVipList.filter(item => item.VIPMOBILENO == data.NAME && item.NAME  == data.VIPNAME)
+        this.ruleForm.buyInPrice = sameVipObj[0].MONEY
+        this.ruleForm.ContestQty = sameVipObj[0].CHARGESMONEY
+      },
+      cancelSignUp(){
+        this.memberdetails = {}
+        this.searchText = ''
+        this.inputShow = true
+      },
+
+    },
+    mounted(){
+      let levelList = []
+      for(var i = 1; i<= 30; i++){
+        levelList.push({ name: '第 '+ i +' 名', disabled: false })
+      }
+      this.levelList = levelList
+
+      this.defaultItem()
+    }
+}
+</script>
+
+
+<style lang="scss" scoped>
+.ruleFormStyle>>>.el-form-item{
+  margin-bottom: 0
+}
+.vue-dropdown.default-theme {
+  position: relative;
+  &._self-show {
+    display: block !important;
+  }
+
+  .search-module {
+    position: relative;
+
+    .search-text {
+      width: 100%;
+      height: 80px;
+      padding-right: 2em;
+      padding-left: 20px;
+      background:rgba(255,255,255,1);
+      border-radius:2px;
+      border: 1px solid #f2f2f2;
+      border-radius: 6px;
+    //   border: none !important;
+      font-size: 12px;
+      color: rgb(204, 192, 200);
+
+      &:focus {
+        border-color: #2198f2;
+      }
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 24%;
+      right: 0.5em;
+      color: #aaa;
+    }
+  }
+
+  .list-module {
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    width: 100%;
+    z-index: 999;
+    border-top: 0;
+
+    li {
+      padding: 10px;
+      overflow: hidden;
+      // border-bottom: 1px solid #ccc;
+      position: relative;
+
+      img {
+        width: 40px;
+        height: 40px;
+        float: left;
+        margin-right: 6px;
+      }
+      .itmeright {
+        align-items: center;
+        display: flex;
+        width: 90%;
+        position: absolute;
+        left: 0;
+        box-sizing: border-box;
+        padding-left: 50px;
+        padding-right: 6px;
+      }
+
+      &._self-hide {
+        display: none;
+      }
+      margin-top: 0.5em;
+      padding: 0.5em;
+      &:hover {
+        cursor: pointer;
+        color: #fff;
+        background: #00a0e9;
+      }
+    }
+  }
+}
+
+.ssmemberul {
+    width: 100%;
+    background: #fff;
+    border-radius:  6px;
+}
+.ssmemberul-cont{
+    width: 100%;
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+}
+.ssmemberul-imgUrl img{
+    height: 40px;
+    width: 40px;
+    border-radius: 100%;
+}
+.ssmemberul-massge{
+    margin-left: 10px;
+    font-size: 12px;
+}
+.el-icon-delete{
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+.ssmemberul-cont-name{
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(51,51,51,1);
+}
+.ssmemberul-cont-ka{
+    margin-left: 30px;
+    font-size:8px !important;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(255,255,255,1);
+    background:rgba(37,137,255,1);
+    border-radius:2px;
+    padding: 2px 4px;
+
+}
+.ssmemberul-cont-text{
+    font-size:12px;
+    font-family:HelveticaCyr Upright;
+    font-weight:400;
+    color:rgba(153,153,153,1);
+    margin-top: 5px;
+}
+.ssmemberul-cont-phone{
+    font-size:12px;
+    font-family:Microsoft YaHei;
+    font-weight:300;
+    color:rgba(153,153,153,1);
+}
+.item_dright-left .name{
+    font-size: 14px;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+    width: 50%;
+    overflow: hidden;
+    display: inline-block;
+    font-weight: bold;
+}
+.item_dright-left .phone{
+    color: #fff;
+    font-size: 12px;
+}
+.item_dright-right{
+    width: 30%;
+    text-align: left;
+    color: #fff;
+    font-size: 12px;
+}
+.item_dright-left{
+    width: 40%;
+    margin-left: 10px;
+}
+input::-webkit-input-placeholder{
+    color: #C0C4CC;
+    font-size: 14px;
+    // padding-left: 20px;
+}
+::-webkit-scrollbar {width: 3px;}
+::-webkit-scrollbar-track{background-color:#E3E3E5;}
+::-webkit-scrollbar-thumb{background-color:#979799;}
+
+</style>

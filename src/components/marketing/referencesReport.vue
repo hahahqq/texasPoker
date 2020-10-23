@@ -1,0 +1,224 @@
+<template>
+    <div>
+        <div class="content-eighty">
+            <div class="content-center">
+                <el-row :gutter="10" style="padding: 0 4px">
+                    <span :span='6' style="float:left; margin-right: 10px">
+                        <el-radio-group size="small" v-model='chooseDateIdx' @change="chooseDate(chooseDateIdx)">
+                            <el-radio-button v-for="(item,index) in ['本月','上月','全部','其它']" :key='index' :label='index'>{{item}}</el-radio-button>
+                        </el-radio-group>
+                    </span>
+                    <span :span='10'>
+                        <el-date-picker v-if="isShowDate"
+                            ref="dateBE"
+                            size="small"
+                            v-model="dateBE"
+                            @change="chooseDate2"
+                            type="daterange"
+                            value-format="timestamp"
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期"
+                            style="width:400px"
+                        ></el-date-picker>
+                    </span>
+                    <span :span='6'>
+                        <el-button type="primary" size="small" class="m-left-sm" plain >
+                            <i class="el-icon-upload el-icon--right"></i> 导出表格
+                        </el-button>
+                    </span>
+                </el-row>
+            </div>
+        </div>
+        <div style="height:10px;width:100%;background-color: #F4F5FA;"></div>
+        <div class="content-table">
+            <div class="content-table-center">
+                <el-table
+                    :data='tableData'
+                    border
+                    size='small'
+                    :height="tableHeight"
+                    :loading='loading'
+                    header-row-class-name="bg-theme2 text-white"
+                    style="width: 100%;">
+                    <el-table-column align="center" prop="NAME" label="推荐人"></el-table-column>
+                    <el-table-column align="center" prop="MOBILENO" label="手机号"></el-table-column>
+                    <el-table-column align="center" prop="VIPCOUNT" label="推荐人数"></el-table-column>
+                    <el-table-column align="center" prop="GETINTEGRAL" label="获赠积分"></el-table-column>
+                    <el-table-column align="center" prop="GETMONEY" label="获赠余额"></el-table-column>
+                    <el-table-column align="center" prop="GETBROKERAGEMONEY" label="获得佣金"></el-table-column>
+                    <el-table-column align="center" prop="BROKERAGEMONEY" label="剩余佣金"></el-table-column>
+                    <el-table-column label="操作" align="right">
+                        <template slot-scope='scope'>
+                            <el-button size='small' type="text" @click='viewCurItem(scope.row)'>详情</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <!-- 分页 -->
+                <div v-show='pagination.TotalNumber > 20' class="m-top-sm clearfix elpagination">
+                    <el-pagination
+                        @size-change="handlePageChange"
+                        @current-change="handlePageChange"
+                        :current-page.sync="pagination.PN"
+                        :page-size="pagination.PageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.TotalNumber"
+                        class="text-center"
+                    ></el-pagination>
+                </div>
+            </div>
+        </div>
+        <el-dialog title='收益详情' :visible.sync="showRecommendInfo" width="78%" append-to-body>
+            <recommendInfo :curVipInfo='curVipInfo' :shareVipInfo='shareVipInfo' :choseDate='choseDate'></recommendInfo>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import dayjs from 'dayjs'
+export default {
+    data(){
+        return {
+            chooseDateIdx: 0,
+            dateBE: [],
+            isShowDate: false,
+            ruleFrom: {
+                BeginDate: dayjs().startOf('month').valueOf(),
+                EndDate: dayjs().endOf('month').valueOf(),
+                PN:1
+            },
+            tableData:[],
+            showRecommendInfo: false,
+            loading: false,
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 1
+            },
+            curVipInfo:{},
+            shareVipInfo:{},
+            choseDate:{},
+            tableHeight:document.body.clientHeight-300,
+        }
+    },
+    components: {
+        recommendInfo: () => import("@/components/marketing/RecommendInfo.vue")
+    },
+    computed: {
+        ...mapGetters({
+            RecommendListState: 'RecommendListState',
+            RecommendVipItemState:'RecommendVipItemState',
+            RecommendVipInfoState:'RecommendVipInfoState'
+        })
+    },
+    watch:{
+        RecommendVipInfoState(data){
+            if(data.success){
+                this.shareVipInfo = data.data
+            }
+        },
+        RecommendVipItemState(data){
+            if(data.success){
+               this.curVipInfo = data.data
+               this.showRecommendInfo = true
+            }else{
+                this.$message.warning(data.message)
+            }
+        },
+        RecommendListState(data){
+            this.tableData = data.data.PageData.DataArr
+            this.pagination = {
+                TotalNumber: data.data.PageData.TotalNumber,
+                PageNumber: data.data.PageData.PageNumber,
+                PageSize: data.data.PageData.PageSize,
+                PN: data.data.PageData.PN
+            }
+            this.ruleFrom.PN = data.data.PageData.PN
+        },
+    },
+    methods:{
+        handlePageChange: function(currentPage) {
+            if (this.ruleFrom.PN == currentPage || this.loading) {
+                return
+            }
+            this.ruleFrom.PN = parseInt(currentPage);
+            this.getNewData()
+        },
+        chooseDate(i) {
+            this.chooseDateIdx = i;
+            if (i < 3 ) {
+                this.isShowDate = false;
+            }
+            switch (i) {
+                case 0:
+                    let arr2 = this.getAroundMonth();
+                    this.ruleFrom.BeginDate = dayjs().startOf('month').valueOf();
+                    this.ruleFrom.EndDate = dayjs().endOf('month').valueOf()
+                    this.getNewData();
+                    break;
+                case 1:
+                    var nowdays = new Date();
+                    var year = nowdays.getFullYear();
+                    var month = nowdays.getMonth();
+                    if(month==0) {
+                        month=12;
+                        year=year-1;
+                    }
+                    if (month < 10) {
+                        month = "0" + month;
+                    }
+                    var firstDay = year + "-" + month + "-" + "01";//上个月的第一天
+                    var myDate = new Date(year, month, 0);  //上个月最后一天
+                    var lastDay = year + "-" + month + "-" + myDate.getDate();//上个月的最后一天
+
+                    this.ruleFrom.BeginDate = dayjs(firstDay).valueOf()
+                    this.ruleFrom.EndDate = dayjs(lastDay).valueOf()
+                    this.getNewData();
+                    break;
+                case 2:
+                    this.ruleFrom.BeginDate = '1'
+                    this.ruleFrom.EndDate = '9999999999999'
+                    this.getNewData();
+                    break;
+                case 3:
+                    this.isShowDate = !this.isShowDate;
+                    break;
+            }
+        },
+        chooseDate2(v) {
+            this.ruleFrom.BeginDate = v[0];
+            this.ruleFrom.EndDate = v[1];
+            this.ruleFrom.PN = 1
+            this.getNewData();
+        },
+        viewCurItem(row){
+            let sendData = {
+                BeginDate: this.ruleFrom.BeginDate,
+                EndDate: this.ruleFrom.EndDate,
+                VipId: row.VIPID,
+                PN: 1
+            }
+            this.choseDate = { BeginDate: this.ruleFrom.BeginDate, EndDate: this.ruleFrom.EndDate}
+
+            this.$store.dispatch('getIncomeItem', sendData )
+            this.$store.dispatch('getIncomeVipInfo', { VipId: row.VIPID})
+        },
+        getNewData(){
+            let sendData = {
+                BeginDate: this.ruleFrom.BeginDate,
+                EndDate: this.ruleFrom.EndDate,
+                PN: this.ruleFrom.PN
+            }
+            this.$store.dispatch('getRecommendList', sendData).then(()=>{
+                this.loading = true
+            })
+        }
+    },
+    mounted(){
+        this.getNewData()
+    }
+}
+</script>
+

@@ -1,0 +1,166 @@
+<template>
+    <div class="report row-flex flex-start">
+        <section style="min-width:130px;margin-left:-10px;">
+            <sidebarMenu :activePath="activePath" :routesList="routesList" :width="130"></sidebarMenu>
+        </section>
+        <section class="bg-white marginLR-sm paddingTB-sm paddingLR-md full-width">
+            <filtePage @getNewData="getNewData" @exportState="exportState"></filtePage>
+            <!-- page -->
+            <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick">
+                <el-tab-pane name="first">
+                    <span slot="label">
+                        <i class="el-icon-date"></i> 积分调整
+                    </span>
+                    <integralPage :ruleFrom="ruleFrom" :pageState="activeName=='first'?true:false"></integralPage>
+                </el-tab-pane>
+                <el-tab-pane label="余额调整" name="second">
+                    <balance-page :ruleFrom="ruleFrom" :pageState="activeName=='second'?true:false"></balance-page>
+                </el-tab-pane>
+            </el-tabs>
+        </section>
+    </div>
+    <!--  -->
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import { getHomeData } from "@/api/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_INDEX.IS_SHOW_POPUP,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            activeName: "first",
+            ruleFrom: {
+                ShopId: "",
+                BeginDate: "1",
+                EndDate: "9999999999999"
+            },
+            exportList: []
+        };
+    },
+    computed: {
+        ...mapGetters({
+            exportFirstState: "integralAdjustReportExportState",
+            exportSecondState: "balanceAdjustReportExportState"
+        })
+    },
+    watch: {
+        exportFirstState(data) {
+            if (data.success) {
+                this.exportList = [...data.data.List];
+                this.exportStateFun();
+            } else {
+                this.exportList = [];
+                this.$message({
+                    message: "数据有误，导出失败",
+                    type: "error"
+                });
+            }
+            this.loading = false;
+        },
+        exportSecondState(data) {
+            if (data.success) {
+                this.exportList = [...data.data.List];
+                this.exportStateFun();
+            } else {
+                this.exportList = [];
+                this.$message({
+                    message: "数据有误，导出失败",
+                    type: "error"
+                });
+            }
+            this.loading = false;
+        }
+    },
+    methods: {
+        getNewData(data) {
+            this.ruleFrom = Object.assign({}, data);
+        },
+        handleClick(tab, event) {
+            console.log(tab, event);
+        },
+        exportState(data) {
+            let methodName =
+                this.activeName == "first"
+                    ? "getintegralAdjustList_Export"
+                    : "getbalanceAdjustList_Export";
+            this.$store.dispatch(methodName, this.ruleFrom).then(() => {
+                this.loading = true;
+            });
+        },
+        exportStateFun() {
+            let list = [...this.exportList];
+            let head = [
+                "日期",
+                "门店",
+                "会员名",
+                "调整积分",
+                "调整后积分",
+                "操作员",
+                "备注"
+            ];
+            let val = [
+                "DATESTR",
+                "SHOPNAME",
+                "VIPNAME",
+                "INTEGRAL",
+                "NOWINTEGRAL",
+                "WRITER",
+                "REMARK"
+            ];
+            let title = "会员积分调整表" + this.getNowDateTime();
+
+            if (this.activeName == "second") {
+                head = [
+                    "日期",
+                    "门店",
+                    "会员名",
+                    "调整金额",
+                    "调整后金额",
+                    "操作员",
+                    "备注"
+                ];
+                val = [
+                    "DATESTR",
+                    "SHOPNAME",
+                    "VIPNAME",
+                    "MONEY",
+                    "NOWMONEY",
+                    "WRITER",
+                    "REMARK"
+                ];
+                title = "会员余额调整表" + this.getNowDateTime();
+            }
+            if (list.length > 0) {
+                this.export2Excel(head, val, list, title);
+            } else {
+                this.$message({
+                    message: "数据不能为空",
+                    type: "error"
+                });
+            }
+        }
+    },
+    components: {
+        filtePage: () => import("@/views/reports/filte"),
+        balancePage: () =>
+            import("@/components/reports/member/balanceAdjust.vue"),
+        integralPage: () =>
+            import("@/components/reports/member/integralAdjust.vue")
+    },
+    created() {
+         this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+    }
+};
+</script>

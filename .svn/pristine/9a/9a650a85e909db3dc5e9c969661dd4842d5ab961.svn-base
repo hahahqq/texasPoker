@@ -1,0 +1,161 @@
+<template>
+    <el-container>
+
+      <div class="content-new-fex">
+    <div class="report row-flex flex-start">
+        <section
+            class="bg-white full-width"
+            v-loading="loading"
+        >
+        <div class="content-eighty">
+            <div class="content-center">
+               <filtePage @getNewData="getNewData" @exportState="exportState"></filtePage>
+            </div>
+        </div>
+            <!-- page -->
+            <div style="width:100%;height:10px;background-color: #F4F5FA;"></div>
+
+        <div class="content-table4">
+          <div class="content-table-center">
+            <el-table
+                border
+                :data="checkoutReportPayData"
+                header-row-class-name="bg-theme2 text-white"
+                class="full-width"
+            >
+                <el-table-column prop="PAYTYPENAME" label="支付方式" width="180"></el-table-column>
+                <el-table-column prop="MONEY" label="金额"></el-table-column>
+                <el-table-column prop="BILLCOUNT" label="单据数"></el-table-column>
+                <el-table-column label="更多" width="80" align="right">
+                    <template slot-scope="props">
+                        <el-button type="text" @click="getNewList(props.row)" class="no-padding">详情</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+          </div>
+        </div>
+        </section>
+        <el-dialog :title="title" :visible.sync="isShowList" width="90%" style="max-width:100%;">
+            <listPage
+                @closeModal="isShowList=false"
+                :dataType="{'data':ruleFrom2,'state':isShowList}"
+            ></listPage>
+        </el-dialog>
+    </div>
+    </div>
+    </el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            autofocus: -1,
+            ruleFrom3: {
+                UserId: "",
+                PayTypeId: ""
+            }
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataData: "checkoutReportData",
+            dataState: "checkoutReportState",
+            dataList: "checkoutReportList",
+            dataListState: "checkoutReportListState",
+            dataListArr: "checkoutReportListARR",
+            checkoutReportPayData: "checkoutReportPayData"
+        })
+    },
+    watch: {
+        dataState(data) {
+            this.loading = false;
+        }
+    },
+    methods: {
+        exportState(data) {
+            var list = this.checkoutReportPayData;
+            var head = ["支付方式", "金额", "单据数"];
+            var val = ["PAYTYPENAME", "MONEY", "BILLCOUNT"];
+            var title = "收银对账表" + this.getNowDateTime();
+            if (list.length == 0) {
+                this.$message({
+                    message: "数据不能为空",
+                    type: "success"
+                });
+            } else {
+                this.export2Excel(head, val, list, title);
+            }
+        },
+        getNewData(data) { 
+            console.log(data)
+            let sendData = Object.assign({}, data, {
+                UserId: this.ruleFrom3.UserId
+            });
+            this.$store
+                .dispatch("getcheckoutReportPayData", sendData)
+                .then(() => {
+                    this.loading = true;
+                    this.ruleFrom = Object.assign({}, sendData);
+                    this.$store.dispatch("getcheckoutReportData", sendData);
+                });
+        },
+        getNewList(item) {
+            this.ruleFrom3.PayTypeId = item.PAYTYPEID;
+            let index = 0;
+            let sendData = {
+                obj: { index: index, obj: "checkout" },
+                data: Object.assign({}, this.ruleFrom, this.ruleFrom3)
+            };
+            this.ruleFrom2 = Object.assign({}, sendData);
+            this.$store.dispatch("clearcheckoutReportList", index).then(() => {
+                this.$store.dispatch("getcheckoutReportList", sendData);
+                this.title =
+                    this.dataListArr[index].title + "：" + item.PAYTYPENAME;
+            });
+        },
+        getNewPayData(id, index) {
+            this.ruleFrom3.UserId = id;
+            this.autofocus = index;
+            console.log(this.ruleFrom);
+            this.getNewData(this.ruleFrom);
+        }
+    },
+    created() {
+        this.$store.dispatch("getcheckoutReportData", {
+            ShopId: this.theShopId,
+            BeginDate: this.getTimeStamp(),
+            EndDate: new Date().getTime()
+        });
+        this.$store
+            .dispatch("getcheckoutReportPayData", {
+                ShopId: this.theShopId,
+                BeginDate: this.getTimeStamp(),
+                EndDate: new Date().getTime()
+            })
+            .then(() => {
+                this.loading = true;
+                 this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+            });
+    },
+    components: {
+        listPage: () => import("@/components/reports/management/tableList")
+    }
+};
+</script>
+
+
+
+

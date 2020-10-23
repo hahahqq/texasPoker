@@ -1,0 +1,105 @@
+<template>
+	<!-- 消费时段分析 -->
+	<div class="bg-white paddingTB-md" v-loading="loading">
+		<!-- table-->
+		<el-table border :data="tableList" header-row-class-name="bg-F1F2F3" class="full-width aa">
+			<el-table-column prop="" label="">
+				<el-table-column prop="TIMENAME" label="星期段"></el-table-column>
+				<el-table-column prop="ADDVIPCOUNT" label="会员注册"></el-table-column>
+			</el-table-column>
+			<el-table-column label="会员充值">
+				<el-table-column prop="BUYQTY" label="次数"></el-table-column>
+				<el-table-column prop="BUYMONEY" label="金额"></el-table-column>
+			</el-table-column>
+			<el-table-column label="比赛登记">
+				<el-table-column prop="ADDMONEYBILLCOUNT" label="买入手数"></el-table-column>
+				<el-table-column prop="ADDMONEY" label="买入金额"></el-table-column>
+				<el-table-column prop="REWARDCOUNT" label="奖励次数"></el-table-column>
+				<el-table-column prop="REWARDMONEY" label="奖励金额"></el-table-column>
+			</el-table-column>
+			<el-table-column label="商品销售">
+				<el-table-column prop="SALEBILLCOUNT" label="次数"></el-table-column>
+				<el-table-column prop="SALEQTY" label="数量"></el-table-column>
+				<el-table-column prop="SALEMONEY" label="金额"></el-table-column>
+			</el-table-column>
+			<!-- <el-table-column label="更多" width="80">
+				<template slot-scope="props">
+					<el-button type="text" @click="getItemData(props.row)" class="no-padding">
+						详情
+					</el-button>
+				</template>
+			</el-table-column> -->
+		</el-table>
+	</div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	props: {
+		pageData: {
+			type: Object,
+			default: function () {
+				return {
+					ShopId: "",
+					BeginDate: "",
+					EndDate: "",
+					show: false,
+					type: 2
+				};
+			}
+		}
+	},
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "" },
+			tableList: []
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataState: "actionsDataState",
+			dataListState: "commonListState"
+		})
+	},
+	watch: {
+		pageData(data) {
+			if (data.show && data.type == 2) {
+				this.defaultData();
+			}
+		},
+		dataState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.tableList = data.data.List;
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		getNewData() {
+			this.loading = true;
+			indexQuery.consume(this, "week", this.formData);
+		},
+		defaultData() {
+			this.formData = Object.assign({}, this.pageData);
+			this.getNewData();
+		}
+	},
+	mounted() {
+		if (this.pageData.show && this.pageData.type == 2) {
+			this.defaultData();
+		}
+	}
+};
+</script>
+<style scoped>
+.aa >>> .cell {
+	text-align: center;
+}
+</style>

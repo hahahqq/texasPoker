@@ -1,0 +1,287 @@
+<template>
+<el-container>
+  <el-container>
+    <el-container>
+      <el-main>
+        <div class="content-eighty">
+            <div class="content-center">
+             <filtePage @getNewData="getNewData" :isAll="true"  @exportState="exportState"></filtePage>
+           </div>
+        </div>
+        <div class="content-table-integralSta">
+          <div class="content-table-center">
+            <el-table
+                border
+                :data="pageList"
+                :height="tablename"
+                header-row-class-name="bg-theme2 text-white"
+                class="full-width"
+            >
+                <el-table-column prop="DATESTR" label="日期" width="150"></el-table-column>
+                <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                <el-table-column prop="VIPNAME" label="会员信息"></el-table-column>
+                <el-table-column prop="EXCHANGETYPENAME" label="消费类型"></el-table-column>
+                <el-table-column prop="GETINTEGRAL" label="变动积分"></el-table-column>
+                <el-table-column label="变动详情"></el-table-column>
+                <el-table-column prop='REMARK' label="备注"></el-table-column>
+            </el-table>
+            <div v-show="pageList.length>0" class="m-top-sm clearfix elpagination">
+                <el-pagination
+                    @size-change="handlePageChange"
+                    @current-change="handlePageChange"
+                    :current-page.sync="pagination.PN"
+                    :page-size="pagination.PageSize"
+                    layout="prev, pager, next, jumper"
+                    :total="pagination.TotalNumber"
+                    class="text-right"
+                ></el-pagination>
+            </div>
+        </div>
+        </div> 
+      </el-main>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import { getHomeData,getUserInfo } from '@/api/index'
+import MIXINS_CLEAR from "@/mixins/clearAllData";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+  mixins: [MIXINS_REPORT.SIDERBAR_MENU, MIXINS_REPORT.COMMOM_PAGE,MIXINS_CLEAR.LOGOUT,MIXNINS_EXPORT.TOEXCEL,MIXNINS_EXPORT.TODATA],
+  data() {
+    return {
+      current: 0,
+      shopInfo: getHomeData().shop,
+      isShowShop:false,
+      theshopList: [],
+      activePath: "",
+      tableHeight: document.body.clientHeight ,
+      nameList:[],
+      searchText: "",
+      dateBE: [],
+      sshopStr: "",
+      sshopID: "",
+      shopCheckText: "全部店铺",
+      shopCheckidx: -1,
+      isIndexSix: false,
+      pageList:[],
+      tablename:document.body.clientHeight-260,
+      pagination: {
+          TotalNumber: 0,
+          PageNumber: 0,
+          PageSize: 20,
+          PN: 0
+      },
+    };
+  },
+  computed: {
+    ...mapGetters({
+      integralStatistics: "integralStatistics",
+      integralStatisticsState:"integralStatisticsState",
+      memberStatisticsexport:"memberStatisticsexport",
+    })
+  },
+  watch: {
+    memberStatisticsexport(data){
+      console.log("导出来的数据显示",data)
+        if (data.success) {
+            this.exportList = [...data.data.List];
+            if (this.exportList.length > 0) {
+                let list = [...this.exportList];
+                let head = [
+                    "日期",
+                    "店铺",
+                    "会员信息",
+                    "消费类型",
+                    "变动积分",
+                    "备注"
+                    ];
+                let val = [
+                    "DATESTR",
+                    "SHOPNAME",
+                    "VIPNAME",
+                    "EXCHANGETYPENAME",
+                    "GETINTEGRAL",
+                    "REMARK",
+                    ];
+                let title = "积分变动统计表" + this.getNowDateTime();
+
+                this.export2Excel(head, val, list, title);
+            } else {
+                this.$message({
+                    message: "数据不能为空",
+                    type: "error"
+                });
+            }
+        } else {
+            this.$message({
+                message: "数据有误，导出失败",
+                type: "error"
+            });
+        }
+    },
+    integralStatistics(data){
+      this.pageList=data.DataArr
+      console.log("this.pageList");
+      console.log(this.pageList);
+      
+    },
+    integralStatisticsState(data){
+      this.pagination={
+          TotalNumber: data.paying.TotalNumber,
+          PageNumber: data.paying.PageNumber,
+          PageSize: data.paying.PageSize,
+          PN: data.paying.PN
+      }
+    }
+  },
+
+  methods: {
+    exportState(data) {
+      console.log("数据导出功能")
+        this.$store
+            .dispatch("getmembertableDataExport", {InterfaceCode: '210021407'})
+            .then(() => {
+                this.loading = true;
+            });
+    },
+    handlePageChange: function(currentPage) {
+      console.log(currentPage)
+        this.pagination.PN = parseInt(currentPage);
+        let homeInfo = getHomeData();
+        let setDate={
+          ShopId:homeInfo.shop.ID,
+          BeginDate:this.dateBE[0],
+          EndDate:this.dateBE[1],
+          PN:this.pagination.PN
+        }
+        this.$store.dispatch("getintegraltableData", {setDate}).then(() => {
+        });
+    },
+    getNewData(data) {
+      console.log(data);
+      // 当前数据
+      this.dateBE[0] = data.BeginDate;
+      this.dateBE[1] = data.EndDate;
+      let setDate={
+        ShopId:data.ShopId,
+        BeginDate:data.BeginDate,
+        EndDate:data.EndDate,
+      }
+      this.$store.dispatch("getintegraltableData", {setDate}).then(() => {
+      });
+
+    },
+    
+  },
+  created() {
+        let userInfo = getUserInfo();
+        let setDate={
+          ShopId:userInfo.ShopID,
+          BeginDate:this.getTimeStamp(),
+          EndDate:new Date().getTime(),
+        }
+        this.$store.dispatch("getintegraltableData", {setDate}).then(() => {
+        });
+  },
+  components: {
+  }
+};
+</script>
+<style scoped>
+.tableStock{
+  height:400px;border:1px solid #ddd; border-right:0; border-bottom:0;
+}
+ .tableStock thead{
+    background:#E4E4E4; color:#333333; height:36px; line-height:36px;
+  }
+.tableStock thead tr th{
+    border-right:1px solid #fff;
+     }
+.tableStock   tbody tr{
+    
+    height: 36px; line-height: 36px;
+    
+  }
+
+.tableStock tbody tr:hover{
+      background: #ecf5ff
+    }
+    .tableStock   tfoot tr{
+      height:36px; line-height: 36px; 
+  }
+.el-header{
+  padding: 0 !important;
+}
+.el-main{
+  padding: 0px !important;
+}
+.member-main-top{
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 100px;
+  background: #fff;
+}
+.member-main-table{
+  margin-top: 8px;
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 600px;
+  background: #fff;
+}
+.member-header{
+  display: flex;
+  align-items: center;
+  height: 50px;
+  border-bottom: 1px solid #d7d7d7;
+  background: #fff;
+}
+.center-title{
+  width: 100px;
+  text-align: center;
+  height: 50px;
+  line-height: 50px;
+  border: solid 1px #d7d7d7;
+}
+.center-cont{
+  /* width: 100px; */
+  text-align: center;
+  height: 35px;
+  line-height: 35px;
+  margin-left: 25px;
+}
+.center-cont-ul{
+  display: flex;
+}
+.center-cont-ul li{
+  width: 58px;
+  text-align: center;
+  margin-right: 25px;
+}
+.center-cont-ul li.selected {
+    color: #2589FF;
+    border-bottom: 2px solid #2589FF;
+}
+.el-header{
+  padding: 0 !important;
+}
+.shop{
+  line-height: 50px;
+  height: 50px;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #d7d7d7;
+  background: #fff;
+}
+.content-table-integralSta{
+  margin-top: 10px;
+  /* height: px; */
+  width: 100%;
+  background: #fff;
+}
+</style>

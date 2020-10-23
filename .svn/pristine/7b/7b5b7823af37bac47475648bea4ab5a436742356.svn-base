@@ -1,0 +1,205 @@
+<template>
+	<!-- 营业概况 -->
+
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="content-center">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm">
+			<div class="content-center">
+				<!-- page -->
+				<div class="row-flex paddingTB-sm flex-items-center">
+					<div class style="min-width: 510px">
+						<div
+							v-for="(item, i) in pageList"
+							:key="i"
+							v-show="i < 6"
+							class="inline-block m-right-md marginTB-sm padding-sm border"
+							style="width: 150px"
+						>
+							<span>{{ item.label }}</span>
+							<el-button
+								type="text"
+								@click="getNewList(item.id, null)"
+								class="pull-right no-padding"
+							>
+								详情
+							</el-button>
+							<div class="text-left p-top-sm">
+								<span
+									v-text="dataData[item.value] ? dataData[item.value] : 0"
+									class="font-600"
+								></span>
+							</div>
+						</div>
+					</div>
+					<div class="full-width relative">
+						<div
+							class="inline-block border-top border-right border-bottom paddingTB-lg paddingLR-md"
+						>
+							<span class="block paddingTB-sm"></span>
+						</div>
+						<div
+							class="inline-block padding-sm border translateY-center marginLR-md"
+							style="width: 150px"
+						>
+							<div class="p-bottom-sm">{{ pageList[6].label }}</div>
+							<div>
+								<span
+									v-text="
+										dataData[pageList[6].value]
+											? dataData[pageList[6].value]
+											: 0
+									"
+									class="font-600 font-16"
+								></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white paddingTB-md">
+			<div class="content-center">
+				<!-- table-->
+				<el-table
+					border
+					:data="tableList"
+					header-row-class-name="bg-F1F2F3"
+					class="full-width"
+				>
+					<el-table-column
+						prop="PAYTYPENAME"
+						label="支付方式"
+						width="180"
+					></el-table-column>
+					<el-table-column label="金额">
+						<template slot-scope="props">
+							<span>&yen;{{ props.row.MONEY }}</span>
+							<el-progress
+								:text-inside="true"
+								:stroke-width="18"
+								:percentage="
+									props.row.FRATE > 0
+										? props.row.FRATE < 1
+											? props.row.FRATE * 100
+											: 100
+										: 0
+								"
+								:color="getColor(props.row.FRATE * 100)"
+							></el-progress>
+						</template>
+					</el-table-column>
+					<el-table-column prop="FCOUNT" label="笔数"></el-table-column>
+					<el-table-column label="占比">
+						<template slot-scope="props">
+							{{
+								props.row.FRATE == 1
+									? "100%"
+									: parseInt(props.row.FRATE * 100) + "%"
+							}}
+						</template>
+					</el-table-column>
+					<el-table-column label="更多" width="80">
+						<template slot-scope="props">
+							<el-button
+								type="text"
+								@click="getNewList(5, props.row)"
+								class="no-padding"
+							>
+								详情
+							</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</div>
+		</div>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			pageList: [
+				{
+					label: "商品销售",
+					value: "SaleMoney",
+					num: "SaleCount",
+					id: 1
+				},
+				{ label: "充值", value: "AddMoney", num: "AddCount", id: 3 },
+				{ label: "还款", value: "PayOweMoney", id: 7 },
+				{
+					label: "会员消费",
+					value: "SaleVipMoney",
+					num: "SaleVipCount",
+					id: 2
+				},
+				{ label: "支出", value: "ExpMoney", num: "ExpCount", id: 4 },
+				{ label: "欠款", value: "OweMoney", id: 6 },
+				{ label: "收支结余", value: "GainMoney", id: null }
+			],
+			dataData: {},
+			tableList: [
+				{
+					FCOUNT: 2,
+					FRATE: 0.93,
+					MONEY: 905088,
+					PAYTYPEID: "-110070",
+					PAYTYPENAME: "支付宝"
+				}
+			]
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {},
+	methods: {
+		exportState_fun(data) {
+			console.log(data);
+		},
+		getNewData_fun(data) {
+			console.log(data);
+		},
+		getNewData() {},
+		getNewList(index, item) {},
+		getColor: function (v) {
+			if (v > 75) {
+				return "#67c23a";
+			} else if (v > 50) {
+				return "rgba(142, 113, 199, 0.7)";
+			} else if (v > 25) {
+				return "#409eff";
+			} else {
+				return "#f56c6c";
+			}
+		},
+		defaultData() {}
+	},
+
+	created() {
+		let dd = {
+			ShopId: this.theShopId,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		};
+	},
+	components: {
+		echartLine: () => import("@/components/other/echartLine.vue"),
+		filtePage: () => import("@/views/reports/filte")
+	}
+};
+</script>
+<style scoped>
+</style>

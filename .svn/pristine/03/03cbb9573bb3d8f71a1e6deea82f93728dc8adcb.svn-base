@@ -1,0 +1,50 @@
+<template>
+	<div>
+		<!-- 统计报表 -->
+		<component :is="componentName" v-if="isShow"></component>
+	</div>
+</template>
+<script>
+import page1 from "@/views/reports/member/recharge/index.vue";
+import page2 from "@/views/reports/match/checkIn";
+import page3 from "@/views/reports/integral/award.vue";
+import page4 from "@/views/reports/integral/adjust.vue";
+import page5 from "@/views/reports/statistics/goodsSale";
+import page6 from "@/views/reports/consume/fast.vue";
+import page7 from "@/views/reports/member/award/index.vue";
+
+export default {
+	props: {
+		activePage: {
+			type: Object,
+			default: {
+				show: false,
+				index: 1
+			}
+		}
+	},
+	data() {
+		return {
+			isShow: false,
+			componentName: "page1"
+		};
+	},
+	watch: {
+		activePage(data) {
+			if (data.show) {
+				this.componentName = "page" + data.index;
+				this.isShow = true;
+			}
+		}
+	},
+	components: {
+		page1,
+		page2,
+		page3,
+		page4,
+		page5,
+		page6,
+		page7
+	}
+};
+</script>

@@ -1,0 +1,166 @@
+<template>
+  <div class="unit">
+    <div class="m-bottom-sm">
+      <el-button size="small" @click="handleDeal({})" icon="el-icon-plus">新增</el-button>
+      <div class="hide">{{dataList}}</div>
+    </div>
+    <!--列表-->
+    <el-table border :data="pagelist" 
+    v-loading="loading" 
+    height="600"
+    header-row-class-name="bg-theme text-white"
+    >
+      <el-table-column prop="NAME" label="名称" width="120" sortable>
+      </el-table-column>
+      <el-table-column prop="REMARK" label="备注">
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button-group>
+            <el-button size="small" @click="handleDeal(scope.row)" icon="el-icon-edit">编辑</el-button>
+            <el-button size="small" @click="handleDel(scope.$index, scope.row)" icon="el-icon-delete">删除</el-button>
+          </el-button-group>
+          <div class="hide">{{scope.row}}</div>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-dialog title="商品单位" :visible.sync="dialogVisible" width="400px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="名称" prop="Name">
+          <el-input v-model="form.Name" placeholder="请输入名称"></el-input>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input type="textarea" v-model="form.Remark"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="dealData">保存</el-button>
+          <el-button @click="dialogVisible=false">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+  data() {
+    return {
+      pagelist: [],
+      loading: false,
+      dialogVisible: false,
+      form: {
+        Name: "",
+        Remark: ""
+      },
+      rules: {
+        Name: [
+          {
+            required: true,
+            message: "请输入等级名称",
+            trigger: "blur"
+          }
+        ],
+      },
+      dealType: "add"
+    };
+  },
+  computed: {
+    ...mapGetters({
+      dataList: "unitList",
+      dataListState: "unitListState",
+      dataState: "unitState",
+      dealState: "dealUnitState"
+    })
+  },
+  watch: {
+    dataListState(data) {
+      this.loading = false;
+      if (data.success) {
+        this.pagelist = [...this.dataList];
+      }
+    },
+    dealState(data) {
+      if (data.success) {
+        // this.pagelist = [...this.dataList];
+        this.getNewData();
+      }else{
+        this.loading = false;
+      }
+      this.$message({
+        message: data.message,
+        type: data.success ? "success" : "error"
+      });
+      this.dialogVisible = false;
+    }
+  },
+  methods: {
+    getNewData() {
+      this.$store.dispatch("getUnitList").then(() => {
+        this.loading = true;
+      });
+    },
+    getUnitItem() {},
+    handleDeal(item) {
+      if (this.$refs.form) this.$refs.form.resetFields();
+      if (Object.keys(item).length > 0) {
+        this.form = Object.assign({}, item, {
+          Id: item.ID,
+          Name: item.NAME,
+          Remark: item.REMARK
+        });
+        this.dealType = "edit";
+      } else {
+        this.form = {
+          Name: "",
+          Remark: ""
+        };
+        this.dealType = true;
+      }
+      this.dialogVisible = true;
+    },
+    dealData() {
+      var _this = this;
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          _this.loading = true;
+          _this.$store.dispatch("dealUnitItem", _this.form).then(() => {
+            _this.loading = true;
+          });
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+    handleDel(index, item) {
+       this.$confirm("此操作将永久删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$store
+            .dispatch("delUnitItem", { index: index, data: item })
+            .then(() => {
+              this.loading = true;
+              this.dealType = "del";
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    }
+  },
+  mounted() {
+    if (this.dataList.length == 0) {
+      this.getNewData();
+    } else {
+      this.pagelist = [...this.dataList];
+    }
+  }
+};
+</script>

@@ -1,0 +1,284 @@
+<template>
+    <div class="f-botton-fssock" style="height: 100%;">
+        <div class="f-botton-fs" style="height: 100%;">
+            <el-row :gutter="24" style="height: 100%;">
+                <el-col
+                    :span="8"
+                    style="height: 100%;border-right: 10px solid rgba(234, 226, 213, 1);height: 100%;position: relative;"
+                >
+                    <dropdown
+                        @getmemberID="getmemberID"
+                        :details="Object.keys(selmember).length>0?selmember:new Object()"
+                    ></dropdown>
+
+                    <el-form label-width="80px" class="fastc_top">
+                        <el-form-item label="消费金额">
+                            <el-input
+                                v-model="form.Money"
+                                placeholder="0.00"
+                                type="number"
+                                autocomplete="off"
+                                class="full-width"
+                            ></el-input>
+                        </el-form-item>
+                        <el-form-item label="业绩员工">
+                            <a
+                                @click="selroyaltyFun()"
+                                class="full-width bg-gw block pointer font-12 el-input__inner"
+                            >
+                                <span
+                                    v-for="(item,i) in royaltyData.default"
+                                    :key="i"
+                                    v-text="(i>0?'，':'')+item.Name+'：'+item.Money+'元'"
+                                ></span>
+                                <span v-if="royaltyData.default.length==0">请选择业绩员工</span>
+                            </a>
+                        </el-form-item>
+                        <el-form-item label="备注">
+                            <el-input v-model="form.Remark" autocomplete="off" class="full-width"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div class="timescountc_left_footer" ref="footer">
+                        <div class="f_commodityc-left">
+                            <div class="pull-right">
+                                <el-button type="success" @click="resetData()">取消</el-button>
+                                <el-button type="danger" @click="submitForm">结账</el-button>
+                            </div>
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :span="16">
+                    <div class="grid-content bg-purple"></div>
+                </el-col>
+            </el-row>
+        </div>
+
+        <!-- 选择业绩员工 -->
+        <el-dialog title="选择业绩员工" :visible.sync="dialogFormVisible">
+            <royalty-sel
+                @closeModal="dialogFormVisible=false"
+                @resultArr="selRoyalty_Fun"
+                :pageData="pageItemData"
+            >
+                <slot>
+                    <div class="employeetitle">
+                        <span>消费金额：</span>
+                        <span class="com_color">{{pageItemData.TotalPrice}}</span>
+                        <span>元，按金额的</span>
+                        <span class="com_color" v-text="(pageItemData.EmpAddRate * 100) + '%'"></span>
+                        <span>提成，员工可的</span>
+                        <span
+                            class="com_color"
+                            v-text="pageItemData.TotalPrice * pageItemData.EmpAddRate"
+                        ></span>
+                        <span>元提成</span>
+                    </div>
+                </slot>
+            </royalty-sel>
+        </el-dialog>
+
+        <!-- 充值界面 -->
+        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+            <recharge
+                @closeModalrecharge="showRecharge=false"
+                :totalprice="{ price:form.Money,discount:0 }"
+                :isselectvip="VipId"
+                @CashRecharge="CashRecharge"
+                :rechargestatus="3"
+                ref="SurveyForm"
+            ></recharge>
+        </el-dialog>
+        <!-- 充值界面 -->
+    </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getDayindate } from "@/util/Printing";
+import { nscreenexCodeFun } from "@/util/objectivity";
+import { getparametersetup } from "@/util/com/index";
+
+import royaltySel from "@/components/selected/selroyalty2.vue";
+import recharge from "@/components/Recharge/Recharge";
+import MIXINS_CHECKOUT from "@/mixins/checkout";
+export default {
+    mixins: [MIXINS_CHECKOUT.CHOOSE_MEMBER],
+    data() {
+        return {
+            searchText: "",
+            showRecharge: false,
+            VipId: "",
+
+            loading: false,
+            form: {
+                money: 0,
+                Remark: ""
+            },
+            dialogFormVisible: false,
+            pageItemData: { EmpAddRate: 0, TotalPrice: 0, isShow: false },
+            royaltyData: {
+                data: [],
+                default: []
+            }
+        };
+    },
+    computed: {
+        ...mapGetters({
+            employeeList: "employeeList",
+            royaltyState: "fastccroyaltyState",
+            fastcconsumptionState: "fastcconsumptionState"
+        })
+    },
+    watch: {
+        royaltyState(data) {
+            if (data.success && this.loading) {
+                this.dialogFormVisible = true;
+                setTimeout(() => {
+                    this.pageItemData = {
+                        EmpAddRate: data.data.EmpSaleRate, // 
+                        TotalPrice: this.form.Money,
+                        isShow: true
+                    };
+                }, 200);
+            }
+            this.loading = false;
+        },
+        fastcconsumptionState(data) {
+            if (data.success) {
+                this.$message({
+                    message: "快速消费成功",
+                    type: "success"
+                });
+                this.resetData();
+                let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
+                if (this.$store.state.recharge.isPrintsatus) {
+                    getDayindate("601020405", data.data.BillId, 3, qresurl);
+                }
+            } else {
+                this.$message(data.message);
+            }
+        }
+    },
+    methods: {
+        resetData() {
+            this.VipId = "";
+
+            this.form.Money = "";
+            this.form.Remark = "";
+
+            this.royaltyData = {
+                data: [],
+                default: []
+            };
+            this.$store
+                .dispatch("selectingMember", {
+                    isArr: false,
+                    data: new Object()
+                })
+                .then(() => {
+                    this.VipId = "";
+                });
+        },
+        getmemberID(id, data) {
+            this.VipId = id;
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: data
+            });
+        },
+        submitForm() {
+            if (this.form.Money == "") {
+                this.$message("请输入金额");
+                return;
+            }
+            if (getparametersetup(2)) {
+                if (this.royaltyData.data.length == 0) {
+                    this.$message.error("请选择业绩员工");
+                    return;
+                }
+            }
+            nscreenexCodeFun(4, String(this.form.Money));
+            this.showRecharge = true;
+        },
+        CashRecharge(data) {
+            this.showRecharge = false;
+            let otherdata = {
+                SaleEmpMoney: JSON.stringify(this.royaltyData.data),
+                VipId: this.VipId,
+                Remark: this.form.Remark,
+                CustomerName: "",
+                CustomerPhone: "",
+                SaleEmpList: ""
+            };
+            let AllsendData = Object.assign({}, otherdata, data);
+            this.$store
+                .dispatch("getfastcconsumption", AllsendData)
+                .then(() => {});
+        },
+        selroyaltyFun() {
+            // 选择业绩员工
+            if (!this.form.Money) {
+                this.$message.error("请输入金额");
+                return;
+            }
+            this.$store.dispatch("getfastccroyaltyState").then(() => {
+                this.loading = true;
+            });
+        },
+        selRoyalty_Fun: function(arr) {
+            let d = [];
+            for (let i = 0; i < arr.length; i++) {
+                d.push({ EmpId: arr[i].EmpId, Money: arr[i].Money });
+            }
+            this.royaltyData = {
+                data: d,
+                default: [...arr]
+            };
+
+            this.pageItemData.TotalPrice = 0;
+            this.pageItemData.isShow = false;
+            this.dialogFormVisible = false;
+        }
+    },
+    components: {
+        recharge,
+        royaltySel
+    }
+};
+</script>
+<style scoped>
+.timescountc_left_footer {
+    position: absolute;
+    bottom: 12px;
+    left: 22px;
+    right: 22px;
+    background: #fff;
+}
+.employee_ms .el-form-item__content {
+    width: 70%;
+}
+
+.f-botton-fs .el-form-item__label {
+    text-align: left !important;
+}
+
+.f-botton-fs .fastc_top {
+    margin-top: 50px;
+}
+.f-botton-fssock .el-dialog__body {
+    padding: 5px 20px;
+}
+.employeetitle {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    overflow: hidden;
+    color: #130606;
+    text-align: center;
+}
+.fastcMoney{
+    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+</style>

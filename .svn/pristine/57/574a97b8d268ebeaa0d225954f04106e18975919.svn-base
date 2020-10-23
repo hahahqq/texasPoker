@@ -1,0 +1,291 @@
+<template>
+<el-container>
+  <el-header style="height:50px;">
+    <headerPage></headerPage>
+  </el-header>
+  <el-container>
+    <el-aside width="100px">
+        <section style="min-width:100px;">
+        <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+        </section>
+    </el-aside>
+    <el-container>
+      <div class="content-new-fex-goods">
+        <div class="content-eighty">
+            <div class="content-center">
+                <filtePage @getNewData="getNewData" @exportState="exportState" :isAll="true"></filtePage>
+            </div>
+        </div>
+        <div class="content-table-goods">
+          <div class="content-table-center">
+            <div style="margin-bottom:15px;">
+                <div
+                    v-for="(item,i) in pageList"
+                    :key="i"
+                    v-if="i<4"
+                    class="inline-block m-right-md border sale-list"
+                    style="width:180px;height:90px;"
+                >
+                <div class="sale-list-cont">
+                    <div style="height:45px;width:100%;line-height: 50px;">{{item.label}}</div>
+                    <div  style="height:45px;width:100%;font-size: 18px;font-weight: bold;">
+                        <span v-text="dataData.info[item.value]?dataData.info[item.value]:0"></span>
+                    </div>
+                </div>
+                </div>
+            </div>
+            
+            <el-table
+                border
+                :data="tebleList"
+                :height="tablename"
+                header-row-class-name="bg-theme2 text-white"
+                class="full-width"
+            >
+                <el-table-column prop="RN" label="排名" width="180"></el-table-column>
+                <el-table-column prop="GOODNAME" label="品名"></el-table-column>
+                <el-table-column prop="QTY" label="数量"></el-table-column>
+                <el-table-column prop="MONEY" label="金额"></el-table-column>
+                <el-table-column prop="GAINMONEY" label="毛利润"></el-table-column>
+            </el-table>
+            
+            <div v-show="tebleList.length>0" class="m-top-sm clearfix elpagination">
+                <el-pagination
+                    @size-change="handlePageChange"
+                    @current-change="handlePageChange"
+                    :current-page.sync="pagination.PN"
+                    :page-size="pagination.PageSize"
+                    layout="prev, pager, next, jumper"
+                    :total="pagination.TotalNumber"
+                    class="text-right"
+                ></el-pagination>
+            </div>
+          </div>
+            </div>
+      </div>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+import { getUserInfo} from '@/api/index'
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            pageList: [
+                { label: "销售总额", value: "MONEY" },
+                { label: "毛利润", value: "GAINMONEY" },
+                { label: "销售笔数", value: "BILLCOUNT" },
+                { label: "销售数量", value: "QTY" },
+                { label: "盈利金额", value: "GAINMONEY" }
+            ],
+            tebleList: [],
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 0
+            },
+            pageData: { PN: 1 },
+            exportList: [],
+            tablename:document.body.clientHeight-325,
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataData: "goodsReportData",
+            dataExportState: "goodsReportExportState", // 商品分析导出
+            dataState: "goodsReportState",
+            dataList: "goodsReportList",
+            dataListState: "goodsReportListState",
+            dataListArr: "goodsReportListARR"
+        })
+    },
+    watch: {
+        dataExportState(data) {
+            if (data.success) {
+                // 商品分析导出
+                this.exportList = [...data.data.List];
+                if (this.exportList.length > 0) {
+                    let list = [...this.exportList];
+                    let head = [
+                        "商品名称",
+                        "商品编码",
+                        "商品描述",
+                        "零售价",
+                        "成交加",
+                        "数量",
+                        "金额",
+                        "毛利"
+                        ];
+                    let val = [
+                        "GOODSNAME",
+                        "GOODSCODE",
+                        "BILLCOUNT",
+                        "PRICE",
+                        "DETAILPRICE",
+                        "DETAILQTY",
+                        "SALEMONEY",
+                        "GROSSPROFITMONEY"
+                        ];
+                    let title = "商品分析表" + this.getNowDateTime();
+
+                    this.export2Excel(head, val, list, title);
+                } else {
+                    this.$message({
+                        message: "数据不能为空",
+                        type: "error"
+                    });
+                }
+            } else {
+                this.exportList = [];
+                this.$message({
+                    message: "数据有误，导出失败",
+                    type: "error"
+                });
+            }
+            this.loading = false;
+        },
+        dataState(data) {
+            this.loading = false;
+            if (data.success) {
+                this.defaultData();
+            }
+        }
+    },
+    methods: {
+        exportState(data) {
+            this.$store
+                .dispatch("getgoodsReportData_Export", this.ruleFrom)
+                .then(() => {
+                    this.loading = true;
+                });
+        },
+
+        getNewData(data) {
+            let sendData = Object.assign({}, data);
+            this.$store.dispatch("cleargoodsReportList2").then(() => {
+                this.$store.dispatch("getgoodsReportData", sendData);
+                this.loading = true;
+                this.ruleFrom = Object.assign({}, sendData);
+                this.pageData.PN = 1;
+            });
+        },
+        handlePageChange: function(currentPage) {
+            if (this.pageData.PN == currentPage || this.loading) {
+                return;
+            }
+            this.pageData.PN = parseInt(currentPage);
+            this.$store
+                .dispatch(
+                    "getgoodsReportData",
+                    Object.assign({}, this.ruleFrom, this.pageData)
+                )
+                .then(() => {
+                    this.loading = true;
+                });
+        },
+        defaultData() {
+            let setDate = [...this.dataData.List];
+            let agentPermission = getUserInfo().List
+            let arr = agentPermission.filter(element => element.MODULENAME == "查看成本价");
+            if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
+              this.dataData.info.GAINMONEY=  "***";
+            for(var i in setDate){
+                setDate[i].GAINMONEY='***'
+            }
+            this.tebleList = setDate;
+            } else {
+                this.tebleList = setDate;
+            }
+            this.pagination = {
+                TotalNumber: this.dataData.paying.TotalNumber,
+                PageNumber: this.dataData.paying.PageNumber,
+                PageSize: this.dataData.paying.PageSize,
+                PN: this.dataData.paying.PN
+            };
+            this.pageData.PN = this.dataData.paying.PN;
+        }
+    },
+    // beforeCreate() {
+    //   this.$store.dispatch("getgoodsReportData", {});
+    // },
+    created() {
+        this.$store
+            .dispatch("getgoodsReportData", {
+                ShopId: this.theShopId,
+                BeginDate: this.getTimeStamp(),
+                EndDate: new Date().getTime()
+            })
+            .then(() => {
+                this.loading = true;
+                 this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+            });
+    },
+    components: {
+        headerPage: () => import("@/components/header")
+    }
+};
+</script>
+<style scoped>
+.el-header{
+  padding: 0 !important;
+}
+.member-main-top{
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 100px;
+  background: #fff;
+}
+.member-main-table{
+  margin-top: 8px;
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 600px;
+  background: #fff;
+}
+.el-aside, .el-main{
+    overflow: hidden;
+}
+.sale-list{
+    border-radius: 6px;
+}
+.sale-list-cont{
+    width: 90%;
+    margin-left: 10%;
+}
+.content-new-fex-goods{
+  padding: 10px !important;
+  margin-left: 1px;
+  background-color: #F4F5FA;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 12px;
+  position: absolute;
+  top: 50px;
+  bottom: 10px;
+  left:100px;
+  right:0px;
+}
+.content-table-goods{
+  margin-top: 10px;
+  /* height: 550px; */
+  width: 100%;
+  background: #fff;
+}
+</style>

@@ -1,0 +1,340 @@
+<template>
+    <div class='employee'>
+        <!-- 员工排班 -->
+        <el-row :gutter="10">
+            <el-col :span="5">
+                <span>店 铺 :</span>
+                <el-select size='small' clearable v-model="ShopId" placeholder="请选择店铺">
+                    <el-option v-for="item in shopList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+                </el-select>
+            </el-col>
+            <el-col :span="6">
+                <span>月 份 :</span>
+                <el-date-picker size="small"
+                    v-model="month"
+                    type="month"
+                    format="yyyy 年 MM 月"
+                    @change="curMonth"
+                    placeholder="请选择月份">
+                </el-date-picker>
+            </el-col>
+            <!-- <el-col :span="5">
+                <span>职 务 :</span>
+                <el-select size='small' clearable v-model='EmpId' placeholder='请选择员工职务'>
+                    <el-option v-for='(item,i) in employeePost' :key='i' :value='item.POSITION'></el-option>
+                </el-select>
+            </el-col> -->
+
+            <el-col :span="4">
+                <el-date-picker 
+                    type="date" 
+                    size="small" 
+                    value-format="yyyy-MM-dd" 
+                    placeholder="选择日期" 
+                    v-model="TimeDate"
+                    @change='defultData()'
+                    style="width: 100%;"
+                    :picker-options="Object.assign({},{
+                        disabledDate: time=>{
+                            return time.getTime() < month || time.getTime() > disabledMonth
+                        }
+                    })"
+                    >
+                </el-date-picker>
+            </el-col>
+
+            <!-- <el-col :span="4" class='pull-right'>  
+                <el-button size='small' class='pull-right' @click='showAutoSet = true'>自动排班</el-button>
+            </el-col> --> 
+        </el-row>
+
+        <table class='tableStock m-top-sm' border='0' cellspacing='0' cellpadding='0' width='100%'>
+            <thead>
+                <tr>
+                    <th style="width:120px">日期</th>
+                    <th v-for="item in employeeList" :key="item">{{item}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item, i) in tableData' :key='i'>
+                    <td>{{item.TIMEDATE.substr(8,9)+ '日'}} ( {{item.WEEK}} )</td>
+                    <td v-for='(item1, ii) in item.data' :key='ii' @click='curEmploy(item1)'>
+                        <span>{{item1.SHIFTSNAME}}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <el-dialog title='自动排班设置' :visible.sync="showAutoSet" append-to-body width="60%">
+            <div>
+                <i style='font-weight:bold'> 工作日设置：</i>
+                <span>快捷设置班次：班次默认班次： </span>
+                <span v-if='modifyStatu == false'>
+                    <i>{{BeginTime}} </i> - <i>{{EndTime}}</i>
+                </span>
+                <span v-else>
+                    <el-select size="small" v-model='SHIFTSID' placeholder="请选择班次">
+                        <el-option v-for='item in shiftsList' :key='item.ID' :label='item.NAME' :value="item.BEGINTIME +'-' + item.ENDTIME"></el-option>
+                    </el-select>
+                </span>
+                <el-button type='text' v-if='modifyStatu== false' style='margin-left:10px' @click='groupSet'>更改班次</el-button>
+                <el-button type='text' v-if='modifyStatu== true' @click='autoSetMoidfy'>确认</el-button>
+                <el-button type='text' v-if='modifyStatu== true' @click='modifyStatu = false; SHIFTSID=""'>取消</el-button>
+            </div>
+            <el-table :data='autoWorkData' header-row-class-name="bg-theme text-white" :highlight-current-row='true' size='small' border @selection-change="handleSelectionChange">
+                <el-table-column type="selection" width="55"></el-table-column>
+                <el-table-column label='工作日' prop="date" width="100" align="center"></el-table-column>
+                <el-table-column label='班次时间段'>
+                    <template slot-scope='scope'>
+                        班次默认班次：
+                        <span v-if='scope.row.isModify == false'> {{scope.row.work}}</span>
+                        <span v-if='scope.row.isModify == true'>
+                            <el-select size="small" v-model='SHIFTSID1' placeholder="请选择班次">
+                                <el-option v-for='item in shiftsList' :key='item.ID' :label='item.NAME' :value="item.BEGINTIME +'-' + item.ENDTIME"></el-option>
+                            </el-select>
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label='操作' width="150">
+                    <template slot-scope="scope">
+                        <el-button size="small" v-if='!scope.row.isModify' @click='modifyWorkTime(scope.row)'>更改班次</el-button>
+                        <el-button size="small" v-if='scope.row.isModify' @click='ModifyCurRowTime(scope.row)'>确认</el-button>
+                        <el-button size="small" v-if='scope.row.isModify' @click='scope.row.isModify = false'>取消</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <el-checkbox label="法定节假日自动排休" v-model="isChoseNoWork" style='margin-top:10px'></el-checkbox>
+
+        </el-dialog>
+
+        <el-dialog :title='titleName' :visible.sync="showSetDialog" append-to-body width='36%'>
+            <el-form ref="form" :model='curShifts' label-width="100px">
+                <el-form-item label="员工姓名 :">
+                    {{curShifts.EMPNAME}}
+                </el-form-item>
+
+                <el-form-item label="日　期 :">
+                    {{curShifts.TIMEDATE}} ( {{curShifts.WEEK}} )
+                </el-form-item>
+
+                <el-form-item label="班次名称 :">
+                    <el-select v-model='curShifts.SHIFTSID' placeholder="请选择班次">
+                        <el-option label="休息" value="0"></el-option>
+                        <el-option v-for='item in shiftsList' :key='item.ID' :label='item.NAME' :value="item.ID"></el-option>
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type='primary' @click='submitCurWork' :loading='loading'>确认</el-button>
+                    <el-button @click='showSetDialog = false; curShifts.SHIFTSID = ""'>取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+    </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs'
+import Vue from 'vue';
+export default {
+    data(){
+        return {
+            loading: false,
+            isChoseNoWork:true,
+            ShopId:getHomeData().shop.ID,
+            month: dayjs().startOf('month').valueOf(),
+            disabledMonth : dayjs().endOf('month').valueOf(),
+            EmpId:'',
+            TimeDate:'',
+            titleName:'',
+            tableData:[],
+            SHIFTSID:'',
+            SHIFTSID1:'',
+            showAutoSet: false,
+            modifyStatu: false,
+            showSetDialog:false,
+            autoWorkData:[
+                { id:0, date: '周一', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:1, date: '周二', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:2, date: '周三', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:3, date: '周四', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:4, date: '周五', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:5, date: '周六', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' },
+                { id:6, date: '周七', work: '09:00-18:00', isModify: false, BeginTime:'', EndTime:'' }
+            ],
+            BeginTime:'09:00',
+            EndTime:'18:00',
+            options: {
+                start: "08:00",
+                step: "00:15",
+                end: "23:45"
+            },
+            employeeList:[],
+            curShifts:{},
+            multipleSelection:[]
+        }
+    },
+    computed: {
+        ...mapGetters({
+            shopList: "shopList",
+            employeePost:'employeePost',
+            // employeeList: "employeeList",
+            // employeeListState:'employeeListState',
+            employPaiBanData:'employPaiBanData',
+            shiftsList: "shiftsList",
+            dataListState: "shiftsListState",
+            okSetEmploypaiban:'okSetEmploypaiban'
+        })
+    },
+    watch:{
+        // employeeListState(data){
+        //     this.employeeList = data.data.List.filter(item => item.ISSERVICE == true && item.NAME != '店长')
+        // },
+        employPaiBanData(data){
+            if(data.success){
+                let arr = [...data.data.List],  map = {}, dest = [];
+                for(var i = 0; i < arr.length; i++){
+                    arr[i].isEdit = false
+                    var ai = arr[i];
+                    if(!map[ai.TIMEDATE]){
+                        dest.push({
+                            WEEK: ai.WEEK,
+                            TIMEDATE: ai.TIMEDATE,
+                            data: [ai]
+                        })
+                        map[ai.TIMEDATE] = ai;
+                    }else{
+                        for(var j = 0; j < dest.length; j++){
+                            var dj = dest[j];
+                            if(dj.TIMEDATE == ai.TIMEDATE){
+                                dj.data.push(ai);
+                                break;
+                            }
+                        }
+                    }
+                }
+                this.tableData = dest
+                this.employeeList = dest[0].data.map(item => item.EMPNAME)
+            }
+        },
+        okSetEmploypaiban(data){
+            this.showSetDialog = false
+            this.loading = false
+            if(data.success){
+                this.defultData()
+            }
+        }
+    },
+    methods:{
+        groupSet(){
+            if(this.multipleSelection.length == 0){
+                this.$message.warning('请勾选需要更改班次的工作日 ！')
+            }else{
+                this.modifyStatu = true
+            }
+        },
+        handleSelectionChange(val) {
+            this.multipleSelection = val;
+        },
+        autoSetMoidfy(){
+            this.modifyStatu = false
+            if(this.multipleSelection.length != 0){
+                let SHIFTSID = this.SHIFTSID
+                let time = SHIFTSID.split('-')
+                this.BeginTime = time[0]
+                this.EndTime = time[1]
+
+                let param = this.multipleSelection, newParam = []
+                for(var i in param){
+                    param[i].work = this.BeginTime +'-'+this.EndTime
+                    newParam.push(param[i])
+                }
+                this.multipleSelection = newParam
+            }
+        },
+        submitCurWork(){
+            let id = this.curShifts.SCHEDULINGID != undefined ? this.curShifts.SCHEDULINGID : '' 
+            let arr = [{ Id: id, ShiftsId: this.curShifts.SHIFTSID, EmpId: this.curShifts.EMPID, TimeDate: new Date(this.curShifts.TIMEDATE).getTime() }]
+            let obj = {}
+            for(var i in arr){
+                obj[i] = arr[i]
+            }
+            this.$store.dispatch('setEmployPaiBan', { ShopId: this.ShopId,  ShiftsList: obj }).then(()=>{
+                this.loading = true
+            })
+        },
+        curEmploy(row){
+            this.showSetDialog = true
+            this.curShifts = row
+        },
+        modifyWorkTime(row){
+            row.isModify = !row.isModify
+            this.SHIFTSID1 = ''
+        },
+        ModifyCurRowTime(row){
+            row.isModify = !row.isModify
+            let SHIFTSID = this.SHIFTSID1
+            let time = SHIFTSID.split('-')
+            row.work = time[0] +'-'+ time[1]
+        },
+        curMonth(){
+            this.disabledMonth = dayjs(new Date(this.month)).endOf('month').valueOf()
+            this.month = new Date(this.month).getTime()
+            this.defultData()
+        },
+        defultData(){
+            let sendData = {
+                ShopId: this.ShopId,
+                BeginTime: this.month,
+                TimeDate: this.TimeDate,
+                EmpId: this.EmpId
+            }
+            this.$store.dispatch('getEmployPaiBan', sendData)
+        }
+    },
+    mounted(){
+        if (this.shopList.length == 0) {
+            this.$store.dispatch("getShopList")
+        }
+        // if (this.employeeList.length == 0) {
+        //     this.$store.dispatch("getEmployeeList", {})
+        // }
+        if(this.shiftsList == 0){
+            this.$store.dispatch("getShiftsList")
+        }
+        this.$store.dispatch('getEmployeePost',{})
+        this.defultData()
+    },
+    activated(){}
+}
+</script>
+
+<style lang="scss" scoped >
+.tableStock{
+  text-align: center;
+  thead{
+    background:#fb789a; color:#fff; height:36px; line-height:36px;
+    tr{
+      th{  
+        border-right:1px solid #fff
+      }
+    }
+  }
+  tbody{
+    tr{
+      height: 36px; line-height: 36px;
+      td{
+        border:1px solid #ebeef5;
+        input{
+          border:none; height: 36px; line-height: 36px; width: 100%; text-align: center
+        }
+        input:hover{
+          outline: 1px solid #fb789a;
+        }
+      }
+    }
+  }
+}
+</style>

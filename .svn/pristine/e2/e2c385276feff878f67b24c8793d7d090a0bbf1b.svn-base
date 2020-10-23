@@ -1,0 +1,757 @@
+<template>
+<el-container>
+  <el-container>
+    <el-aside width="100px">
+        <section style="min-width:100px;">
+        <sidebarMenu :activePath="activePath" :routesList="routesList" :width="100"></sidebarMenu>
+        </section>
+    </el-aside>
+    <el-container>
+        <div class="f-botton-fssock" style="height: 100%;">
+            <div class="f-botton-fs" style="height: 100%;">
+                <div style="position: absolute;top: 0px;bottom: 0px;background:rgb(248, 248, 249);left:100px;right:0px;">
+                    <el-row :gutter="24" style="height: 100%;margin-right: 0px;margin-left: 0px">
+                            <el-col :span="8" style="height: 100%;position: relative;padding-right: 0px;padding-left: 0px">
+                                <div class="commodityc-top">
+                                    <span class="title">快速消费</span>
+                                    <span class="commodityc-top-text" @click="resetData">清空页面</span>
+                                </div>
+                                <div>
+                                    <dropdown
+                                        @getmemberID="getmemberID"
+                                        @changeMemberIDnull="changeMemberIDnull"
+                                        :details="Object.keys(selmember).length>0?selmember:new Object()"
+                                    ></dropdown>
+                                    <el-form label-width="80px" class="fastc_top">
+                                        <el-row style="padding-top:10px;">
+                                            <el-form-item label="消费金额" style='margin-right: 10px; margin-bottom: 10px;' >
+                                                <el-input @input="changeMoney" v-model="form.money" placeholder="0.00" type="number" autocomplete="off" class="full-width">
+                                                  <template slot="append">￥</template>
+                                                </el-input>
+                                            </el-form-item>
+
+                                            <el-form-item label="支付方式" style='margin-bottom: 10px; padding-top: 10px; border-top: 1px dashed #ddd'>
+                                              <el-radio v-model="payType" label="0">储值积分</el-radio>
+                                              <el-radio v-model="payType" label="1">竞技积分</el-radio>
+                                            </el-form-item>
+
+                                            <!-- <el-form-item label="应付金额">
+                                                <el-input v-model="form.addMoney" placeholder="0.00" type="number" disabled autocomplete="off" class="full-width">
+                                                <template slot="append">￥</template>
+                                                </el-input>
+                                            </el-form-item> -->
+                                        </el-row>
+                                    </el-form>
+                                    <div class="fastc-foot" style='position:absolute; bottom: 80px; width: 100%'>
+                                        <div>
+                                            <el-select class="g-public-multi-select" v-model="slamen" placeholder="请选择销售员" multiple style="width:100%">
+                                                <el-option
+                                                v-for="item in options"
+                                                :key="item.slamenid"
+                                                :label="item.label"
+                                                :value="item.slamenid">
+                                                </el-option>
+                                            </el-select>
+                                        </div>
+                                        <div style="margin-top:10px;">
+                                            <el-input placeholder="请输入备注" :rows="2" v-model="form.Remark" autocomplete="off" class="full-width"></el-input>
+                                        </div>
+                                    </div>
+                                    <div class="timescountc_left_footer" ref="footer">
+                                        <div class="footer_top" style="margin-bottom: 10px">
+                                            <el-row>
+                                                <el-col :span="24" style="text-align:right">
+                                                    <el-button type="primary" style="margin-right: 10px" @click="submitForm">收款  <i v-if="form.addMoney != ''">： ￥{{form.addMoney}} </i></el-button>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-col>
+                            <el-col :span="16" style="padding-left:0px;padding-right: 0px; background:#f4f5fa">
+                                <div class="commodity-right">
+                                    <div class="search_sock">
+                                        <el-row>
+                                            <el-col :span="24" class="shop">
+                                                <span class="name">{{shopInfo.SHOPNAME}}</span>
+                                                <span class="">
+                                                    <el-popover placement="bottom" width="140" trigger="hover" popper-class="no-padding">
+                                                        <el-button style="border: none!important;"  @click="changeShop()" class="full-width" icon='icon-exchange'>&nbsp;&nbsp;切换店铺</el-button>
+                                                        <el-button style="border: none!important;"  class="full-width no-m-left border-top" icon='icon-user'>&nbsp;&nbsp; 账号信息</el-button>
+                                                        <el-button style="border: none!important;"  @click="logout()" class="full-width no-m-left border-top" icon='icon-signout'>&nbsp;&nbsp;退出账号</el-button>
+                                                        <a slot="reference" class="hitem">
+                                                            <i class='icon-reorder'></i>
+                                                        </a>
+                                                    </el-popover>
+                                                </span>
+                                            </el-col>
+                                        </el-row>
+                                    </div>
+
+                                    <div :style="`text-align:center; display: table; width: 100%; height: ${clientHeight}px`">
+                                      <span style="display: table-cell; vertical-align: middle; ">
+                                        <img src="static/images/delf.png" style=" width: 180px; height:170px; display: inline-block;" alt="">
+                                        <div style="color:#868686; margin-top: 20px">
+                                          快速输入金额，消费一步到位
+                                        </div>
+                                      </span>
+                                    </div>
+                                </div>
+                            </el-col>
+                        </el-row>
+                   </div>
+                </div>
+                <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+                    <recharge
+                        @closeModalrecharge="showRecharge=false"
+                        :totalprice="totalPrice"
+                        :isselectvip="VipIds"
+                        @CashRecharge="CashRecharge"
+                        :rechargestatus="3"
+                        ref="SurveyForm"
+                    ></recharge>
+                </el-dialog>
+                <el-dialog title="请选择门店" :visible.sync="isShowShop" width="300px" :before-close="handleClose">
+                    <div class='shopListClass'>
+                        <ul>
+                            <li v-for='(item, index) in theshopList' :key="index" @click="setShop(item)">
+                                {{item.SHOPNAME}}
+                            </li>
+                        </ul>
+                    </div>
+                </el-dialog>
+            </div>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+
+import { mapState, mapGetters } from "vuex";
+import { getDayindate } from "@/util/Printing";
+import { nscreenexCodeFun } from "@/util/objectivity";
+import { getparametersetup } from "@/util/com/index";
+
+import royaltySel from "@/components/selected/selroyalty2.vue";
+import recharge from "@/components/Recharge/Recharge";
+import MIXINS_CHECKOUT from "@/mixins/checkout";
+import MIXINS_MONEY from "@/mixins/money";
+import { getUserInfo,getHomeData } from '@/api/index'
+import MIXINS_CLEAR from "@/mixins/clearAllData";
+export default {
+    mixins: [MIXINS_CHECKOUT.CHOOSE_MEMBER,MIXINS_MONEY.MONEY_MENU,MIXINS_CLEAR.LOGOUT],
+    data() {
+        return {
+            payType: 0,
+            showRecharge: false,
+            visible:false,
+            shouDisvalue:true,
+            coupon:"",
+            showCoupn:true,
+            showCoupnmoney:true,
+            index:'1',
+            VipId: "",
+            VipIds:"",
+            options: [],
+            pageCouponList: {
+                VipId: "",
+                Type: "",
+                PN: 1
+            },
+            slamen:[],
+            disoptions: [],
+            disvalue: '',
+            dataLists:[],
+            loading: false,
+            form: {
+                money: '',
+                Remark: "",
+                addMoney:0,
+                coupontMoney:0,
+            },
+            inputCouponMoney:"",
+            tate:1,
+            totalPrice:{
+                price: 0,
+                integral:'',
+                title:'销售日期'
+            },
+            isneedsaler:'',
+            shopInfo: getHomeData().shop,
+            isShowShop:false,
+            theshopList: [],
+            activePath: "",
+            shopName:getUserInfo().CompanyName,
+            value1:'',
+            rate:1,
+            couponCode:"",
+            clientHeight: document.body.clientHeight -50,
+        };
+    },
+    created(){  //生命周期里接收参数
+        let getInfo = getUserInfo();
+        this.isneedsaler=getInfo.CompanyConfig.ISNEEDSALER
+    },
+    computed: {
+        ...mapGetters({
+            employeeList: "employeeList",
+            fastcconsumptionState: "fastcconsumptionState",
+            commoditycflDiscountList:"commoditycflDiscountList",
+            couponList:"couponList",
+            shopList: "shopList",
+            shopListState:'shopListState'
+        })
+    },
+    watch: {
+        couponList(data){
+        let msl=[];
+        msl=data;
+        this.dataLists=[];
+        msl.forEach(item => {
+            this.$set(item, "isSelect" , false)
+            this.dataLists.push(item)
+        })
+        },
+        //消费成功方法
+        fastcconsumptionState(data) {
+            if (data.success) {
+                this.$message({
+                    message: "快速消费成功",
+                    type: "success"
+                });
+                this.resetData();
+                let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
+                if (this.$store.state.recharge.isPrintsatus) {
+                    getDayindate("210020530", data.data.BillId, 3, qresurl);
+                }
+            } else {
+                this.$message(data.message);
+            }
+        },
+        //销售员获取数据方法
+        employeeList(data) {
+            this.options=[]
+            let employeemen=data;
+            for(var i in employeemen){
+                let Obj={
+                    slamenid:employeemen[i].ID,
+                    label:employeemen[i].NAME
+                    }
+                    this.options.push(Obj)
+            }
+        },
+        //折卡方法
+        commoditycflDiscountList(data) {
+             this.disoptions=[];
+             let discount=data;
+             for(var i in discount){
+                 let Obj= {
+                    rateId:discount[i].RATE,
+                    label:discount[i].NAME,
+                    id:i,
+                 }
+                 this.disoptions.push(Obj)
+             }
+        },
+    },
+    methods: {
+        handleClose(done) {
+            this.isShowShop = false;
+        },
+        logout: function() { //退出登录
+            var _this = this;
+            this.$confirm("确认退出吗?", "提示").then(() => {
+                _this.$store.dispatch("toLogOut").then(() => {
+                    _this.clearAllData();
+                    _this.$router.push("/login");
+                })
+            }).catch(() => {
+                console.log("logout");
+            })
+        },
+        setShop(item) { //切换店铺
+            this.$store.dispatch("choosingShop", item).then(() => {
+                this.isShowShop = false;
+                this.clearAllData();
+                this.defaultData();
+                this.$router.push({
+                    path: "/home"
+                })
+            })
+        },
+        defaultData() {
+            let homeData = getHomeData();
+            if (homeData.shop) {
+                this.shopInfo = Object.assign({}, homeData.shop);
+            }
+            this.UserName = getUserInfo().UserName;
+            if (this.shopList.length == 0) {
+                this.$store.dispatch("getShopList")
+            }
+        },
+        changeShop() {
+            let userInfo = getUserInfo();
+            if (userInfo.CODE2 == "boss") {
+                this.theshopList = [...this.shopList];
+            } else {
+                this.theshopList = [];
+                for (let i = 0; i < userInfo.ShopList.length; i++) {
+                    if (userInfo.ShopList[i].ISPURVIEW == 1) {
+                        this.theshopList.push({
+                            ID : userInfo.ShopList[i].SHOPID,
+                            NAME : userInfo.ShopList[i].SHOPNAME
+                        })
+                    }
+                }
+            }
+            this.isShowShop = true;
+        },
+        //删除会员信息，子传父事件
+        changeMemberIDnull(e){
+            this.VipId=""
+            this.form.addMoney = this.form.money
+            this.rate = 1
+            this.tate = 1
+            this.coupontMoney = 0
+            this.coupon = ''
+            this.showCoupn = true
+            // this.disoptions = []
+            this.value1 = ''
+        },
+        //添加消费金额事件
+        changeMoney(){
+            // this.$forceUpdate()
+            // console.log(this.rate, this.tate)
+            this.form.addMoney = this.form.money
+            // this.form.addMoney = this.form.addMoney * this.rate
+        },
+       //切换有用或者无用优惠卷列表方法
+        selectCoupont(items) {
+            console.log(items)
+            this.index=items;
+        },
+        //选择优惠卡
+        handleCommand(event){
+            // let discountlist = this.commoditycflDiscountList
+            // for(var i in discountlist){
+            //     if(event==discountlist[i].NAME){
+            //         this.tate=discountlist[i].RATE
+            //     }
+            // }
+            // this.disvalue=event;
+            // this.shouDisvalue=false;
+
+            this.tate=event
+        },
+        //根据会员ID调优惠卷接口的方法
+        selctCoupon(){
+            this.showCoupon=true;
+            console.log("优惠卷")
+            this.pageCouponList.VipId=this.VipId;
+            this.pageCouponList.Type=1;
+            this.$store.dispatch("getcouponListState", this.pageCouponList).then(() => {
+            });
+        },
+
+        //选择优惠卷
+        selectCouponList(e, items) {
+            this.selectlist=[]
+            for(var i in this.dataLists){
+                if(e==i){
+                    this.dataLists[i].isSelect =!this.dataLists[i].isSelect
+                    if(this.dataLists[i].isSelect==true){
+                        this.selectlist=items
+                    }
+                }else{
+                    this.dataLists[i].isSelect=false;
+                }
+            }
+            if(this.selectlist.MONEY != undefined){
+               this.coupon=this.selectlist.MONEY
+               this.couponCode=this.selectlist.COUPONCODE;
+               this.showCoupn=false;
+            }
+            if(this.selectlist.MONEY == undefined){
+               this.showCoupn=true;
+               this.coupon=0
+            }
+        },
+        //清空页面方法
+        resetData() {
+            this.VipId = "";
+            this.slamen=[];
+            this.form={
+                money: '',
+                Remark: "",
+                addMoney:0,
+                coupontMoney:0
+            }
+            this.couponCode="";
+            this.coupon="";
+
+            this.$store
+                .dispatch("selectingMember", {
+                    isArr: false,
+                    data: new Object()
+                })
+                .then(() => {
+                    this.VipId = "";
+                });
+        },
+        //选择会员信息
+        getmemberID(id, data) {
+            this.value1=data.LEVELNAME;
+            this.tate= data.RATE
+            // this.tate = 1
+            this.VipId = id;
+            this.VipIds=data
+            this.totalPrice.integral=data.INTEGRAL;
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: data
+            });
+        },
+        //提交跳到收银页面
+        submitForm() {
+            this.$store.dispatch("selectingMember", {});
+            let agentPermission = getUserInfo().List
+            let arr = agentPermission.filter(element => element.MODULECODE == '210040302');
+            if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
+                this.$message.warning('您还没有获得相关权限!')
+            } else {
+                if (this.form.money == "") {
+                    this.$message("请输入金额");
+                    return;
+                }
+                this.totalPrice.price=this.form.addMoney*this.tate - this.coupon -this.inputCouponMoney
+                nscreenexCodeFun(4, String(this.form.Money));
+                this.showRecharge = true;
+            }
+        },
+
+        //子传父事件
+        CashRecharge(data) {
+            let otherdata
+            this.showRecharge = false;
+
+            let param = this.slamen, str = ''  // 销售员
+            for(let i in param){
+                str += param[i] + ','
+            }
+            if(str.length>0){  //去掉最后一个逗号
+                str=str.substring(0,str.length-1)
+            }
+            if(this.VipId.length > 0){
+                otherdata = {
+                    VipId: this.VipId,
+                    CouponNo:this.couponCode,//优惠卷号
+                    Money:data.Money,
+                    DiscountMoney:"",
+                    PaytypeId:data.PaytypeId,
+                    SaleEmpList: str,
+                    GetIntegral:data.GetIntegral,
+                    IsPayVipMoney:"",
+                    Remark: this.form.Remark,
+                    IsSms:data.IsSms,
+                    PayIntegral:data.PayIntegral,
+                    IntegralMoney:data.IntegralMoney,
+                    BillDate:"",
+                    InterfaceCode: "210020503_V1",
+                }
+            }else{
+                otherdata = {
+                    VipId: '',
+                    CouponNo:this.couponCode,//优惠卷号
+                    Money:data.Money,
+                    DiscountMoney:"",
+                    PaytypeId:data.PaytypeId,
+                    SaleEmpList: str,
+                    GetIntegral:data.GetIntegral,
+                    IsPayVipMoney:"",
+                    Remark: this.form.Remark,
+                    IsSms:data.IsSms,
+                    PayIntegral:data.PayIntegral,
+                    IntegralMoney:data.IntegralMoney,
+                    BillDate:"",
+                    InterfaceCode: "210020501",
+                }
+            }
+            let AllsendData = Object.assign({}, otherdata);
+            this.$store.dispatch("getfastcconsumption", AllsendData).then(() => {});
+        },
+    },
+    components: {
+        recharge,
+        royaltySel
+    },
+    beforeCreate() {
+        let list1 = this.$store.state.employee.employeeList;
+        if (list1.length == 0) {
+            this.$store.dispatch("getEmployeeList", {}).then(() => {
+            });
+        }
+        let list2 = this.$store.state.commodityc.commoditycflDiscountList;
+        if (list2.length == 0) {
+            this.$store.dispatch("getcommoditycDiscountList", {}).then(() => {
+            });
+        }
+    },
+    //钩子函数
+    mounted() {
+        this.$store.dispatch("getEmployeeList", {}).then(() => {
+        });
+        this.$store.dispatch("getcommoditycDiscountList", {}).then(() => {
+        });
+    }
+};
+</script>
+<style scoped>
+.butmoney{
+    height: 50px;
+    width: 100%;
+    background: #fff;
+    margin-top: 10px;
+    line-height: 50px;
+}
+.coupon{
+    width: 96%;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+.coupont-list-top-money{
+    font-size:20px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(255,255,255,1);
+    margin-left:5px;
+}
+.coupont-list-top-allmoney{
+    margin-left: 5px;
+    font-size:5px !important;
+    font-family:Microsoft YaHei;
+    color:rgba(255,255,255,1);
+}
+.coupon-title{
+    position: relative;
+    height: 40px;
+    width: 100%;
+    line-height: 30px;
+    text-align: center;
+    border-bottom: solid 1px rgba(242,242,242,1);
+    font-size:8px;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(102,102,102,1);
+}
+.discount-title{
+    margin-left: 5px;
+    height: 20px;
+    width: 20px;
+    line-height: 20px;
+    text-align: center;
+    background: #3399FF;
+    color: #fff;
+    border-radius: 100%;
+    font-size: 4px;
+}
+.discount{
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin-left: 12px;
+}
+.timescountc_left_footer {
+    position: absolute;
+    bottom: 0px;
+    width: 100%
+    /* left: 10px;
+    right: 10px; */
+}
+.employee_ms .el-form-item__content {
+    width: 70%;
+}
+
+.f-botton-fs .el-form-item__label {
+    text-align: left !important;
+}
+
+.f-botton-fs .fastc_top {
+    margin-top: 10px;
+    background: #fff;
+    /* height: 150px; */
+}
+.f-botton-fssock .el-dialog__body {
+    padding: 5px 20px;
+}
+.employeetitle {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    overflow: hidden;
+    color: #130606;
+    text-align: center;
+}
+.fastcMoney{
+    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
+.selectList{
+  height: 50px;
+  width: 100%;
+  line-height: 50px;
+  border-bottom: solid 1px #F9FAFC;
+}
+.selectList ul li{
+  float: left;
+  width: 50%;
+  text-align: center;
+}
+.selectList-fists{
+  width: 70px;
+  height: 40px;
+  text-align: center;
+  border-bottom: solid 1px #3EA9FF;
+  margin: 0 auto;
+}
+.select-list{
+  width: 100%;
+  margin: 0 auto;
+}
+.select-list ul li{
+    float: left;
+    margin-right: 7px;
+    /* margin-left: 12px; */
+    margin-top: 10px;
+}
+.secect-border{
+  border: solid 2px #F8493B !important;
+}
+.select-list-cont{
+  position: relative;
+  height: 400px;
+  overflow: auto;
+}
+.select-list-bottom{
+  height: 100px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 100px;
+}
+.coupont ul li{
+    float: left;
+    margin-right: 15px;
+    margin-top: 8px;
+}
+.coupont-list{
+    height: 100px;
+    border: solid 2px #3EA9FF;
+    color: #fff;
+}
+.coupont-list-top{
+    height: 64px;
+    background: #3EA9FF;
+}
+.coupont-list-bottom{
+    height: 34px;
+    width: 160px;
+    line-height: 35px;
+    margin-left: 15px;
+    font-size: 11px;
+    color: #666666;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.showEit-input{
+    border: none !important;
+    margin-left: 30px;
+}
+.showEit-input1{
+    border: none !important;
+    margin-left: 5px;
+}
+.gright{
+    position: absolute;
+    right: 5px;
+}
+.el-icon-close{
+    position: absolute;
+    right: 0;
+    font-size: 20px;
+    margin-top: 10px;
+}
+.fastc-foot >>>.el-input__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+    font-size: 12px;
+    color: #444444;
+}
+.fastc-foot >>>.el-textarea__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+}
+.commodity-right{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.search_sock{
+    height: 50px;
+    line-height: 50px;
+    background: #fff;
+    width: 100%;
+    border-left: solid 1px #EBEDF0;
+    border-bottom: solid 1px #EBEDF0;
+}
+.shop{
+  line-height: 50px;
+  height: 50px;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #EBEDF0;
+  background: #fff;
+}
+.shop .name{
+    margin-right: 8px;
+}
+.icon-reorder{
+    color: #2589FF;
+    cursor: pointer;
+}
+.FastcTol{
+    color: #DC2823;
+    font-weight: bold;
+    font-size: 20px;
+}
+.timescountc_left_footer >>>.el-input__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+    font-size: 12px;
+    color: #444444;
+}
+.coupon-ts{
+    height: 40px;
+    line-height: 40px;
+    width: 50px;
+}
+.coupon-ts .gright{
+    top: 15px;
+    color:#9e9e9e;
+}
+::-webkit-scrollbar {width: 3px;}
+::-webkit-scrollbar-track{background-color:#E3E3E5;}
+::-webkit-scrollbar-thumb{background-color:#979799;}
+input::-webkit-input-placeholder{
+    color: #C0C4CC;
+    font-size: 12px;
+}
+.priceTol{
+    color: #DC2823;
+    font-weight: bold;
+    font-size: 20px;
+}
+</style>

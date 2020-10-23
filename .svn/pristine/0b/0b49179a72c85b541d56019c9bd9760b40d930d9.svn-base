@@ -1,0 +1,38 @@
+<template>
+	<div>
+		<!-- 统计报表 -->
+		<component :is="componentName"></component>
+	</div>
+</template>
+<script>
+import page1 from "@/views/reports/member/recharge.vue";
+import page2 from "./page2.vue";
+import page3 from "./page3.vue";
+import page4 from "./page4.vue";
+import page5 from "./page5.vue";
+import page6 from "./page6.vue";
+import page7 from "./page7.vue";
+
+export default {
+	props: ["activePageIdx"],
+	data() {
+		return {
+			componentName: "page1"
+		};
+	},
+	watch: {
+		activePageIdx(v) {
+			this.componentName = "page" + v;
+		}
+	},
+	components: {
+		page1,
+		page2,
+		page3,
+		page4,
+		page5,
+		page6,
+		page7
+	}
+};
+</script>

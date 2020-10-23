@@ -1,0 +1,658 @@
+<template>
+    <el-container>
+    <el-container>
+        <el-container>
+            <div class="content-new-fex">
+                <div class="content-table1">
+                <div class="content-table-center">
+                        <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+                            <el-tab-pane label="余额积分" name="first"> 
+                                <div class="member-main-top">
+                                <div>
+                                    <el-row class="member-main-time">
+                                        <el-col :span="12">
+                                            <el-input placeholder="请输入内容" v-model="VipCode" size="medium" style="width:50%">
+                                                <template slot="append">查询</template>
+                                            </el-input>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-row>
+                                                <el-col :span="16" style="text-align:right;"><el-button @click="ExportMemberData('210021423')" plain size="medium">导出</el-button></el-col>
+                                                <el-col :span="8" style="text-align:center;">
+                                                    <!-- <span>店铺</span> -->
+                                                    <!-- <el-dropdown v-if="$route.meta.name !='crossStore'" @command="shopCheckfun" class="m-left-sm">
+                                                        <el-button type="primary" size="small" plain>
+                                                            <span v-text="shopCheckText?shopCheckText:'请选择店铺'"></span>
+                                                            <i class="el-icon-arrow-down el-icon--right"></i>
+                                                        </el-button>
+                                                        <el-dropdown-menu slot="dropdown">
+                                                            <el-dropdown-item v-if="isAll" :command="-1">全部</el-dropdown-item>
+                                                            <el-dropdown-item
+                                                                v-for="(item,i) in shopList"
+                                                                :key="i"
+                                                                :command="i"
+                                                            >{{item.NAME}}</el-dropdown-item>
+                                                        </el-dropdown-menu>
+                                                    </el-dropdown> -->
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                </div>
+                                <div class="member-main-table">
+                                    <div class="member-table">
+                                        <el-table
+                                            border
+                                            :height="tablename"
+                                            :data="pageList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="NAME" label="会员名" width="200" sortable></el-table-column>
+                                            <el-table-column prop="MOBILENO" label="手机号"></el-table-column>
+                                            <el-table-column prop="MONEY" label="余额"></el-table-column>
+                                            <el-table-column prop="INTEGRAL" label="积分"></el-table-column>
+                                            <el-table-column prop="ADDMONEY" label="累计充值"></el-table-column>
+                                             <el-table-column prop="PAYMONEY" label="累计消费"></el-table-column>
+                                            <el-table-column label="最近消费日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.LASTTIME) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column label="更多" width="200">
+                                                <template slot-scope="scope">
+                                                    <el-button size="small"  @click="flowChange(1,scope.row)"
+                                                    >余额记录</el-button>
+                                                    <el-button size="small"  @click="flowChange(0,scope.row)"
+                                                    >积分记录</el-button>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                        <div v-show="pageList.length>0" class="m-top-sm clearfix elpagination">
+                                            <el-pagination
+                                                @size-change="handlePageChange"
+                                                @current-change="handlePageChange"
+                                                :current-page.sync="pagination.PN"
+                                                :page-size="pagination.PageSize"
+                                                layout="prev, pager, next, jumper"
+                                                :total="pagination.TotalNumber"
+                                                class="text-right"
+                                            ></el-pagination>
+                                        </div>
+                                    </div>
+                                    <el-dialog
+                                    title="余额记录"
+                                    :visible.sync="dialogVisible"
+                                    width="60%">
+                                        <el-table
+                                            border
+                                            :data="memberFleseList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="MONEY" label="余额调整" width="200"></el-table-column>
+                                            <el-table-column prop="CURRMONEY" label="余额"></el-table-column>
+                                            <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                                            <el-table-column prop="PAYTYPENAME" label="支付方式"></el-table-column>
+                                            <el-table-column label="日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.BILLDATE) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="PAYREMARK" label="说明"></el-table-column>
+                                        </el-table>
+                                    </el-dialog>
+                                    <el-dialog
+                                    title="积分记录"
+                                    :visible.sync="dialogVisibles"
+                                    width="60%">
+                                        <el-table
+                                            border
+                                            :data="memberFleseList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="CAPTION" label="积分调整" width="200"></el-table-column>
+                                            <el-table-column prop="CAPTION1" label="积分"></el-table-column>
+                                            <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                                            <el-table-column label="日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.BILLDATE) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="SM" label="说明"></el-table-column>
+                                        </el-table>
+                                    </el-dialog>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="会员余次" name="second" v-if="deskmode==1">
+                                <div class="member-main-top">
+                                <div style="margin-left:30px;">
+                                    <el-row class="member-main-time">
+                                        <el-col :span="12">
+                                            <el-input placeholder="请输入内容" v-model="VipCode2" size="medium" style="width:50%">
+                                                <template slot="append">查询</template>
+                                            </el-input>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-row>
+                                                <el-col :span="16" style="text-align:right;"><el-button @click="ExportMemberData('210021426')" plain size="medium">导出</el-button></el-col>
+                                                <el-col :span="8" style="text-align:center;">
+                                                    <!-- <span>店铺</span> -->
+                                                    <!-- <el-dropdown v-if="$route.meta.name !='crossStore'" @command="shopCheckfun" class="m-left-sm">
+                                                        <el-button type="primary" size="small" plain>
+                                                            <span v-text="shopCheckText?shopCheckText:'请选择店铺'"></span>
+                                                            <i class="el-icon-arrow-down el-icon--right"></i>
+                                                        </el-button>
+                                                        <el-dropdown-menu slot="dropdown">
+                                                            <el-dropdown-item v-if="isAll" :command="-1">全部</el-dropdown-item>
+                                                            <el-dropdown-item
+                                                                v-for="(item,i) in shopList"
+                                                                :key="i"
+                                                                :command="i"
+                                                            >{{item.NAME}}</el-dropdown-item>
+                                                        </el-dropdown-menu>
+                                                    </el-dropdown> -->
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                </div>
+                                <div class="member-main-table">
+                                    <div class="member-table">
+                                        <el-table
+                                            border
+                                            :data="pageList"
+                                            :height="tablename"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="NAME" label="会员名" width="200" sortable></el-table-column>
+                                            <el-table-column prop="MOBILENO" label="手机号"></el-table-column>
+                                            <el-table-column prop="GOODSNAME" label="项目"></el-table-column>
+                                            <el-table-column label="有效期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.INVALIDDATE) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="CALCCOUNT" label="剩余次数"></el-table-column>
+                                            <el-table-column  label="说明">
+                                                <template slot-scope="scope">
+                                                    <span>充值{{scope.row.ADDCALCCOUNT}}次,</span>
+                                                    <span>消费{{scope.row.PAYCALCCOUNT}}次,</span>
+                                                    <span>调整{{scope.row.CHANGECALCCOUNT}}次</span>
+                                                </template>
+                                            </el-table-column>
+
+                                            <el-table-column label="最近消费日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.LASTTIME) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column label="更多" width="200">
+                                                <template slot-scope="scope">
+                                                    <el-button size="small"  @click="yuciChange(scope.row)"
+                                                    >余次记录</el-button>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                        <div v-show="pageList.length>0" class="m-top-sm clearfix elpagination">
+                                            <el-pagination
+                                                @size-change="handlePageChange1"
+                                                @current-change="handlePageChange1"
+                                                :current-page.sync="pagination.PN"
+                                                :page-size="pagination.PageSize"
+                                                layout="prev, pager, next, jumper"
+                                                :total="pagination.TotalNumber"
+                                                class="text-right"
+                                            ></el-pagination>
+                                        </div>
+                                    <el-dialog
+                                    title="余次记录"
+                                    :visible.sync="dialogVisible2"
+                                    width="60%">
+                                        <el-table
+                                            border
+                                            :data="memberYuciList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="BILLTYPENAME" label="计次方式" width="200"></el-table-column>
+                                            <el-table-column prop="QTY" label="数量"></el-table-column>
+                                            <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                                            <el-table-column prop="PAYTYPENAME" label="支付方式"></el-table-column>
+                                            <el-table-column label="日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.BILLDATE) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="PAYREMARK" label="说明"></el-table-column>
+                                        </el-table>
+                                    </el-dialog>
+                                    </div>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="有效时段" name="third" v-if="deskmode==1">
+                                <div class="member-main-top">
+                                <div style="margin-left:30px;">
+                                    <el-row class="member-main-time">
+                                        <el-col :span="12">
+                                            <el-input placeholder="请输入内容" v-model="VipCode3" size="medium" style="width:50%">
+                                                <template slot="append">查询</template>
+                                            </el-input>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-row>
+                                                <el-col :span="16" style="text-align:right;"><el-button @click="ExportMemberData('210021428')" plain size="medium">导出</el-button></el-col>
+                                                <el-col :span="8" style="text-align:center;">
+                                                    <!-- <span>店铺</span> -->
+                                                    <!-- <el-dropdown v-if="$route.meta.name !='crossStore'" @command="shopCheckfun" class="m-left-sm">
+                                                        <el-button type="primary" size="small" plain>
+                                                            <span v-text="shopCheckText?shopCheckText:'请选择店铺'"></span>
+                                                            <i class="el-icon-arrow-down el-icon--right"></i>
+                                                        </el-button>
+                                                        <el-dropdown-menu slot="dropdown">
+                                                            <el-dropdown-item v-if="isAll" :command="-1">全部</el-dropdown-item>
+                                                            <el-dropdown-item
+                                                                v-for="(item,i) in shopList"
+                                                                :key="i"
+                                                                :command="i"
+                                                            >{{item.NAME}}</el-dropdown-item>
+                                                        </el-dropdown-menu>
+                                                    </el-dropdown> -->
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                </div>
+                                <div class="member-main-table">
+                                    <div class="member-table">
+                                        <el-table
+                                            border
+                                            :height="tablename"
+                                            :data="pageList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="NAME" label="会员名" width="200" sortable></el-table-column>
+                                            <el-table-column prop="MOBILENO" label="手机号"></el-table-column>
+                                            <!-- <el-table-column label="余额"></el-table-column> -->
+                                            <el-table-column prop="GOODSNAME" label="项目"></el-table-column>
+                                            <el-table-column prop="PAYCALCCOUNT" label="消费次数"></el-table-column>
+                                            <el-table-column label="最近消费日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.LASTTIME) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column label="更多" width="200">
+                                                <template slot-scope="scope">
+                                                    <el-button size="small"  @click="timeChange(scope.row)"
+                                                    >有效记录</el-button>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                        <div v-show="pageList.length>0" class="m-top-sm clearfix elpagination">
+                                            <el-pagination
+                                                @size-change="handlePageChange2"
+                                                @current-change="handlePageChange2"
+                                                :current-page.sync="pagination.PN"
+                                                :page-size="pagination.PageSize"
+                                                layout="prev, pager, next, jumper"
+                                                :total="pagination.TotalNumber"
+                                                class="text-right"
+                                            ></el-pagination>
+                                        </div>
+                                    <el-dialog
+                                    title="余次记录"
+                                    :visible.sync="dialogVisible3"
+                                    width="60%">
+                                        <el-table
+                                            border
+                                            :data="memberTimeList"
+                                            header-row-class-name="bg-theme2 text-white"
+                                            class="full-width"
+                                        >
+                                            <el-table-column prop="BILLTYPENAME" label="计次方式" width="200"></el-table-column>
+                                            <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                                            <el-table-column prop="PAYTYPENAME" label="支付方式"></el-table-column>
+                                            <el-table-column label="日期">
+                                                <template slot-scope="scope">
+                                                    <span>{{new Date(scope.row.BILLDATE) | time}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="PAYREMARK" label="说明"></el-table-column>
+                                        </el-table>
+                                    </el-dialog>
+                                    </div>
+                                </div>
+                            </el-tab-pane>
+                        </el-tabs>
+                    </div>
+                </div>
+            </div>
+        </el-container>
+    </el-container>
+    </el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getUserInfo} from '@/api/index'
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXINS_INDEX.IS_SHOW_POPUP,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+             activeName: 'first',
+             dialogVisible:false,
+             dialogVisibles:false,
+             dialogVisible2:false,
+             dialogVisible3:false,
+             input2:"",
+             pageList:[],
+             deskmode:'',
+             tablename:document.body.clientHeight-300,
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 1
+            },
+            pageData: { PN: 1 },
+            memberFleseList:[],
+            memberYuciList:[],
+            memberTimeList:[],
+            InterfaceCode:'',
+            VipCode:'',
+            VipCode2:'',
+            VipCode3:'',
+        };
+    },
+    computed: {
+        ...mapGetters({
+          memberList2:"memberList2",
+          memberListState2:"memberListState2",
+          memberFlese:"memberFlese",
+          memberYuci:"memberYuci",
+          memberTime:"memberTime",
+          memberTimeExport:"memberTimeExport"
+        })
+    },
+    watch: {
+        memberTime(data){
+            let OBJs=data.DataArr
+            let listes=[];
+            for(var i in OBJs){
+               listes.push(OBJs[i])
+            }
+            this.memberTimeList=listes
+
+        },
+        memberYuci(data){
+            let OBJ=data.DataArr
+            let lists=[];
+            for(var i in OBJ){
+               lists.push(OBJ[i])
+            }
+            this.memberYuciList=lists
+
+        },
+        memberFlese(data){
+            let Obj=data.DataArr
+            let list=[]
+            for(var i in Obj){
+               list.push(Obj[i])
+            }
+            this.memberFleseList=list
+
+        },
+        memberList2(data){
+            this.pageList=data.DataArr
+            this.pagination = {
+                TotalNumber: this.memberListState2.paying.TotalNumber,
+                PageNumber: this.memberListState2.paying.PageNumber,
+                PageSize: this.memberListState2.paying.PageSize,
+                PN: this.memberListState2.paying.PN
+            };
+            this.pagination.PN=1;
+        },
+        memberTimeExport(data){
+            console.log('导出来的的数据信息',data)
+            this.exportExcel(data)
+        },
+        VipCode(){
+            this.inquireChange();
+        },
+        VipCode2(){
+            this.inquireChange2();
+        },
+        VipCode3(){
+            this.inquireChange3();
+        },
+        
+
+    },
+    methods: {
+        inquireChange(){
+            this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070601",PN:1,VipCode:this.VipCode}).then(() => {});
+        },
+        inquireChange2(){
+            this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070602",PN:1,VipCode:this.VipCode2}).then(() => {});
+        },
+        inquireChange3(){
+            this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070603",PN:1,VipCode:this.VipCode3}).then(() => {});
+        },
+        ExportMemberData(index){
+            console.log("导出数据结构")
+            this.InterfaceCode=index;
+            this.$store
+                .dispatch("getmemberTimeListExport", {
+                    InterfaceCode:index,
+                    VipCode:'',
+                    VipFlag:'',
+                })
+                .then(() => {
+                    
+                });
+        },
+        exportExcel(arr) {
+            // 导出到excel
+            var list = [];
+            for(var i in arr){
+                list.push(arr[i])
+            }
+            for (var i = 0; i < list.length; i++) {
+                list[i].LASTTIME = this.filterTime(
+                    new Date(list[i].LASTTIME)
+                );
+            }
+            if(this.InterfaceCode=='210021423'){
+                for (var i = 0; i < list.length; i++) {
+                    list[i].LASTTIME = this.filterTime(
+                        new Date(list[i].LASTTIME)
+                    );
+                }
+                var head = [
+                    "会员名",
+                    "手机号码",
+                    "余额",
+                    "积分",
+                    "累计充值",
+                    "累次消费",
+                    "最近消费日期"
+                ];
+                var val = [
+                    "NAME",
+                    "MOBILENO",
+                    "MONEY",
+                    "INTEGRAL",
+                    "ADDMONEY",
+                    "PAYMONEY",
+                    "LASTTIME",
+                ];
+            }else if(this.InterfaceCode=='210021426'){
+                for (var i = 0; i < list.length; i++) {
+                    list[i].LASTTIME = this.filterTime(
+                        new Date(list[i].LASTTIME)
+                    );
+                    list[i].INVALIDDATE = this.filterTime(
+                        new Date(list[i].INVALIDDATE)
+                    );
+                    list[i].SM='充值' + list[i].ADDCALCCOUNT + '次' + '消费' +list[i].PAYCALCCOUNT + '次' + '调整' + list[i].CHANGECALCCOUNT + '次'
+                }
+                var head = [
+                    "会员名",
+                    "手机号码",
+                    "项目",
+                    "有效期",
+                    "剩余次数",
+                    "最近消费日期",
+                    "说明"
+                ];
+                var val = [
+                    "NAME",
+                    "MOBILENO",
+                    "GOODSNAME",
+                    "INVALIDDATE",
+                    "CALCCOUNT",
+                    "LASTTIME",
+                    "SM",
+                ];
+
+            }else if(this.InterfaceCode=='210021428'){
+                for (var i = 0; i < list.length; i++) {
+                    list[i].LASTTIME = this.filterTime(
+                        new Date(list[i].LASTTIME)
+                    );
+                    list[i].INVALIDDATE = this.filterTime(
+                        new Date(list[i].INVALIDDATE)
+                    );
+                }
+                var head = [
+                    "会员名",
+                    "手机号码",
+                    "项目",
+                    "有效期",
+                    "剩余次数"
+                ];
+                var val = [
+                    "NAME",
+                    "MOBILENO",
+                    "GOODSNAME",
+                    "INVALIDDATE",
+                    "CALCCOUNT",
+                    "LASTTIME",
+                ];
+            }
+            var title = "会员余额查询导出" + this.getNowDateTime();
+            this.export2Excel(head, val, list, title);
+        },
+      timeChange(item){
+          let setDate={
+              VipID:item.ID,
+              GoodsId:item.GOODSID
+          }
+          this.dialogVisible3=true,
+          this.$store.dispatch("getmemberTimeList", {setDates:setDate}).then(() => {});
+      },
+      yuciChange(item){
+          let setDate={
+              VipID:item.ID,
+              GoodsId:item.GOODSID
+          }
+          this.dialogVisible2=true
+          this.$store.dispatch("getmemberYuciList", {setDates:setDate}).then(() => {});
+
+      },
+      flowChange(index ,item){
+            let setDate={
+                VipID:item.ID,
+                Type:'',
+                InterfaceCode: '210020152',
+            }
+          if(index==1){
+            setDate={
+                VipID:item.ID,
+                Type:index,
+                InterfaceCode: '210020152',
+            }
+            this.dialogVisible=true;
+             this.$store.dispatch("getmemberFleseList", {setDates:setDate}).then(() => {});
+          }else if(index==0){
+            setDate={
+                VipID:item.ID,
+                Type:index,
+                InterfaceCode: '210020152',
+            }
+            this.dialogVisibles=true;
+             this.$store.dispatch("getmemberFleseList", {setDates:setDate}).then(() => {});
+          }
+      },
+      handleClick(event) {
+        if (event.name=="first") {
+            this.InterfaceCode='210021423';
+           this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070601",PN:1}).then(() => {});
+        }else if(event.name=="second"){
+           this.InterfaceCode='210021426';
+           this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070602",PN:1}).then(() => {});
+        }else if(event.name=="third"){
+           this.InterfaceCode='210021428';
+           this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070603",PN:1}).then(() => {});
+        }
+      },
+    handlePageChange: function(currentPage) {
+        this.pagination.PN = parseInt(currentPage);
+        this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070601",PN:this.pagination.PN}).then(() => {});
+    },
+    handlePageChange1: function(currentPage) {
+        this.pagination.PN = parseInt(currentPage);
+        this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070602",PN:this.pagination.PN}).then(() => {});
+    },
+    handlePageChange2: function(currentPage) {
+        this.pagination.PN = parseInt(currentPage);
+        this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070603",PN:this.pagination.PN}).then(() => {});
+    },
+    },
+    created() {
+        this.$store.dispatch("getMemberList2", {InterfaceCode:"21002070601"}).then(() => {});
+        let getUser = getUserInfo();
+        this.deskmode=getUser.TradeType
+    },
+    components: {
+        "echart-pie": () => import("@/components/other/echartPie.vue"),
+    }
+};
+</script>
+<style scoped>
+.el-header{
+  padding: 0 !important;
+}
+.el-main{
+  padding: 0px !important;
+}
+.member-table{
+    padding-top: 10px;
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+.member-main-time{
+    display: flex;
+    height: 80px;
+    align-items: center;
+}
+</style>
+
+
+
+

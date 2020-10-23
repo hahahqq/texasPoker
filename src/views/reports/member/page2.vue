@@ -1,0 +1,59 @@
+<template>
+	<section v-loading="loading">
+		<!-- <div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div> -->
+		<div class="bg-white m-bottom-sm">敬请期待</div>
+		<div class="bg-white m-bottom-sm"></div>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			exportData: { show: false }
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			console.log(data);
+		},
+		getNewData() {},
+		defaultData() {}
+	},
+
+	created() {
+		let dd = {
+			ShopId: this.theShopId,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		};
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

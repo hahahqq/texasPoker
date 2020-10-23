@@ -1,0 +1,77 @@
+<template>
+	<div id="report">
+		<el-container>
+			<el-header style="height: 50px; padding: 0">
+				<headerPage :pageList="buttonGroup" @showPageIdx="showPageIdx_fun"></headerPage>
+			</el-header>
+
+			<el-container>
+				<el-aside width="100px">
+					<section style="min-width: 100px">
+						<subMenu
+							:activePath="activePath"
+							:routesList="routesList"
+							:width="100"
+						></subMenu>
+					</section>
+				</el-aside>
+				<el-main :style="{ height: height + 'px' }">
+					<router-view :activePageIdx="activePageIdx"></router-view>
+				</el-main>
+			</el-container>
+		</el-container>
+	</div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+
+export default {
+	data() {
+		return {
+			height: window.innerHeight - 50,
+			activePath: "",
+			routesList: [],
+
+			buttonGroup: [],
+			activePageIdx: 1
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {
+		$route(to, from) {
+			this.height = window.innerHeight - 50;
+			this.defaultData();
+		}
+	},
+	methods: {
+		showPageIdx_fun(v) {
+			this.activePageIdx = parseInt(v) + 1;
+		},
+		defaultData() {
+			let rr = this.$router.options.routes;
+			let reportObj = rr.filter((item) => item.name === "reports");
+			this.routesList = [...reportObj[0].children[1].children];
+
+			let Rmeta = this.$route.meta,
+				arr = [];
+			let idx = this.$route.query.idx ? parseInt(this.$route.query.idx) + 1 : 1;
+			if (Rmeta.buttonGroup && Rmeta.buttonGroup.length > 0) arr = [...Rmeta.buttonGroup];
+			this.$nextTick(() => {
+				this.activePath = Rmeta.name;
+				this.buttonGroup = arr;
+				this.activePageIdx = idx;
+				this.height = window.innerHeight - 50;
+			});
+		}
+	},
+	created() {
+		this.defaultData();
+	},
+	components: {
+		headerPage: () => import("@/components/header/headDiv"),
+		subMenu: () => import("@/components/other/subMenu")
+	}
+};
+</script>

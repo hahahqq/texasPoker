@@ -1,0 +1,332 @@
+<template>
+    <div class='Bespeak'>
+        <el-form :model="ruleForm" class='ruleFormStyle' :rules="rules" ref="ruleForm" hide-required-asterisk='true' label-width="100px">
+            <el-row class="text-left">
+                <el-col :xs="24" >
+                    <el-form-item label="客户类型" >
+                        <el-radio size="small" v-model="radio1" @change="isVipType(radio1)" label="0" border>会员</el-radio>
+                        <el-radio size="small" v-model="radio1" @change="isVipType(radio1)" label="1" border>散客</el-radio>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="10">
+                <el-col :span="12">
+                    <el-form-item label="会员">
+                        <a @click="isShowVipPopup=true" v-if='ruleForm.VipId != "散客"' class="inline-block paddingTB-sm paddingLR-xs pointer"
+                            style="line-height:1.3;min-width:100px">
+                            <span v-text="Object.keys(selmember).length>0?selmember.NAME: '请选择预约会员'"></span>
+                            <i class="el-icon-arrow-down el-icon--right"></i>
+                        </a>
+                        <el-button size='small' type="primary" plain v-else disabled>散客</el-button>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="客户姓名">
+                        <el-input size="small" v-model="ruleForm.Name" clearable placeholder="请输入客户姓名" class='full-width'></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+            <el-row :gutter="10">
+                <el-col :span="12">
+                    <el-form-item label="手机号" prop='PhoneNo'>
+                        <el-input clearable v-model='ruleForm.PhoneNo' placeholder="请输入手机号" size="small" class='full-width'></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="预约员工" prop='EmpId'>
+                        <el-select size='small' v-model="ruleForm.EmpId" placeholder="请选择预约员工" class="full-width">
+                            <el-option
+                                v-for="(item,ii) in employeeList"
+                                :key="ii"
+                                :label="item.NAME"
+                                :value="item.ID"
+                            ></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+            <el-form-item label="预约项目">
+                <a @click="isShowGoodsPopup=true" class="inline-block paddingTB-sm paddingLR-xs pointer"
+                    style="line-height:1.3;min-width:100px">
+                    <span v-text="Object.keys(selgoods).length>0?selgoods.NAME: '请选择预约项目'"></span>
+                    <i class="el-icon-arrow-down el-icon--right"></i>
+                </a>
+            </el-form-item>
+
+            <el-form-item label="到店时间">
+                <el-col :span="11">
+                    <el-form-item prop='Servicetime'>
+                        <el-date-picker
+                            :disabled="ruleForm.GoodsId == ''"
+                            type="date" size="small"
+                            value-format="timestamp"
+                            :picker-options="pickerOptions"
+                            placeholder="选择日期"
+                            @change='showChoseDateList'
+                            v-model="ruleForm.Servicetime"
+                            style="width: 100%;">
+                        </el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-button size="small" :disabled="ruleForm.Servicetime == ''" @click='showDialogDate = true' type="primary" plain style='margin-left:10px'>请选择时间</el-button>
+                </el-col>
+            </el-form-item>
+
+            <el-form-item label="备 注">
+                <el-input type="textarea" v-model="ruleForm.Remark" placeholder="请输入备注（不超过40字）" maxlength="40" size="small" class='full-width'></el-input>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button @click="closeModal('closeModal')">取消</el-button>
+                <el-button type="primary" :loading='loading' @click="submitForm('ruleForm')">保存</el-button>
+            </el-form-item>
+        </el-form>
+
+        <el-dialog width="70%" title="选择预约会员" :visible.sync="isShowVipPopup" append-to-body style="max-width:100%;">
+            <selmember @closeModal="isShowVipPopup=false"></selmember>
+        </el-dialog>
+
+        <el-dialog width="700px" title="选择服务项目" :visible.sync="isShowGoodsPopup" append-to-body style="max-width:100%;">
+            <selGoods @closeModal="isShowGoodsPopup=false" :chooseServer='{ type: ""}'></selGoods>
+        </el-dialog>
+
+        <el-dialog title='选择到店时间' :visible.sync="showDialogDate" append-to-body width='50%'>
+            <el-radio-group size="small" v-model="chooseCurDate" @change='setShowTimeDialog' style="margin-bottom: 30px;">
+                <el-radio-button v-for='(item,index) in canChoseDate' :disabled="item.TYPE == 1" :key="index" :label='item.TIME'>
+                    <div>{{item.WEEK}}</div>
+                    <div>{{item.TIME}}</div>
+                </el-radio-button>
+            </el-radio-group>
+
+            <div>
+                <el-radio-group v-model="ruleForm.BeginTime" size="small">
+                    <el-radio border v-for='(item, i) in canChoseTime' :key="i" :label="item.TIME" :disabled="item.TYPE == 1 || item.QTY >= serviceQty" style='margin: 4px 4px'>{{item.TIME}}</el-radio>
+                </el-radio-group>
+            </div>
+
+            <div style="width: 100%; margin: 30px auto 0; text-align:center; border-top: 1px solid #dcdcdc;">
+                <el-button size='small' type="primary" @click="submitArriTime" plain style="margin-top:30px"> 确 定 </el-button>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs'
+export default {
+    data() {
+        var checkTel = (rule, value, callback) => {
+            if (!value) {
+                return callback(new Error("手机号码不能为空"));
+            }
+            setTimeout(() => {
+                var myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+                if (!myreg.test(value)) {
+                    callback(new Error("请输入正确的手机号码"));
+                } else {
+                    callback();
+                }
+            }, 800);
+        };
+        return{
+            showDialogDate: false,
+            chooseCurDate:'',
+            isShowVipPopup: false,
+            isShowGoodsPopup: false,
+            radio1: '0',
+            ruleForm:{
+                Servicetime:'',
+                BeginTime:'',
+                EndTime:'',
+                EmpId:'',
+                VipId:'',
+                GoodsId:'',
+                PhoneNo:'',
+                Name:'',
+                Remark:'',
+                ServiceMinute:''
+            },
+            disabledBtn:false,
+            disableVip: false,
+            rules:{
+                Servicetime: [
+                    {  required: true, message: '请选择日期', trigger: 'change' }
+                ],
+                GoodsId:[
+                    { required: true, message: '请选择服务项目', trigger: 'change' }
+                ],
+                EmpId:[
+                    { required: true, message: '请选择预约员工', trigger: 'change' }
+                ],
+                PhoneNo:[
+                    { required: true, validator: checkTel, trigger: 'blur' }
+                ]
+            },
+            pickerOptions: {
+                disabledDate: time => {
+                    return time.getTime() <= new Date(this.getCustomDay(-1)).getTime()
+                }
+            },
+            loading: false,
+            G_loading:false,
+            dataGoodsList:[],
+            canChoseDate:[],
+            canChoseTime:[],
+            disableSave: true,
+            serviceQty: 1
+        }
+    },
+    computed: {
+        ...mapGetters({
+            dataItem: "bespeakItem",
+            dataState: "bespeakState",
+            employeeList: "employeeList",
+            shopList: "shopList",
+            memberListState2: "memberListState2",
+            goodsListState2:'goodsListState2',
+            selmember: "selmember", //选择的会员
+            selgoods: "selgoods",
+            bespeakDateListState:'bespeakDateListState',
+            bespeakTimeListState:'bespeakTimeListState',
+            Get_appointmentsState:'Get_appointmentsState'
+        })
+    },
+    watch:{
+        Get_appointmentsState(data){
+            if(data.success){
+                this.serviceQty = data.data.Obj.SERVICEQTY
+            }
+        },
+        bespeakTimeListState(data){
+            if(data.success){
+                this.canChoseTime = data.data.TimeList
+                this.ruleForm.BeginTime = data.data.TimeList[0].TIME
+                this.disableSave = false
+            }else{
+                this.$message.error(data.message)
+            }
+        },
+        bespeakDateListState(data){
+            this.canChoseDate = data.data.DateList
+            if(data.data.DateList[0].TYPE == 1){
+                this.$message.warning('当前日期时间不可用，请选择具体时间')
+                this.disableSave = true
+            }else{
+                let arrCanChose = data.data.DateList.filter(item => item.TYPE == 0 )
+                this.chooseCurDate = arrCanChose[0].TIME
+                this.setShowTimeDialog()
+            }
+        },
+        selmember(data){
+            this.ruleForm.Name = data.NAME
+            this.ruleForm.VipId = data.ID
+            this.ruleForm.PhoneNo = data.MOBILENO
+        },
+        selgoods(data){
+            this.ruleForm.ServiceMinute = data.SERVICEMINUTE
+            this.ruleForm.GoodsId = data.ID != undefined ? data.ID : ''
+        },
+        goodsListState2(data){
+            this.G_loading = false
+            if(data.success){
+                this.dataGoodsList = [...data.data.PageData.DataArr]
+            }else{
+                this.$message.error(data.message)
+            }
+        },
+        dataState(data) {
+            this.loading = false
+            this.$message({ message: data.message, type: data.success ? "success" : "error" })
+            if (data.success) {
+                this.closeModal("resetList")
+            }
+        },
+    },
+    methods:{
+        submitArriTime(){
+            this.ruleForm.Servicetime = new Date(this.chooseCurDate).getTime()
+            this.showDialogDate = false
+        },
+        setShowTimeDialog(){
+            let sendData = {
+                EmpId: this.ruleForm.EmpId,
+                TimeDate: new Date(this.chooseCurDate).getTime(),
+                GoodsId: this.ruleForm.GoodsId
+            }
+            this.$store.dispatch('getBespeakTimeList', sendData)
+        },
+        showChoseDateList(){
+            let sendData = {
+                EmpId: this.ruleForm.EmpId,
+                TimeDate: this.ruleForm.Servicetime
+            }
+            this.$store.dispatch('getBespeakDateList', sendData)
+        },
+        closeModal(type) {
+            if (this.$refs.ruleForm) this.$refs.ruleForm.resetFields();
+            this.ruleForm = {
+                Servicetime:'',
+                BeginTime:'',
+                EndTime:'',
+                EmpId:'',
+                VipId:'',
+                GoodsId:'',
+                PhoneNo:'',
+                Name:'',
+                Remark:'',
+                ServiceMinute:''
+            }
+            this.notUseDate = ''
+            this.$store.dispatch("selectingGoods",{})
+            this.$store.dispatch('clearMember', 8)
+            if (type == "resetList") {
+                this.$emit("resetList")
+            } else {
+                this.$emit("closeModal")
+            }
+        },
+        isVipType(type){
+            this.ruleForm.VipId = type == 0 ? this.selmember.ID : '散客'
+            this.ruleForm.Name = ''
+        },
+        submitForm(){
+            console.log("预约不了吗")
+            let sendData = Object.assign({}, this.ruleForm);
+            this.$refs.ruleForm.validate(valid => {
+                if (valid) {
+                    this.$store.dispatch("dealBespeakItem", {
+                        type: 'add',
+                        data: sendData
+                    }).then(() => {
+                        this.loading = true
+                    })
+                }
+            })
+        },
+    },
+    mounted(){
+        if (this.employeeList.length == 0) {
+            this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID });
+        }
+        if (this.shopList.length == 0) {
+            this.$store.dispatch("getShopList")
+        }
+        this.$store.dispatch("getAppointments")
+    },
+    components: {
+        selmember: () => import("@/components/selected/selmember"),
+        selGoods: () => import("@/components/selected/selgoods")
+    }
+}
+</script>
+<style scoped>
+.Bespeak .half {
+  width: 50%;
+  float: left;
+}
+
+</style>

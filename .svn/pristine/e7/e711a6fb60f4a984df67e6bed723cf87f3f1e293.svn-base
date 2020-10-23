@@ -1,0 +1,61 @@
+<template>
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="content-center text-right">
+				<el-button-group class="pull-left">
+					<el-button type="primary" size="small" :plain="true">日报</el-button>
+					<el-button type="primary" size="small" :plain="false">月报</el-button>
+				</el-button-group>
+
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					:isNoDate="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+					class="inline-block"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm">会员注册分析</div>
+		<div class="bg-white m-bottom-sm"></div>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 }
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {},
+	methods: {
+		exportState_fun(data) {
+			console.log(data);
+		},
+		getNewData_fun(data) {
+			console.log(data);
+		},
+		getNewData() {},
+		defaultData() {}
+	},
+
+	created() {
+		let dd = {
+			ShopId: this.theShopId,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		};
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filte")
+	}
+};
+</script>
+<style scoped>
+</style>

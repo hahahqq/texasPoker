@@ -1,0 +1,437 @@
+<template>
+	<!-- 营业概况 -->
+
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<div class="font-14 font-600">整体看板</div>
+				<div class="row-flex" style="margin: 0 -5px">
+					<div v-for="(item, i) in pageList" :key="i" style="width: 33.33%">
+						<div class="bg-white padding-sm border rounded-sm m-top-sm marginLR-xs">
+							<div>{{ item.label }}</div>
+							<div class="p-top-sm m-top-xs p-bottom-xs font-18 text-theme">
+								{{ item.value }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="paddingTB-md-">
+			<el-row>
+				<el-col :span="12" v-for="(item, i) in echartList" :key="i">
+					<div
+						class="bg-white padding-sm"
+						:class="{
+							'm-top-sm': i > 1,
+							'm-left-xs': i % 2 != 0,
+							'm-right-xs': i % 2 == 0
+						}"
+					>
+						<div class="font-16 font-600 p-left-sm m-left-xs text-right">
+							<span class="inline-block pull-left" style="line-height: 42px">
+								{{ item.title }}
+							</span>
+							<el-button type="text" @click="toRouter(item.url)">
+								<span>更多</span>
+							</el-button>
+						</div>
+						<div class="clearfix" style="padding-left: 15px">
+							<div class="row-flex font-14">
+								<div
+									v-for="(subItem, j) in item.total"
+									:key="j"
+									class="flex-grow-1"
+								>
+									<div class="text-muted m-bottom-xs">{{ subItem.label }}</div>
+									<div class="font-600">{{ subItem.value }}</div>
+								</div>
+							</div>
+						</div>
+						<echartLine
+							ref="managementEchart"
+							:idName="'managementEchart-' + i"
+							:typeData="item"
+							:unit="i == 5 ? '人' : '元'"
+							class="padding-sm marginTB-sm"
+						></echartLine>
+					</div>
+				</el-col>
+			</el-row>
+		</div>
+		<!-- 数据导出 -->
+		<el-dialog
+			append-to-body
+			:close-on-click-modal="false"
+			:close-on-press-escape="false"
+			:show-close="false"
+			title="数据导出"
+			:visible.sync="exportData.show"
+			width="400px"
+		>
+			<exportPage
+				:dataType="exportData"
+				:isPage="true"
+				@closeModal="exportData.show = false"
+			></exportPage>
+		</el-dialog>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			pageList: [
+				{
+					label: "充值实收",
+					value: 0
+				},
+				{
+					label: "赛事盈利",
+					value: 0
+				},
+				{
+					label: "销售实收",
+					value: 0
+				},
+				{
+					label: "快速消费",
+					value: 0
+				},
+				{
+					label: "积分调整",
+					value: 0
+				},
+				{
+					label: "会员数据",
+					value: 0
+				}
+			],
+			echartFormData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			echartList: [
+				{
+					title: "充值数据",
+					url: "/report/statistics?idx=0",
+					methodName: "managementA",
+					total: [
+						{
+							label: "充值金额",
+							value: 0
+						},
+						{
+							label: "充值笔数",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "充值趋势",
+						legend: ["金额"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				},
+				{
+					title: "赛事数据",
+					url: "/report/match?idx=0",
+					methodName: "managementB",
+					total: [
+						{
+							label: "买入积分",
+							value: 0
+						},
+						{
+							label: "参赛人数",
+							value: 0
+						},
+						{
+							label: "服务费",
+							value: 0
+						},
+						{
+							label: "奖励积分",
+							value: 0
+						},
+						{
+							label: "盈利",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "买入趋势",
+						legend: ["金额"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				},
+				{
+					title: "商品销售",
+					url: "/report/statistics?idx=4",
+					methodName: "managementC",
+					total: [
+						{
+							label: "销售金额",
+							value: 0
+						},
+						{
+							label: "销售笔数",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "销售趋势",
+						legend: ["金额"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				},
+				{
+					title: "快速消费",
+					url: "/report/statistics?idx=5",
+					methodName: "managementD",
+					total: [
+						{
+							label: "消费金额",
+							value: 0
+						},
+						{
+							label: "消费笔数",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "消费趋势",
+						legend: ["金额"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				},
+				{
+					title: "积分调整",
+					url: "/report/statistics?idx=3",
+					methodName: "managementE",
+					total: [
+						{
+							label: "调整积分",
+							value: 0
+						},
+						{
+							label: "调整笔数",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "调整趋势",
+						legend: ["金额"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				},
+				{
+					title: "会员数据",
+					url: "/report/member?idx=0",
+					methodName: "managementF",
+					total: [
+						{
+							label: "新增会员",
+							value: 0
+						},
+						{
+							label: "全部会员",
+							value: 0
+						}
+					],
+					show: true,
+					data: {
+						title: "增长趋势",
+						legend: ["数量"],
+						xAxis: [0],
+						series: [[0]]
+					}
+				}
+			],
+			echartAct: 0,
+			eLoading: false,
+			exportData: { show: false }
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataState: "actionsDataState",
+			dataListState: "commonListState"
+		})
+	},
+	watch: {
+		dataState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.pageList[0].value = data.data.AddMoney;
+					this.pageList[1].value = data.data.MatchGainMoney;
+					this.pageList[2].value = data.data.GoodsSaleMoney;
+					this.pageList[3].value = data.data.QuickSaleMoney;
+					this.pageList[4].value = data.data.RedMoney;
+					this.pageList[5].value = data.data.AddMoney;
+					// ExChangeMoney=积分兑换金额,ChargesMoney=费用支出金额
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		},
+		dataListState(data) {
+			if (this.eLoading) {
+				if (data.success) {
+					this.setEchartNewData(data);
+					if (this.echartAct == 5) {
+						this.echartAct = 0;
+						this.eLoading = false;
+					} else {
+						this.echartAct++;
+						this.getEchartNewData();
+					}
+				} else {
+					this.$message.error(data.message);
+					this.eLoading = false;
+				}
+			}
+		}
+	},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({}, data);
+			this.getNewData();
+			this.setEchartFormData();
+		},
+		getNewData() {
+			this.loading = true;
+			indexQuery.management(this, "management", this.formData);
+		},
+		toRouter(url) {
+			if (url) {
+				this.$router.push({ path: url });
+			}
+		},
+		setEchartFormData() {
+			// 图表 区间段小于7天的，显示结束时间前7天的数据
+			let date1 = this.formData.BeginDate,
+				date2 = this.formData.EndDate;
+			if (date2 - date1 >= 3600 * 1000 * 24 * 7) {
+				this.echartFormData = Object.assign({ PN: 1 }, this.formData);
+			} else {
+				let date = new Date().setTime(date2 - 3600 * 1000 * 24 * 7);
+				this.echartFormData = Object.assign({ PN: 1 }, this.formData, {
+					BeginDate: new Date(date).getTime()
+				});
+			}
+			this.echartAct = 0;
+			this.getEchartNewData();
+		},
+		getEchartNewData() {
+			let name = this.echartList[this.echartAct].methodName;
+			indexQuery.management(this, name, this.echartFormData);
+			this.eLoading = true;
+		},
+		setEchartNewData(data) {
+			let idx = this.echartAct,
+				item = Object.assign({}, this.echartList[idx]),
+				arr1 = [],
+				arr2 = [];
+			if (data.List.length == 0) return;
+			data.List.forEach((element) => {
+				arr1.push(element.FDATE);
+				if (idx == 2 || idx == 3) {
+					arr2.push(element.SALEMONEY);
+				} else if (idx == 5) {
+					arr2.push(element.QTY);
+				} else {
+					arr2.push(element.MONEY);
+				}
+			});
+			arr1.reverse();
+			arr2.reverse();
+			item.data.xAxis = [...arr1];
+			item.data.series = [arr2];
+			item.data.max = Math.max(...arr2);
+			switch (idx) {
+				case 0:
+					item.total[0].value = data.data.AddMoney;
+					item.total[1].value = data.data.BillCount;
+					break;
+				case 1:
+					item.total[0].value = data.data.BuyMoney;
+					item.total[1].value = data.data.VipCount;
+					item.total[2].value = data.data.ChargesMoney;
+					item.total[3].value = data.data.RewardMoney;
+					item.total[4].value = data.data.GainMoney;
+					break;
+				case 2:
+					item.total[0].value = data.data.SaleMoney;
+					item.total[1].value = data.data.BillCount;
+					break;
+				case 3:
+					item.total[0].value = data.data.SaleMoney;
+					item.total[1].value = data.data.BillCount;
+					break;
+				case 4:
+					item.total[0].value = data.data.Money;
+					item.total[1].value = data.data.BillCount;
+					break;
+				case 5:
+					item.total[0].value = data.data.AddQty;
+					item.total[1].value = data.data.AllQty;
+					break;
+				default:
+					console.log(item);
+			}
+			this.$nextTick(() => {
+				this.echartList[idx] = Object.assign({}, item, { show: true });
+			});
+		},
+		defaultData() {}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		};
+		this.getNewData();
+		this.setEchartFormData();
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		echartLine: () => import("@/components/echart/echartLine.vue"),
+		exportPage: () => import("@/components/export/common.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

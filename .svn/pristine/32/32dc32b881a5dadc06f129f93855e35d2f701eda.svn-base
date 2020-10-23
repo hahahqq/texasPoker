@@ -1,0 +1,129 @@
+<template>
+	<div>
+		<div :id="idName" class="full-width" :style="{ minWidth: '300px', height: '300px' }"></div>
+	</div>
+</template>
+<script>
+import echarts from "echarts";
+export default {
+	props: {
+		idName: { type: String, default: "myChart" },
+		typeData: {
+			type: Object,
+			default: {
+				show: false,
+				data: {
+					title: "折线图demo",
+					legend: ["销售金额", "毛利润"],
+					xAxis: [
+						"2018-10-19",
+						"2018-10-20",
+						"2018-10-21",
+						"2018-10-22",
+						"2018-10-23",
+						"2018-10-24",
+						"2018-10-25"
+					],
+					series: [
+						[0, 1, 1, 4, 0, 8, 0],
+						[0, 11, 11, 14, 10, 8, 10]
+					]
+				}
+			}
+		},
+		unit: {
+			type: String,
+			default: "元"
+		}
+	},
+	data() {
+		return {};
+	},
+	watch: {
+		typeData(data) {
+			if (data.show) {
+				setTimeout(() => {
+					this.defaultData();
+				}, 200);
+			}
+		}
+	},
+	methods: {
+		defaultData() {
+			let dd = this.typeData.data;
+			let arr = [];
+			for (let i = 0; i < dd.legend.length; i++) {
+				arr.push({
+					name: dd.legend[i],
+					type: "line",
+					smooth: false,
+					data: [...dd.series[i]]
+				});
+			}
+			this.drawLine(this.idName, this.unit, dd.title, dd.legend, dd.xAxis, arr);
+		},
+		drawLine(id, unit, title, legendArr, xAxisArr, seriesArr) {
+			// 基于准备好的dom，初始化echarts实例
+			let myChart = echarts.init(document.getElementById(id));
+			let space = parseInt(xAxisArr[0].length / 2) * 10;
+			// 绘制图表
+			myChart.setOption({
+				title: {
+					text: title,
+					textStyle: {
+						fontSize: 14
+					}
+				},
+				tooltip: {
+					trigger: "axis",
+					axisPointer: {
+						type: "cross",
+						label: {
+							backgroundColor: "#6a7985"
+						}
+					}
+				},
+				legend: {
+					x: "center",
+					y: "30",
+					borderColor: "#6699FF", //边框颜色
+					textStyle: {
+						color: "#000" // 图例文字颜色
+					},
+					data: [...legendArr]
+				},
+				grid: {
+					left: space,
+					right: space,
+					bottom: "30",
+					containLabel: false
+				},
+				toolbox: {
+					feature: {
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: "category",
+					boundaryGap: false,
+					data: [...xAxisArr]
+				},
+				yAxis: {
+					type: "value",
+					name: "单位：" + unit
+				},
+				areaStyle: { color: "rgba(148, 226, 238, 1)" },
+				series: [...seriesArr]
+			});
+		}
+	},
+	mounted() {
+		if (this.typeData.show) {
+			setTimeout(() => {
+				this.defaultData();
+			}, 200);
+		}
+	}
+};
+</script>
+

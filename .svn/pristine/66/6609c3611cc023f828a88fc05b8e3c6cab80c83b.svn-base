@@ -1,0 +1,60 @@
+import commonSend from '@/api/api'
+import { getUserInfo,setHomeData,getHomeData } from '@/api/index'
+import { 
+  GET_SSMEMBERD_LIST
+} from '@/store/mutation-types'
+let selected={}
+
+// initial state
+const state = {
+  ssmemberdListState: {},
+  ssmemberopenID: ''
+  // ssmemberdList: [],
+}
+
+// getters
+const getters = {
+  // ssmemberdList: state => state.ssmemberdList,
+  ssmemberdListState: state => state.ssmemberdListState,
+}
+
+// actions
+const actions = {
+  //生意通商品消费获取会员列表接口
+  getSsmemberdList ({commit},data) {
+    console.log("data11111111111111111")
+    console.log(data)
+    let userInfo= getUserInfo();
+    let shopuserInfo = getHomeData().shop;
+    let ShopId=data.Filter!='' ? '' :shopuserInfo.ID;
+    let sendData = {
+      InterfaceCode: "210020104_1",
+      ShopId: ShopId,
+      Name:data.Filter,
+      PN:1,
+    };
+    if(data){
+      sendData = Object.assign({},sendData,data)
+    }
+    commonSend.commonSend('get',data => {
+      commit(GET_SSMEMBERD_LIST, { data })
+    }, sendData )
+  }
+}
+
+// mutations
+const mutations = {
+  [GET_SSMEMBERD_LIST] (state, { data }) {
+    if(data.success){
+       // state.ssmemberdList = [...data.data.PageData.DataArr];
+       state.ssmemberdListState = Object.assign({},data);
+    }
+  },
+}
+
+export default {
+  state,
+  getters,
+  actions,
+  mutations,
+}

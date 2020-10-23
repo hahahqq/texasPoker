@@ -1,0 +1,86 @@
+<template>
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="content-center">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white padding-md">
+			<el-tabs v-model="activeName" @tab-click="handleClick" type="card">
+				<el-tab-pane label="销售单据" name="first">
+					<page1 :typeData="formData"></page1>
+				</el-tab-pane>
+				<el-tab-pane label="销售明细" name="second">
+					<page2 :typeData="formData"></page2>
+				</el-tab-pane>
+				<el-tab-pane label="商品汇总" name="third">
+					<page3 :typeData="formData"></page3>
+				</el-tab-pane>
+				<el-tab-pane label="日期汇总" name="fourth">
+					<page4 :typeData="formData"></page4>
+				</el-tab-pane>
+			</el-tabs>
+		</div>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import page1 from "./goodsSale/saleOrder";
+import page2 from "./goodsSale/saleDetails.vue";
+import page3 from "./goodsSale/goodsSummary.vue";
+import page4 from "./goodsSale/dateSummary.vue";
+
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", show: false },
+			activeName: "first"
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {},
+	methods: {
+		exportState_fun(data) {
+			console.log(data);
+		},
+		getNewData_fun(data) {
+			console.log(data);
+			this.formData = Object.assign({ show: false }, data);
+		},
+		handleClick(tab, event) {
+			console.log(tab, event);
+		},
+		defaultData() {
+			this.activeName = "first";
+			this.ruleFrom = {
+				ShopId: getHomeData().shop.ID,
+				BeginDate: this.getTimeStamp(),
+				EndDate: new Date().getTime(),
+				show: true
+			};
+		}
+	},
+
+	created() {
+		this.defaultData();
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		page1,
+		page2,
+		page3,
+		page4
+	}
+};
+</script>
+<style scoped>
+</style>

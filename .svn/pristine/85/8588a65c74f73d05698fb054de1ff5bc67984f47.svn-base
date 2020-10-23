@@ -1,0 +1,302 @@
+<template>
+    <el-container>
+    <el-header style="height:50px;">
+        <headerPage></headerPage>
+    </el-header>
+    <el-container>
+        <el-aside width="100px">
+            <section style="min-width:100px;">
+            <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+            </section>
+        </el-aside>
+        <el-container>
+        <el-main>
+        <div class="content-eighty">
+            <div class="content-center">
+                <filtePage @exportState="exportState" @getNewData="getNewData" :isAll="true"></filtePage>
+            </div>
+        </div>
+        <div class="content-table-defray">
+          <div class="content-table-center">
+                <echart-pie
+                    :pieData="echartData"
+                    class="border padding-sm m-top-sm m-bottom-lg"
+                    style="border-width:5px;"
+                ></echart-pie>
+                <el-table
+                    border
+                    :data="tebleList"
+                    header-row-class-name="bg-theme2 text-white"
+                    class="full-width"
+                >
+                    <el-table-column prop="RN" label="排名" width="80"></el-table-column>
+                    <el-table-column prop="ITEMNAME" label="支出项目"></el-table-column>
+                    <el-table-column prop="MONEY" label="支出金额">
+                        <template slot-scope="props">
+                            <span>&yen;{{props.row.MONEY}}</span>
+                            <el-progress
+                                :text-inside="true"
+                                :stroke-width="18"
+                                :percentage="props.row.FRATE>0?props.row.FRATE*100:0"
+                                :color="getColor(props.row.FRATE*100)"
+                            ></el-progress>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="FRATE" label="占比"></el-table-column>
+                    <el-table-column prop="BILLCOUNT" label="单据数量"></el-table-column>
+                    <el-table-column label="更多" width="80">
+                        <template slot-scope="props">
+                            <el-button
+                                type="text"
+                                @click="getNewItem(props.row.ITEMID)"
+                                class="no-padding"
+                            >详情</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <div v-show="tebleList.length>0" class="m-top-sm clearfix elpagination">
+                    <el-pagination
+                        @size-change="handlePageChange"
+                        @current-change="handlePageChange"
+                        :current-page.sync="pagination.PN"
+                        :page-size="pagination.PageSize"
+                        :pager-count="5"
+                         layout="total, sizes, prev, pager, next, jumper"
+                        :total="pagination.TotalNumber"
+                        class="text-right"
+                    ></el-pagination>
+                    <!-- <div class="text-center clearfix">
+                        <span
+                            class="inline-block"
+                        >共{{pagination.TotalNumber}}条，每页{{pagination.PageSize}}条</span>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+        </el-main>
+            <el-dialog :title="title" :visible.sync="isShowList" width="90%" style="max-width:100%;">
+                <listPage
+                    @closeModal="isShowList=false"
+                    :dataType="{'data':ruleFrom2,'state':isShowList}"
+                ></listPage>
+            </el-dialog>
+        </el-container>
+    </el-container>
+    </el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXINS_INDEX.IS_SHOW_POPUP,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            pageList: [],
+            tebleList: [],
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 0
+            },
+            pageData: { PN: 1 },
+            echartData: {
+                title: "支出分析",
+                legend: [],
+                series: []
+            },
+            exportList: []
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataData: "defrayReportData",
+            dataExportState: "defrayReportExportState",// 支出分析导出
+            dataState: "defrayReportState",
+            dataList: "defrayReportList",
+            dataListState: "defrayReportListState",
+            dataListArr: "defrayReportListARR"
+        })
+    },
+    watch: {
+        dataExportState(data) {
+            if (data.success) {
+                // 支出分析导出
+                this.exportList = [...data.data.List];
+                if (this.exportList.length > 0) {
+                    let list = [...this.exportList];
+                    for (let i in list) {
+                        list[i].SEX = list[i].SEX == 1 ? "女" : "男";
+                    }
+                    let head = ["支出项目", "支出金额", "占比", "单据数量"];
+                    let val = ["ITEMNAME", "MONEY", "FRATE", "BILLCOUNT"];
+                    let title = "支出分析表" + this.getNowDateTime();
+
+                    this.export2Excel(head, val, list, title);
+                } else {
+                    this.$message({
+                        message: "数据不能为空",
+                        type: "error"
+                    });
+                }
+            }else{
+                this.exportList=[];
+                this.$message({
+                        message: "数据有误，导出失败",
+                        type: "error"
+                    });
+            }
+            this.loading = false;
+        },
+        dataState(data) {
+            this.loading = false;
+            if (data.success) {
+                this.defaultData();
+            }
+        }
+    },
+    methods: {
+        exportState(data) {
+            this.$store.dispatch("getdefrayReportData_Export", this.ruleFrom).then(()=>{
+                this.loading = true;
+            });
+        },
+        getNewData(data) {
+            let sendData = Object.assign({}, data);
+            this.$store.dispatch("cleardefrayReportList2").then(() => {
+                this.$store.dispatch("getdefrayReportData", sendData);
+                this.loading = true;
+                this.ruleFrom = Object.assign({}, sendData);
+                this.pageData.PN = 1;
+            });
+        },
+        getNewItem(id) {
+            // 详细
+            let index = 0;
+            let sendData = {
+                obj: { index: index, obj: "defray" },
+                data: Object.assign({}, this.ruleFrom, { id: id })
+            };
+            this.ruleFrom2 = Object.assign({}, sendData);
+            this.$store.dispatch("cleardefrayReportList", index).then(() => {
+                this.$store.dispatch("getdefrayReportList", sendData);
+                this.title = this.dataListArr[index].title;
+            });
+        },
+        handlePageChange: function(currentPage) {
+            if (this.pageData.PN == currentPage || this.loading) {
+                return;
+            }
+            this.pageData.PN = parseInt(currentPage);
+            this.$store
+                .dispatch(
+                    "getdefrayReportData",
+                    Object.assign({}, this.ruleFrom, this.pageData)
+                )
+                .then(() => {
+                    this.loading = true;
+                });
+        },
+        defaultData() {
+            this.tebleList = [...this.dataData.List];
+            this.pagination = {
+                TotalNumber: this.dataData.paying.TotalNumber,
+                PageNumber: this.dataData.paying.PageNumber,
+                PageSize: this.dataData.paying.PageSize,
+                PN: this.dataData.paying.PN
+            };
+            this.pageData.PN = this.dataData.paying.PN;
+            this.drawPie();
+        },
+        formatSex: function(row, column) {
+            return row.SEX == 1 ? "女" : "男";
+        },
+        getColor: function(v) {
+            if (v > 75) {
+                return "#67c23a";
+            } else if (v > 50) {
+                return "rgba(142, 113, 199, 0.7)";
+            } else if (v > 25) {
+                return "#409eff";
+            } else {
+                return "#f56c6c";
+            }
+        },
+        drawPie() {
+            // 绘图
+            this.echartData.legend = [];
+            this.echartData.series = [];
+            for (let i = 0; i < this.tebleList.length; i++) {
+                if (this.tebleList[i].MONEY < 0) continue;
+                this.echartData.legend.push(this.tebleList[i].ITEMNAME);
+                this.echartData.series.push({
+                    value: this.tebleList[i].MONEY,
+                    name: this.tebleList[i].ITEMNAME
+                });
+            }
+
+            this.isChangePropsState = !this.isChangePropsState;
+        }
+    },
+    created() {
+        this.$store
+            .dispatch("getdefrayReportData", {
+                ShopId: this.theShopId,
+                BeginDate: this.getTimeStamp(),
+                EndDate: new Date().getTime()
+            })
+            .then(() => {
+                this.loading = true;
+                 this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+            });
+    },
+    components: {
+        "echart-pie": () => import("@/components/other/echartPie.vue"),
+        listPage: () => import("@/components/reports/management/tableList"),
+        headerPage: () => import("@/components/header")
+    }
+};
+</script>
+<style scoped>
+.el-header{
+  padding: 0 !important;
+}
+.member-main-top{
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  /* height: 100px; */
+  background: #fff;
+}
+.member-main-table{
+  margin-top: 8px;
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 600px;
+  background: #fff;
+}
+.content-table-defray{
+  margin-top: 10px;
+  /* height: 550px; */
+  width: 100%;
+  background: #fff;
+}
+</style>
+
+
+
+
+

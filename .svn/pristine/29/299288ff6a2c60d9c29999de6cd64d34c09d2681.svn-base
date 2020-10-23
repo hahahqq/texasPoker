@@ -1,0 +1,128 @@
+<template>
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="content-center">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm">
+			<div class="bg-white m-bottom-sm- paddingTB-md">
+				<div class="content-center">
+					<!-- table-->
+					<el-table
+						border
+						:data="tableList"
+						header-row-class-name="bg-F1F2F3"
+						class="full-width"
+						:style="{ maxWidth: maxWidth + 'px' }"
+					>
+						<el-table-column prop="" label=""></el-table-column>
+					</el-table>
+					<!-- 分页 -->
+					<div v-if="tableList.length > 0" class="m-top-sm clearfix">
+						<el-pagination
+							@size-change="handlePageChange"
+							@current-change="handlePageChange"
+							:current-page.sync="pagination.PN"
+							:page-size="pagination.PageSize"
+							layout="prev, pager, next, jumper"
+							:total="pagination.TotalNumber"
+							class="text-center"
+						></el-pagination>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			tableList: [],
+			pagination: {
+				TotalNumber: 0,
+				PageNumber: 0,
+				PageSize: 20,
+				PN: 0
+			},
+			maxWidth: window.innerWidth - 210
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataState: "actionsDataState",
+			dataListState: "commonListState"
+		})
+	},
+	watch: {
+		dataState(data) {
+			if (this.loading) {
+				if (data.success) {
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		},
+		dataListState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.pagination = Object.assign({}, data.paying);
+					this.tableList = [...data.List];
+					console.log(111, this.tableList);
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		exportState_fun(data) {
+			console.log(data);
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({}, this.formData, data);
+			this.getNewData();
+		},
+		getNewData() {
+			this.loading = true;
+			indexQuery.memberRecharge(this, "memberRecharge", this.formData);
+		},
+		handlePageChange: function (currentPage) {
+			if (this.formData.PN == currentPage || this.loading) {
+				return;
+			}
+			this.formData.PN = parseInt(currentPage);
+			this.getNewData();
+		},
+		defaultData() {}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = Object.assign({}, this.formData, {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		});
+		this.getNewData();
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

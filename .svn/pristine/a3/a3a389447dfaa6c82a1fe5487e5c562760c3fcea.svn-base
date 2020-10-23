@@ -1,0 +1,225 @@
+<template>
+   <div>
+      <el-row>
+         <el-col :span="16">
+            <el-row>
+               <el-col :span="10">
+                     <el-button-group>
+                        <el-button
+                           plain
+                           v-for="(label,i) in ['今天','昨天','本月','上月','其它']"
+                           :key="i"
+                           @click="chooseDate(i)"
+                           type="primary"
+                           size="small"
+                           :class="{'isActive':chooseDateIdx==i}"
+                        >{{label}}</el-button>
+                     </el-button-group>
+               </el-col>
+               <el-col :span="14">
+                     <div>
+                        <el-date-picker
+                           ref="dateBE"
+                           size="small"
+                           v-model="dateBE"
+                           :disabled='chooseDateIdx != 4'
+                           @change="chooseDate2"
+                           type="datetimerange"
+                           value-format="timestamp"
+                           format="yyyy-MM-dd HH:mm"
+                           range-separator="至"
+                           start-placeholder="开始日期"
+                           end-placeholder="结束日期"
+                           style="width:400px;"
+                           class="inline-block"
+                        ></el-date-picker>
+                     </div>
+               </el-col>
+            </el-row>
+         </el-col>
+         <el-col :span="8" style="text-align:right;">
+            <span>店铺</span>
+
+            <el-dropdown v-if="$route.meta.name !='crossStore'" @command="shopCheckfun" class="m-left-sm">
+               <el-button type="primary" size="small" plain>
+                     <div :class="shopCheckText.length >= 8 ? 'shopCheckTextClasslot' : ''">
+                     <span :class="shopCheckText.length >= 8 ? 'shopCheckTextClass' : ''" v-text="shopCheckText?shopCheckText:'请选择店铺'"></span>
+                     <i class="el-icon-arrow-down el-icon--right"></i>
+                     </div>
+               </el-button>
+               <el-dropdown-menu slot="dropdown">
+                     <el-dropdown-item v-if="isAll" :command="-1">全部</el-dropdown-item>
+                     <!-- <el-dropdown-item :command="-1">全部</el-dropdown-item> -->
+                     <el-dropdown-item
+                        v-for="(item,i) in shopList"
+                        :key="i"
+                        :command="i"
+                     >{{item.SHOPNAME}}</el-dropdown-item>
+               </el-dropdown-menu>
+            </el-dropdown>
+         </el-col>
+      </el-row>
+   </div>
+
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs'
+export default {
+    props: {
+        isAll: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data() {
+        return {
+            shopCheckText: "",
+            shopCheckidx: "",
+            ruleFrom: {
+                ShopId: "",
+                BeginDate: "1",
+                EndDate: "9999999999999"
+            },
+            dateBE: [],
+            chooseDateIdx: 0,
+            isExport: false,
+            bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE
+        };
+    },
+    computed: {
+        ...mapGetters({
+            shopList: "shopList",
+        })
+    },
+    watch: {
+
+    },
+    methods: {
+        exportState(data) {
+            this.$emit("exportState", data?data:true);
+        },
+        getNewData() {
+            this.$emit("getNewData", this.ruleFrom);
+            this.$emit("chooseDateIdx1", this.chooseDateIdx)
+        },
+        shopCheckfun(index) {
+            if (index == -1) {
+                this.shopCheckidx = -1;
+                this.shopCheckText = "全部店铺";
+                let str = "";
+                for (let i = 0; i < this.shopList.length; i++) {
+                    str += this.shopList[i].SHOPID;
+                    if (i < this.shopList.length - 1) {
+                        str += ",";
+                    }
+                }
+                this.ruleFrom.ShopId = str;
+                // this.ruleFrom.ShopId = '';
+                this.$store.dispatch("selectingShop", {});
+            } else {
+                this.shopCheckidx = index;
+
+                this.shopCheckText = this.shopList[index].SHOPNAME;
+
+                this.ruleFrom.ShopId = this.shopList[index].SHOPID;
+                this.$store.dispatch("selectingShop", {
+                    ID: this.shopList[index].SHOPID,
+                    NAME: this.shopList[index].SHOPNAME
+                });
+            }
+            this.getNewData();
+        },
+        chooseDate(i) {
+           console.log(this.bussinessTime)
+            this.chooseDateIdx = i;
+
+            let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));
+            let curMonth = Number(dayjs().month())+1;
+            let todayDate = dayjs(new Date().getTime());
+            let nowHourMius = todayDate.format('HH:mm');
+            let yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+            let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+            let beginFormat = '', endFormat = '', beginTime = '', endTime = ''
+
+            if(i == 0){ // 今天
+               // 现在的时间 大于 营业时间, 为今天
+               beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate
+               endTime = todayDate.format('YYYY-MM-DD HH:mm');
+            }else if(i == 1){  // 昨日
+               beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? yesterdayDate : dayjs().subtract(2, 'day').format('YYYY-MM-DD');
+               endFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate ;
+               endTime = endFormat + " " + this.bussinessTime+':00';
+            }else if(i == 2){  // 本月
+               beginFormat = dayjs().year()+'-'+curMonth+'-'+1
+               endTime = todayDate.format('YYYY-MM-DD HH:mm');
+            }else if(i == 3){  // 上月
+               beginFormat = dayjs().year()+'-'+dayjs().month()+'-'+1;
+               endFormat = dayjs().year()+'-'+curMonth+'-'+1;
+               endTime = endFormat + " " + this.bussinessTime+':00';
+            }
+
+            beginTime = beginFormat + " " + this.bussinessTime+':00' ;
+            let firstDate = new Date(beginTime).getTime();
+
+            let lastDate = new Date(endTime).getTime();
+
+            console.log(firstDate, lastDate)
+
+            this.ruleFrom.BeginDate = firstDate
+            this.ruleFrom.EndDate = lastDate
+            this.dateBE = [firstDate, lastDate]
+
+            this.getNewData()
+        },
+        chooseDate2(v) {
+            this.ruleFrom.BeginDate = v[0];
+            this.ruleFrom.EndDate = v[1];
+            this.getNewData();
+        },
+        defaultData() {
+            if (this.shopList.length == 0) {
+               this.$store.dispatch("getShopList", {});
+            }
+
+            let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));
+            let curMonth = Number(dayjs().month())+1;
+            let todayDate = dayjs(new Date().getTime());
+            let nowHourMius = todayDate.format('HH:mm');
+            let yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+            let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+            let beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate;
+
+            let beginTime = beginFormat + " " + this.bussinessTime+':00' ;
+            let endTime = todayDate.format('YYYY-MM-DD HH:mm');
+
+            let firstDate = new Date(beginTime).getTime();
+            let lastDate = new Date(endTime).getTime();
+            this.ruleFrom = {
+                ShopId: getHomeData().shop.ID,
+                BeginDate: firstDate,
+                EndDate: lastDate
+            };
+            this.dateBE = [firstDate, lastDate]
+            this.shopCheckText = getHomeData().shop.NAME;
+
+        }
+    },
+    mounted() {
+        this.defaultData();
+
+        console.log(getUserInfo().CompanyConfig)
+    }
+};
+</script>
+<style scoped>
+.shopCheckTextClass{
+display:block; width:90px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+}
+.shopCheckTextClasslot{
+    display: flex;
+}
+</style>

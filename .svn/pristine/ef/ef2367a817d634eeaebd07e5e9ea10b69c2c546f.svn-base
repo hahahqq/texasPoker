@@ -1,0 +1,319 @@
+<template>
+  <!-- 销售分析 -->
+  <section v-loading="loading">
+    <div class="bg-white paddingTB-md m-bottom-sm">
+      <div class="content-center">
+        <filtePage
+          :isAll="true"
+          :isExport="true"
+          @getNewData="getNewData"
+          @exportState="exportState"
+        ></filtePage>
+      </div>
+    </div>
+    <div class="bg-white m-bottom-sm">
+      <div class="content-center">
+        <div
+          v-for="(item, i) in pageList"
+          :key="i"
+          class="inline-block m-right-md marginTB-sm padding-sm border"
+          style="width:150px"
+        >
+          <div>{{ item.label }}</div>
+          <div>
+            <span
+              v-text="dataData.info[item.value] ? dataData.info[item.value] : 0"
+            ></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white m-bottom-sm paddingTB-sm">
+      <div class="content-center">
+        <!-- chat -->
+        <echart-line
+          :lineData="{
+            title: echartData.title,
+            legend: echartData.legend,
+            xAxis: echartData.xAxis,
+            series: echartData.series
+          }"
+          class="border padding-sm marginTB-sm"
+          style="border-width:5px;"
+        ></echart-line>
+      </div>
+    </div>
+
+    <div class="bg-white m-bottom-sm">
+      <div class="content-table-center p-bottom-md">
+        <!-- table-->
+        <el-table
+          border
+          :data="tableList"
+          header-row-class-name="bg-F1F2F3"
+          class="full-width"
+        >
+          <el-table-column
+            prop="DATESTR"
+            label="日期"
+            width="180"
+          ></el-table-column>
+          <el-table-column prop="BILLCOUNT" label="销售笔数"></el-table-column>
+          <el-table-column prop="QTY" label="销售数"></el-table-column>
+          <el-table-column prop="MONEY" label="销售金额"></el-table-column>
+          <el-table-column prop="GAINMONEY" label="毛利"></el-table-column>
+          <el-table-column label="更多" width="80">
+            <template slot-scope="props">
+              <el-button
+                type="text"
+                @click="getNewList(props.row.DATESTR)"
+                class="no-padding"
+                >详情</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <div
+          v-show="tableList.length > 0"
+          class="m-top-sm clearfix elpagination"
+        >
+          <el-pagination
+            @size-change="handlePageChange"
+            @current-change="handlePageChange"
+            :current-page.sync="pagination.PN"
+            :page-size="pagination.PageSize"
+            layout="prev, pager, next, jumper"
+            :total="pagination.TotalNumber"
+            class="text-right"
+          ></el-pagination>
+        </div>
+      </div>
+    </div>
+    <el-dialog
+      append-to-body
+      :title="title"
+      :visible.sync="isShowList"
+      width="90%"
+      style="max-width:100%;"
+    >
+      <listPage @closeModal="isShowList = false" :dataType="dataType">
+        <slot>
+          <div
+            v-for="(item, i) in pageList"
+            :key="i"
+            class="inline-block m-right-md marginTB-sm padding-sm border"
+            style="width:150px"
+          >
+            <div>{{ item.label }}</div>
+            <div>
+              <span
+                v-text="
+                  dataListState.data && dataListState.data.SumInfo[item.value]
+                    ? dataListState.data.SumInfo[item.value]
+                    : 0
+                "
+              ></span>
+            </div>
+          </div>
+        </slot>
+      </listPage>
+    </el-dialog>
+  </section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+  mixins: [
+    MIXINS_REPORT.COMMOM_PAGE,
+    MIXINS_INDEX.IS_SHOW_POPUP,
+    MIXNINS_EXPORT.TOEXCEL,
+    MIXNINS_EXPORT.TODATA
+  ],
+  data() {
+    return {
+      tableHeight: document.body.clientHeight - 650,
+      pageList: [
+        { label: "销售总额", value: "MONEY" },
+        { label: "毛利", value: "GAINMONEY" },
+        { label: "销售笔数", value: "BILLCOUNT" },
+        { label: "销售数量", value: "QTY" }
+      ],
+      tableList: [],
+      pagination: {
+        TotalNumber: 0,
+        PageNumber: 0,
+        PageSize: 20,
+        PN: 0
+      },
+      pageData: { PN: 1 },
+      echartData: {
+        title: "销售分析",
+        legend: ["销售金额", "毛利润"],
+        xAxis: [],
+        series: []
+      },
+      exportList: [],
+      dataType: {}
+    };
+  },
+  computed: {
+    ...mapGetters({
+      dataData: "saleReportData",
+      dataExportState: "saleReportExportState",
+      dataState: "saleReportState",
+      dataList: "saleReportList",
+      dataListState: "saleReportListState",
+      dataListArr: "saleReportListARR"
+    })
+  },
+  watch: {
+    dataExportState(data) {
+      if (data.success) {
+        //
+        this.exportList = [...data.data.List];
+        if (this.exportList.length > 0) {
+          let list = [...this.exportList];
+          let head = ["日期", "销售笔数", "销售数", "销售金额", "毛利"];
+          let val = ["DATESTR", "QTY", "BILLCOUNT", "MONEY", "GAINMONEY"];
+          let title = "销售分析表" + this.getNowDateTime();
+
+          this.export2Excel(head, val, list, title);
+        } else {
+          this.$message({
+            message: "数据不能为空",
+            type: "error"
+          });
+        }
+      } else {
+        this.exportList = [];
+        this.$message({
+          message: "数据有误，导出失败",
+          type: "error"
+        });
+      }
+      this.loading = false;
+    },
+    dataState(data) {
+      this.loading = false;
+      if (data.success) {
+        this.defaultData();
+      }
+    }
+  },
+  methods: {
+    exportState(data) {
+      this.$store
+        .dispatch("getsaleReportData_Export", this.ruleFrom)
+        .then(() => {
+          this.loading = true;
+        });
+    },
+    getNewData(data) {
+      let sendData = Object.assign({}, data);
+      this.$store.dispatch("clearsaleReportList2").then(() => {
+        this.$store.dispatch("getsaleReportData", sendData);
+        this.loading = true;
+        this.ruleFrom = Object.assign({}, sendData);
+        this.pageData.PN = 1;
+      });
+    },
+    getNewList(str) {
+      let index = 0;
+      let sendData = {
+        obj: { index: index, obj: "sale" },
+        data: {
+          ShopId: this.ruleFrom.ShopId,
+          DateStr: str,
+          OrderType: 0
+        }
+      };
+      this.ruleFrom2 = Object.assign({}, sendData);
+      this.dataType = { data: this.ruleFrom2, state: true };
+      this.$store.dispatch("clearsaleReportList", index).then(() => {
+        this.$store.dispatch("getsaleReportList", sendData);
+        this.title = this.dataListArr[index].title;
+      });
+    },
+    handlePageChange: function(currentPage) {
+      if (this.pageData.PN == currentPage || this.loading) {
+        return;
+      }
+      this.pageData.PN = parseInt(currentPage);
+      this.$store
+        .dispatch(
+          "getsaleReportData",
+          Object.assign({}, this.ruleFrom, this.pageData)
+        )
+        .then(() => {
+          this.loading = true;
+        });
+    },
+    defaultData() {
+      this.tableList = [...this.dataData.List];
+      this.pagination = {
+        TotalNumber: this.dataData.paying.TotalNumber,
+        PageNumber: this.dataData.paying.PageNumber,
+        PageSize: this.dataData.paying.PageSize,
+        PN: this.dataData.paying.PN
+      };
+      this.pageData.PN = this.dataData.paying.PN;
+      this.drawLine();
+    },
+    drawLine() {
+      let dd = this.tableList;
+      let dateStr = [],
+        arr1 = [],
+        arr2 = [];
+      for (let i = 0; i < dd.length; i++) {
+        dateStr.push(dd[i].DATESTR);
+        arr1.push(dd[i].MONEY);
+        arr2.push(dd[i].GAINMONEY);
+      }
+      this.echartData.xAxis = [...dateStr];
+      this.echartData.series = [arr1, arr2];
+      this.isChangePropsState = !this.isChangePropsState;
+    }
+  },
+
+  created() {
+    this.defaultDATA("getsaleReportData");
+  },
+  components: {
+    "echart-line": () => import("@/components/other/echartLine.vue"),
+    listPage: () => import("@/components/reports/management/tableList")
+  }
+};
+</script>
+<style scoped>
+.active {
+  background: #fff;
+  border-color: #409eff;
+  color: #409eff;
+}
+.el-header {
+  padding: 0 !important;
+}
+.sale-list {
+  border-radius: 6px;
+}
+.sale-list-cont {
+  width: 90%;
+  margin-left: 10%;
+}
+.content-table-sale {
+  margin-top: 10px;
+  /* height: 550px; */
+  width: 100%;
+  background: #fff;
+}
+.content-table-center-sale {
+  width: 96%;
+  margin-left: 2%;
+  margin-right: 2%;
+  padding-top: 18px;
+}
+</style>

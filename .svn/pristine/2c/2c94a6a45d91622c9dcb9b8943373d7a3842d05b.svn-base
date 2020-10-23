@@ -1,0 +1,241 @@
+<template>
+  <div v-loading='loading'>
+    <div>
+      <el-button size="small" type="primary" @click="handleNew" class="m-bottom-sm">新增</el-button>
+      <el-select size="small" v-model="pageData.ShopId" placeholder="请选择店铺"  class="m-bottom-sm">
+        <el-option label="请选择店铺" value></el-option>
+        <el-option v-for="item in shopList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+      </el-select>
+      <el-select size="small" v-model="pageData.ItemId" placeholder="请选择支出项目"  class="m-bottom-sm">
+        <el-option label="请选择支出项目" value></el-option>
+        <el-option v-for="item in paymentList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+      </el-select>
+      <el-select size="small" v-model="pageData.PayTypeId" placeholder="请选择付款方式"  class="m-bottom-sm">
+        <el-option label="请选择付款方式" value></el-option>
+        <el-option v-for="item in paywayList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+      </el-select>
+      <el-date-picker
+        v-model="dateBE"
+        type="daterange"
+        size="small"
+        value-format="timestamp"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期" class="m-bottom-sm"
+      ></el-date-picker>
+      <el-button size="small" type="primary" @click="getNewData(1)" class="m-bottom-sm">查 询</el-button>
+    </div>
+    <!-- 列表 -->
+    <el-table
+      border
+      :data="dataList"
+      v-loading="loading"
+      min-height="500"
+      header-row-class-name="bg-theme text-white"
+      style="width: 100%;"
+    >
+      <el-table-column prop="ITEMNAME" label="支出项目"></el-table-column>
+      <el-table-column prop="EXPENDMONEY" label="支出金额"></el-table-column>
+      <el-table-column prop="DATESTR" label="支出时间"></el-table-column>
+      <el-table-column prop="EMPNAME" label="经手人"></el-table-column>
+      <el-table-column prop="PAYTYPENAME" label="付款方式"></el-table-column>
+      <el-table-column prop="REMARK" label="备注"></el-table-column>
+
+      <!-- <el-table-column prop="ISCANCEL" label="状态" :formatter="formatStatus"></el-table-column> -->
+      <el-table-column label="操作" width="70" fixed="right">
+        <template slot-scope="scope">
+          <el-button-group>
+            <el-button size="small" @click="handleCancel(scope.$index, scope.row)">删除</el-button>
+          </el-button-group>
+          <div class="hide">{{scope.row}}</div>
+        </template>
+      </el-table-column>
+    </el-table>
+    <!-- 分页 -->
+    <div v-show="dataList.length>0" class="m-top-sm clearfix elpagination">
+      <el-pagination
+        @size-change="handlePageChange"
+        @current-change="handlePageChange"
+        :current-page.sync="pagination.PN"
+        :page-size="pagination.PageSize"
+        layout="prev, pager, next, jumper"
+        :total="pagination.TotalNumber"
+        class="text-center"
+      ></el-pagination>
+      <div class="text-center clearfix">
+        <span class="inline-block">共{{pagination.TotalNumber}}条，每页{{pagination.PageSize}}条</span>
+      </div>
+    </div>
+    <!-- item -->
+    <el-dialog
+      :title="dealType=='add'?'新增'+title:'编辑'+title"
+      :visible.sync="showItem"
+      width="600px"
+      style="max-width:100%"
+    >
+      <itemPage
+        @closeModal="showItem=false"
+        @resetList="showItem=false;getNewData(1)"
+        :dealType="{type:dealType,state:showItem}"
+      ></itemPage>
+    </el-dialog>
+  </div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import dayjs from 'dayjs'
+export default {
+  data() {
+    return {
+      obj: "",
+      title: "费用支出",
+      dealType: "add",
+      loading: false,
+      loadingShop: false,
+      loadingItem: false,
+      showItem: false,
+      pagination: {
+        TotalNumber: 0,
+        PageNumber: 0,
+        PageSize: 20,
+        PN: 0
+      },
+      pageData: {
+        ShopId: "",
+        BeginDate: "",
+        EndDate: "",
+        PayTypeId: "",
+        ItemId: "",
+        PN: 1
+      },
+      dateBE: [new Date(this.getCustomDay(-7)).getTime(), new Date().getTime()],
+      paywayList:[]
+    };
+  },
+  computed: {
+    ...mapGetters({
+      dataListState: "defrayListState",
+      dataList: "defrayList",
+      dataState: "defrayState",
+      shopList: "shopList",
+      paymentList: "paymentList",
+      paywayListState:'paywayListState',
+    })
+  },
+  watch: {
+    paywayListState(data){
+      for(var i in data.data.List){
+        if(data.data.List[i].NAME == '余额支付'){
+          data.data.List.splice(i, 1)
+        }
+      }
+      this.paywayList = data.data.List
+    },
+    dataListState(data) {
+      this.loading = false;
+      if (data.success) {
+        this.pagination = {
+          TotalNumber: data.paying.TotalNumber,
+          PageNumber: data.paying.PageNumber,
+          PageSize: data.paying.PageSize,
+          PN: data.paying.PN
+        };
+      }
+    },
+    dataState(data) {
+      this.loading = false;
+      this.$message({
+        message: data.message,
+        type: data.success ? "success" : "error"
+      });
+      if(data.success){
+        this.getNewData(1);
+      }
+    },
+  },
+  methods: {
+    // formatStatus: function(row, column) {
+    //   return row.ISSTOP ? "启用" : "作废";
+    // },
+    handlePageChange: function(currentPage) {
+      if (this.pageData.PN == currentPage || this.loading) {
+        return;
+      }
+      this.pageData.PN = parseInt(currentPage);
+      this.getNewData(0);
+    },
+    getNewData(type) {
+      let sendData = Object.assign({}, this.pageData);
+      sendData.BeginDate = dayjs(this.dateBE[0]).format('YYYY-MM-DD')
+      sendData.EndDate = dayjs(this.dateBE[1]).format('YYYY-MM-DD')
+      if (type == 1) {
+        sendData.PN = 1;
+      }
+      this.$store.dispatch("getDefrayList", sendData).then(() => {
+        this.loading = true;
+      });
+    },
+    handleNew() {
+      this.dealType = "add";
+      this.showItem = true;
+    },
+    handleEdit(index, row) {},
+    handleCancel(index, row) {
+      if (!this.isPurViewFun(601050207)) {
+          this.$notify({
+            title: "警告",
+            message: "没有权限",
+            type: "warning"
+          });
+          return;
+        }
+
+      this.$confirm("作废: " + row.ITEMNAME + ", 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$store
+            .dispatch("cancelDefray", {
+              type: "del",
+              BILLID: row.BILLID
+            })
+            .then(() => {
+              this.loading = false;
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消作废"
+          });
+        });
+    },
+    defaultData() {
+      if (this.shopList.length == 0) {
+        this.$store.dispatch("getShopList");
+      }
+      if (this.paymentList.length == 0) {
+        this.$store.dispatch("getPaymentList", {});
+      }
+      if (this.paywayList.length == 0) {
+        this.$store.dispatch("getPaywayList");
+      }
+
+      if (this.dataList.length == 0) {
+        this.getNewData(1);
+      }
+      this.pageData.ShopId = getHomeData().shop.ID;
+    }
+  },
+  mounted() {
+    this.defaultData();
+  },
+  components: {
+    itemPage: () => import("./item.vue")
+  }
+};
+</script>
+

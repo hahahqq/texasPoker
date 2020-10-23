@@ -1,0 +1,51 @@
+<template>
+   <div>
+      <el-table  size='small' :data="tableData" style="width: 100%;" :height='tableHeight' header-row-class-name="bg-F1F2F3">
+         <el-table-column prop="" label="赛事名称"></el-table-column>
+         <el-table-column prop="" label="比赛类型"></el-table-column>
+         <el-table-column prop="" label="报名积分"></el-table-column>
+         <el-table-column prop="" label="开赛时间"></el-table-column>
+         <el-table-column prop="" label="报名时间"></el-table-column>
+         <el-table-column prop="" label="核销时间"></el-table-column>
+         <el-table-column prop="" label="核销券码"></el-table-column>
+         <el-table-column prop="" label="会员名"></el-table-column>
+         <el-table-column prop="" label="卡号"></el-table-column>
+         <el-table-column prop="" label="手机号"></el-table-column>
+         <el-table-column prop="" label="状态"></el-table-column>
+         <el-table-column prop="" label="操作">
+            <template slot-scope="scope">
+               <el-button @click="printFun(scope.row)">打印</el-button>
+            </template>
+         </el-table-column>
+      </el-table>
+   </div>
+</template>
+
+
+<script>
+let _ = require("lodash");
+import Vue from "vue";
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import MIXINS_GAME from "@/mixins/game.js";
+
+
+export default {
+   mixins: [ MIXINS_GAME.GAME_MENU ],
+    data(){
+        return {
+            height:window.innerHeight -70,
+            tableHeight: document.body.clientHeight - 280,
+            tableData: []
+        }
+    },
+    methods: {
+       printFun(row){
+
+       }
+    },
+    components: {
+        headerPage: () => import("@/components/header"),
+    },
+}
+</script>

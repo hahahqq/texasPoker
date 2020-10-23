@@ -1,0 +1,641 @@
+<template>
+<el-container>
+  <el-container>
+    <el-aside width="100px">
+        <section style="min-width:100px;">
+        <sidebarMenu :activePath="activePath" :routesList="routesList" :width="100"></sidebarMenu>
+        </section>
+    </el-aside>
+    <el-container>
+                <div class="search_sock">
+                    <el-row>
+                        <el-col :span="16" class="member-header">
+                            <div class="add-member">
+                                营业查询
+                            </div>
+                        </el-col>
+                        <el-col :span="8" class="shop">
+                            <span class="name">{{shopInfo.SHOPNAME}}</span>
+                            <span class="">
+                                <el-popover placement="bottom" width="140" trigger="hover" popper-class="no-padding">
+                                    <el-button style="border: none!important;"  @click="changeShop()" class="full-width" icon='icon-exchange'>&nbsp;&nbsp;切换店铺</el-button>
+                                    <el-button style="border: none!important;"  class="full-width no-m-left border-top" icon='icon-user'>&nbsp;&nbsp; 账号信息</el-button>
+                                    <el-button style="border: none!important;"  @click="logout()" class="full-width no-m-left border-top" icon='icon-signout'>&nbsp;&nbsp;退出账号</el-button>
+                                    <a slot="reference" class="hitem">
+                                        <i class='icon-reorder'></i>
+                                    </a>
+                                </el-popover>
+                            </span>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div class="content-new-fex">
+                    <div class="content-bigty">
+                        <div class="content-center">
+                            <div class="content-center-btb">
+                                <div class="xdtime">
+                                    <span>下单时间</span>
+                                    <el-date-picker size="small"
+                                        v-model="dateBE"
+                                        @change="chooseDate2"
+                                        type="daterange"
+                                        value-format="timestamp"
+                                        range-separator="至"
+                                        start-placeholder="开始日期"
+                                        end-placeholder="结束日期"
+                                        class="m-left-sm"
+                                    ></el-date-picker>
+                                    <el-radio-group v-model="radio1" size="small" @change="changeTime" class="raButtom">
+                                    <el-radio-button label="1">今天</el-radio-button>
+                                    <el-radio-button label="2">近3天</el-radio-button>
+                                    <el-radio-button label="3">近7天</el-radio-button>
+                                    </el-radio-group>
+                                </div>
+                            </div>
+                            <div class="top-input">
+                                <div class="top-input-conts">
+                                    <div>
+                                        <span>单据类型&nbsp;&nbsp;&nbsp;</span>
+                                        <el-select v-model="value1" placeholder="请选择" size="small" style="width:200px">
+                                            <el-option
+                                            v-for="item in options1"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                            </el-option>
+                                        </el-select>
+                                    </div>
+                                    <div style="margin-left:20px;">
+                                        <span>单据状态&nbsp;&nbsp;&nbsp;</span>
+                                        <el-select v-model="value" placeholder="请选择" size="small" style="width:200px">
+                                            <el-option
+                                            v-for="item in options"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                            </el-option>
+                                        </el-select>
+                                    </div>
+                                    <div style="margin-left:20px;">
+                                        <span>订单单号&nbsp;&nbsp;&nbsp; </span>
+                                        <el-input size="small" style="width:200px" v-model="Filter"></el-input>
+                                    </div>
+                                    <div style="margin-left:20px;">
+                                        <el-button size="small" @click="searchChange">搜索</el-button>
+                                    </div>
+                                    <div style="margin-left:60px;">
+                                        <el-button
+                                            type="primary"
+                                            size="small"
+                                            class="m-left-sm"
+                                            plain
+                                        @click="deriveChange" v-loading="loadingst"
+                                        >
+                                            <i class="el-icon-upload el-icon--right"></i> 导出表格
+                                        </el-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-table3">
+                        <div class="content-table-center">
+                            <div :style="{height:tableHeight+'px'}" style="overflow: auto; width: 100%;" v-loading="loading" element-loading-text="拼命加载中">
+                                <table class='tableStock' border='0' cellspacing='0' cellpadding='10' width='100%' style="height:auto">
+                                    <thead>
+                                    <tr>
+                                        <th align='center' style='width:140px' v-for="(items,index) in name" :key="index">{{items}}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody v-for='(items, index) in moneyName' :key='index'>
+                                        <tr style="height:15px;"></tr>
+                                        <tr class="title-dan">
+                                            <td colspan="10">
+                                                <span style="margin-left:20px;">{{items.DATESTR}}</span>
+                                                <span style="margin-left:10px;">单号 ：{{items.BILLNO}}</span>
+                                                <span style="margin-left:10px;">{{items.BILLTYPE}}</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-for='(item, index) in  items.List' :key='index'>
+                                            <td style='padding:0 4px;width:500px'>
+                                            <el-row>
+                                                    <el-col :span="8" class="imggood">
+                                                        <img
+                                                        :src="`${GOODS_IMGURL}${item.GOODSID}.png`"
+                                                        width="55"
+                                                        height="55"
+                                                        onerror="this.src='static/images/shopmore.png'"
+                                                        />
+                                                    </el-col>
+                                                    <el-col :span="14" class="imggood1">{{item.GOODSNAME}}</el-col>
+                                            </el-row>
+                                            </td>
+                                            <td align='center' style='padding:0 4px;width:200px'>{{item.PRICE}}</td>
+                                            <td align='center' style='padding:0 4px;width:200px'>x{{item.QTY}}</td>
+                                            <td align='center' style='padding:0 4px;width:200px' v-if="index == 0" :rowspan="items.List.length">{{item.SALEEMPNAME}}</td>
+                                            <td align='center' style='padding:0 4px;width:200px' v-if="index == 0" :rowspan="items.List.length">{{item.VIPNAME}}</td>
+
+                                            <td align='center' style='padding:0 4px;width:200px' v-if="index == 0" :rowspan="items.List.length">{{item.PAYMONEY}}</td>
+                                            <td align='center' style='padding:0 4px;width:200px' v-if="index == 0" :rowspan="items.List.length">{{item.SHOPNAME}}</td>
+                                            <td align='center' style='padding:0 4px;width:200px' v-if="index == 0" :rowspan="items.List.length">{{items.ISCANCEL == false ? '已完成' : '已作废'}}</td>
+                                            <td align='center' style='padding:0 4px; width:300px' v-if="index == 0" :rowspan="items.List.length">{{items.REMARK}}</td>
+                                            <td align='center' style='padding:0 4px; width:70px;color:#2589FF;  cursor:pointer' v-if='index == 0' rowspan="40" @click="detailedPage(items)">详情</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div v-show="moneyName.length>0" class="m-top-smts clearfix elpagination">
+                                <el-pagination
+                                    @size-change="handlePageChange"
+                                    @current-change="handlePageChange"
+                                    :current-page.sync="pagination.PN"
+                                    :page-size="pagination.PageSize"
+                                    layout="total,prev, pager, next, jumper"
+                                    :total="pagination.TotalNumber"
+                                    class="text-right"
+                                ></el-pagination>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <el-dialog
+                :title="title"
+                :visible.sync="dialogVisible"
+                width="70%"
+                >
+                <detailedPage @closeModal="dialogVisible=false; getNewData()" :billGoods="{'data':billGoods}" ></detailedPage>
+            </el-dialog>
+            <el-dialog title="请选择门店" :visible.sync="isShowShop" width="300px" :before-close="handleClose">
+                <div class='shopListClass'>
+                    <ul>
+                        <li v-for='(item, index) in theshopList' :key="index" @click="setShop(item)">
+                            {{item.SHOPNAME}}
+                        </li>
+                    </ul>
+                </div>
+            </el-dialog>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+import {getHomeData, getUserInfo } from '@/api/index'
+import MIXINS_MONEY from "@/mixins/money";
+import { GOODS_IMGURL } from "@/util/define";
+import { mapState, mapGetters } from "vuex";
+import MIXINS_CLEAR from "@/mixins/clearAllData";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+import dayjs from 'dayjs'
+export default {
+    mixins: [MIXINS_MONEY.MONEY_MENU,MIXINS_CLEAR.LOGOUT,MIXNINS_EXPORT.TOEXCEL, MIXNINS_EXPORT.TODATA],
+    data() {
+        return {
+        dialogVisible:false,
+        billGoods:{},
+        GOODS_IMGURL:GOODS_IMGURL,
+        title:"",
+        Filter:"",
+        dateBE: [
+                new Date(this.getCustomDay(-30)).getTime(),
+                new Date().getTime()
+            ],
+        ruleFrom: {
+            ShopId: "",
+            BeginDate: "1",
+            EndDate: "9999999999999"
+        },
+        getgoodsIMGURL: "",
+        chooseDateIdx: 0,
+        moneyName:[],
+        name:["商品","单价","数量","销售员","会员","金额","店铺","状态","备注","操作"],
+        radio1:"今天",
+        pagination: {
+            TotalNumber: 0,
+            PageNumber: 0,
+            PageSize: 20,
+            PN: 0
+        },
+        loading: false,
+        options: [{
+          value: '-1',
+          label: '全部'
+        }, {
+          value: '0',
+          label: '已完成'
+        }, {
+          value: '1',
+          label: '已作废'
+        }],
+        value: '',
+        options1: [{
+          value: '-1',
+          label: '全部'
+        }, {
+          value: '0',
+          label: '快速'
+        }, {
+          value: '1',
+          label: '商品'
+        }, {
+          value: '3',
+          label: '次卡'
+        }, {
+          value: '5',
+          label: '兑换'
+        }, {
+          value: '6',
+          label: '储值'
+        }, {
+          value: '7',
+          label: '计次充值'
+        }],
+        value1: '',
+        shopInfo: getHomeData().shop,
+        isShowShop:false,
+        theshopList: [],
+        activePath: "",
+        shopName:getUserInfo().CompanyName,
+        tableHeight:document.body.clientHeight-300,
+        loadingst:false,
+        }
+    },
+    computed: {
+        ...mapGetters({
+            businesstable:"businesstable",
+            businesstableState:"businesstableState",
+            shopList: "shopList",
+            shopListState:'shopListState',
+            exportBusinessDerive:'exportBusinessDerive',
+        })
+    },
+    watch:{
+        businesstable(data){
+           let newArr = []
+           for(var i in data){
+               newArr.push(data[i])
+           }
+            const masterArr = [...new Set(newArr.map((e) => e.BILLDATE))].map(a => ({
+                BILLDATE: a,
+                BILLTYPE: newArr.find(item => item.BILLDATE === a).BILLTYPE,
+                BILLID: newArr.find(item => item.BILLDATE === a).BILLID,
+                BILLNO: newArr.find(item => item.BILLDATE === a).BILLNO,
+                DATESTR:newArr.find(item => item.BILLDATE === a).DATESTR,
+                PAYMONEY:newArr.find(item => item.BILLDATE === a).PAYMONEY,
+                ISCANCEL:newArr.find(item => item.BILLDATE === a).ISCANCEL,
+                REMARK:newArr.find(item => item.BILLDATE === a).REMARK,
+                List: newArr.filter(item => item.BILLTYPE == undefined && item.BILLDATE === a)
+            }));
+            this.loading= false
+            this.moneyName=masterArr;
+            console.log("列表数据",masterArr )
+        },
+        businesstableState(data){
+            this.pagination = {
+            TotalNumber: data.TotalNumber,
+            PageNumber: data.PageNumber,
+            PageSize: data.PageSize,
+            PN: data.PN
+            };
+        },
+        exportBusinessDerive(data){
+           let newArr = []
+           for(var i in data){
+               newArr.push(data[i])
+           }
+            console.log('导出数',newArr)
+            this.exportExcel(newArr);
+            this.loadingst=false;
+        }
+
+    },
+    methods:{
+        deriveChange(){
+            console.log("营业查询导出")
+            this.loadingst=true;
+            this.ruleFrom.BeginDate=this.dateBE[0]
+            this.ruleFrom.EndDate=this.dateBE[1]
+          this.$store
+              .dispatch("getExportBusinessTableData", {
+                    BillType:this.value1,
+                    Status:this.value,
+                    Filter:this.Filter,
+                    BeginDate:this.ruleFrom.BeginDate,
+                    EndDate:this.ruleFrom.EndDate,
+              })
+              .then(() => {
+                  this.exportLoading = true;
+              });
+
+        },
+      exportExcel(arr) {
+          // 导出到excel
+          var list = [...arr];
+          for(var i in list){
+            if(list[i].ISCANCEL==true){
+              list[i].ISCANCEL='已作废'
+            }else{
+              list[i].ISCANCEL='已完成'
+            }
+          }
+          var head = [
+              "日期",
+              "单号",
+              "店铺",
+              "销售类型",
+              "商品",
+              "单价",
+              "数量",
+              "金额",
+              "销售员",
+              "制单位",
+              "会员",
+              "状态",
+              "备注",
+          ];
+          var val = [
+              "DATESTR",
+              "BILLNO",
+              "SHOPNAME",
+              "BILLTYPE",
+              "GOODSNAME",
+              "PRICE",
+              "QTY",
+              "PAYMONEY",
+              "SALEEMPNAME",
+              "USERNAME",
+              "VIPNAME",
+              "ISCANCEL",
+              "REMARK"
+          ];
+          var title = "营业查询" + this.getNowDateTime();
+          this.export2Excel(head, val, list, title);
+      },
+        handleClose(done) {
+            this.isShowShop = false;
+        },
+        logout: function() { //退出登录
+            var _this = this;
+            this.$confirm("确认退出吗?", "提示").then(() => {
+                _this.$store.dispatch("toLogOut").then(() => {
+                    _this.clearAllData();
+                    _this.$router.push("/login");
+                })
+            }).catch(() => {
+                console.log("logout");
+            })
+        },
+        setShop(item) { //切换店铺
+            this.$store.dispatch("choosingShop", item).then(() => {
+                this.isShowShop = false;
+                this.clearAllData();
+                this.defaultData();
+                console.log("11111111111111111111111")
+                this.$router.push({
+                    path: "/home"
+                })
+            })
+        },
+        defaultData() {
+            let homeData = getHomeData();
+            if (homeData.shop) {
+                this.shopInfo = Object.assign({}, homeData.shop);
+            }
+            this.UserName = getUserInfo().UserName;
+            if (this.shopList.length == 0) {
+                this.$store.dispatch("getShopList")
+            }
+        },
+        changeShop() {
+            let userInfo = getUserInfo();
+            if (userInfo.CODE2 == "boss") {
+                this.theshopList = [...this.shopList];
+            } else {
+                this.theshopList = [];
+                for (let i = 0; i < userInfo.ShopList.length; i++) {
+                    if (userInfo.ShopList[i].ISPURVIEW == 1) {
+                    this.theshopList.push({
+                        ID : userInfo.ShopList[i].SHOPID,
+                        NAME : userInfo.ShopList[i].SHOPNAME
+                    });
+                    }
+                }
+            }
+            this.isShowShop = true;
+        },
+        detailedPage(e){
+            console.log("详细数据",e)
+            this.billGoods=e;
+            this.title=e.BILLTYPE,
+            this.dialogVisible=true;
+            let setDate
+            if(e.BILLTYPE=="商品消费"){
+                setDate={
+                    i:1,
+                    BILLID:e.BILLID
+                }
+            }else if(e.BILLTYPE=="快速消费"){
+                setDate={
+                    i:2,
+                    BILLID:e.BILLID
+                }
+            }else if(e.BILLTYPE=="计次消费"){
+                setDate={
+                    i:3,
+                    BILLID:e.BILLID
+                }
+            }else if(e.BILLTYPE=="储值充值"){
+                setDate={
+                    i:4,
+                    BILLID:e.BILLID
+                }
+            }else if(e.BILLTYPE=="计次充值"){
+                setDate={
+                    i:5,
+                    BILLID:e.BILLID
+                }
+            }
+            this.$store.dispatch("getBusinesstableDetailed", setDate).then(() => {
+            });
+        },
+
+        handlePageChange: function(currentPage) {
+        this.pagination.PN = parseInt(currentPage);
+        this.getNewData();
+        },
+        changeTime(data){
+            console.log(data)
+            if(data==1){
+                this.dateBE=[
+                    new Date().getTime(),
+                    new Date().getTime()
+                ]
+            }else if(data==2){
+                this.dateBE=[
+                    new Date(this.getCustomDay(-3)).getTime(),
+                    new Date().getTime()
+                ]
+            }else if(data==3){
+                this.dateBE=[
+                    new Date(this.getCustomDay(-7)).getTime(),
+                    new Date().getTime()
+                ]
+            }
+            this.getNewData();
+
+        },
+        chooseDate2(v) {
+            this.ruleFrom.BeginDate = v[0];
+            this.ruleFrom.EndDate = v[1];
+            this.getNewData();
+        },
+        getNewData(data) {
+        // 当前数据
+        let setDate = Object.assign({},{
+            date:this.dateBE,
+            BillType:this.value1,
+            Status:this.value,
+            Filter:this.Filter,
+            pagination:this.pagination
+        })
+            this.$store.dispatch("getBusinesstable", setDate).then(() => {
+            this.loading = true;
+            });
+        },
+        searchChange(){
+        this.getNewData();
+        }
+    },
+    mounted() {
+        this.getNewData();
+    },
+    components: {
+        detailedPage: () => import("./businessDetailed")
+    },
+    created: function() {
+        this.defaultData();
+    },
+
+}
+</script>
+<style scoped>
+.businesstable-top{
+    height: 130px;
+    /* width: 99%; */
+    background: #fff;
+    border-radius: 5px;
+    border: solid 1px #E2E2E4;
+    /* margin-top: 20px; */
+}
+.businesstable-time{
+    height: 40px;
+    width: 100%;
+    line-height: 40px;
+    margin-top: 10px;
+    margin-left: 20px;
+}
+.raButtom{
+    margin-top: -4.9px;
+}
+.title-dan{
+    background: #F8F8F8;
+    width: 100%;
+    height: 30px;
+    margin-top: 20px;
+}
+.tableStock{
+  height:400px;border:1px solid #EBEEF5; border-right:0; border-bottom:0;
+}
+ .tableStock thead{
+    background:#F8F8F8; color:#4E4E4E; height:36px; line-height:36px;
+  }
+.tableStock thead tr th{
+    border-right:1px solid #EBEEF5;
+     }
+.tableStock   tbody tr{
+
+    height: 36px; line-height: 36px;
+
+  }
+  .tableStock tbody td{
+      border-bottom: solid 0.5px #f2f2f2;
+      border-right: solid 0.5px #f2f2f2;
+  }
+  .businesstable-table{
+      margin-top: 5px;
+      width: 99%;
+      background: #fff;
+  }
+  .businesstable-table-cont{
+      margin-top: 15px;
+      width: 98%;
+      margin-left: 1%;
+      margin-right: 1%;
+  }
+  .imggood{
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+    .imggood1{
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    }
+.search_sock{
+    height: 50px;
+    line-height: 50px;
+    background: #fff;
+    width: 100%;
+    /* border-left: solid 1px #EBEDF0; */
+    border-bottom: solid 1px #EBEDF0;
+}
+.add-member{
+    padding-left: 20px;
+}
+.shop{
+  line-height: 50px;
+  height: 50px;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #EBEDF0;
+  background: #fff;
+}
+.shop .name{
+    margin-right: 8px;
+}
+.icon-reorder{
+    color: #2589FF;
+    cursor: pointer;
+}
+.content-center-btb{
+    display: flex;
+    height: 60px;
+    width: 100%;
+    align-items: center;
+}
+.content-center-btb .xdtime{
+    padding-top: 7px;
+}
+  .top-input-conts{
+      display: flex;
+      /* width: 60%; */
+      padding-bottom: 7px;
+  }
+.top-input{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 60px;
+}
+.top-input .bottom{
+   text-align:right;
+   color:#409EFF;
+   width:40%;
+   padding-bottom: 7px;
+}
+.top-input-list{
+    margin-left: 30px;
+}
+</style>

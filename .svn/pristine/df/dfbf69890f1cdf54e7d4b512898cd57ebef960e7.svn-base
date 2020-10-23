@@ -1,0 +1,89 @@
+<template>
+   <el-container>
+      <div class="content-new-fex">
+         <div class="content-eighty">
+            <div class="content-center">
+            <filtePage @getNewData="getNewData" :isAll="true"></filtePage>
+            </div>
+         </div>
+
+         <div class="content-table4">
+            <div class="content-table-center">
+
+
+            </div>
+         </div>
+      </div>
+   </el-container>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs';
+export default {
+   data() {
+      return {
+         activeName: "first",
+         ruleFrom: {
+            ShopId: "",
+            BeginDate: "1",
+            EndDate: "9999999999999"
+         },
+         bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE
+      }
+   },
+   computed: {
+        ...mapGetters({
+
+        })
+   },
+   watch: {
+
+   },
+   methods: {
+      getNewData(data) {
+         let shopList = data.ShopId.split(',')
+         let str = '', id = ''
+         for(let i in shopList){
+            str += "'"+shopList[i] + "',"
+         }
+         if(str.length>0){  //去掉最后一个逗号
+            str=str.substring(0,str.length-1)
+         }
+         data.ShopIdList = str
+
+         console.log(data)
+         this.ruleFrom = data
+      },
+   },
+   mounted(){
+         let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));
+         let curMonth = Number(dayjs().month())+1;
+         let todayDate = dayjs(new Date().getTime());
+         let nowHourMius = todayDate.format('HH:mm');
+         let yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+         let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+         let beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate;
+
+         let beginTime = beginFormat + " " + this.bussinessTime+':00' ;
+         let endTime = todayDate.format('YYYY-MM-DD HH:mm');
+
+         let firstDate = new Date(beginTime).getTime();
+         let lastDate = new Date(endTime).getTime();
+         this.ruleFrom = {
+            ShopId: getHomeData().shop.ID,
+            BeginDate: firstDate,
+            EndDate: lastDate
+         };
+      // this.$store.dispatch("getparameterstate", {});
+   },
+   components: {
+      filtePage: () => import("@/views/member/vipFilterPage"),
+   },
+   created(){
+      this.ruleFrom = Object.assign({}, {ShopId:this.theShopId});
+   },
+}
+</script>

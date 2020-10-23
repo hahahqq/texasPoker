@@ -1,0 +1,252 @@
+<template>
+	<!-- 商品分析 -->
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+				<div class="p-top-sm">
+					<el-select
+						size="small"
+						v-model="formData.OrderType"
+						placeholder="请选择"
+						@change="changeFun"
+						style="width: 136px"
+					>
+						<el-option
+							v-for="(v, i) in ['金额', '数量']"
+							:key="i"
+							:label="v"
+							:value="i"
+						></el-option>
+					</el-select>
+					<el-select
+						size="small"
+						v-model="formData.GoodsMode"
+						placeholder="请选择"
+						@change="changeFun"
+						style="width: 136px"
+					>
+						<el-option label="全部" :value="-1"></el-option>
+						<el-option label="服务" :value="0"></el-option>
+						<el-option label="商品" :value="1"></el-option>
+					</el-select>
+					<el-input
+						placeholder="请输入内容"
+						size="small"
+						v-model="formData.Filter"
+						clearable
+						style="width: 401px"
+					>
+						<template slot="append">
+							<el-button size="small" type="primary" @click="getNewData">
+								搜索
+							</el-button>
+						</template>
+					</el-input>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm paddingTB-sm">
+			<div class="marginLR-md">
+				<div
+					v-for="(item, i) in pageList"
+					:key="i"
+					class="inline-block border padding-sm marginTB-sm m-right-sm"
+					style="min-width: 150px"
+				>
+					<p>{{ item.label }}</p>
+					<div class="font-16 font-600">{{ item.value }}</div>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm- paddingTB-md">
+			<div class="marginLR-md">
+				<!-- table-->
+				<el-table
+					border
+					:data="tableList"
+					header-row-class-name="bg-F1F2F3"
+					class="full-width"
+				>
+					<el-table-column prop="GOODNAME" label="商品"></el-table-column>
+					<el-table-column prop="QTY" label="数量"></el-table-column>
+					<el-table-column prop="MONEY" label="金额"></el-table-column>
+					<el-table-column prop="GAINMONEY" label="毛利润"></el-table-column>
+					<el-table-column label="占比">
+						<template slot-scope="props">
+							<el-progress
+								:text-inside="true"
+								:stroke-width="18"
+								:percentage="
+									props.row.FRATE > 0
+										? props.row.FRATE < 1
+											? props.row.FRATE * 100
+											: 100
+										: 0
+								"
+								:color="getColor(props.row.FRATE * 100)"
+							></el-progress>
+						</template>
+					</el-table-column>
+					<el-table-column label="更多" width="80">
+						<template slot-scope="props">
+							<el-button
+								type="text"
+								@click="getItemData(props.row)"
+								class="no-padding"
+							>
+								详情
+							</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</div>
+		</div>
+		<!-- 详情 -->
+		<el-dialog title="商品分析详情" :visible.sync="itemData.show" width="980px">
+			<itemPage @closeModal="closeModalFun" :typeData="itemData"></itemPage>
+		</el-dialog>
+		<!-- 数据导出 -->
+		<el-dialog
+			append-to-body
+			:close-on-click-modal="false"
+			:close-on-press-escape="false"
+			:show-close="false"
+			title="数据导出"
+			:visible.sync="exportData.show"
+			width="400px"
+		>
+			<exportPage
+				:dataType="exportData"
+				:isPage="true"
+				@closeModal="exportData.show = false"
+			></exportPage>
+		</el-dialog>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: {
+				ShopId: "",
+				BeginDate: "",
+				EndDate: "",
+				GoodsMode: -1,
+				Filter: "",
+				OrderType: 0
+			},
+			pageList: [
+				{ label: "销售数量", value: 0 },
+				{ label: "销售金额", value: 0 },
+				{ label: "销售毛利", value: 0 },
+				{ label: "毛利率", value: 0 }
+			],
+			tableList: [],
+			itemData: { show: false },
+			exportData: { show: false }
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataState: "actionsDataState",
+			dataListState: "commonListState"
+		})
+	},
+	watch: {
+		dataListState(data) {
+			if (this.loading) {
+				console.log(11, data);
+				if (data.success) {
+					// 合计信息 SumInfo;
+					// BILLCOUNT: 1;
+					// BILLPRICE: 20;
+					// GAINMONEY: 10;
+					// MONEY: 20;
+					// QTY: 1;
+					let m = data.data.SumInfo.GAINMONEY / data.data.SumInfo.BILLPRICE;
+					this.pageList[0].value = data.data.SumInfo.BILLCOUNT;
+					this.pageList[1].value = data.data.SumInfo.BILLPRICE;
+					this.pageList[2].value = data.data.SumInfo.GAINMONEY;
+					this.pageList[3].value = Math.round(m * 100) / 100;
+					this.tableList = data.List;
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({}, this.formData, data);
+			this.getNewData();
+		},
+		getNewData() {
+			this.loading = true;
+			indexQuery.goods(this, "goods", this.formData);
+		},
+		changeFun(v) {
+			this.getNewData();
+		},
+		getItemData(item) {
+			this.itemData = {
+				show: true,
+				data: Object.assign({ PN: 1, GoodsId: item.GOODSID }, this.formData)
+			};
+		},
+		closeModalFun(v) {
+			if (v) {
+				this.getNewData();
+			}
+			this.itemData.show = false;
+		},
+		getColor: function (v) {
+			if (v > 75) {
+				return "#67c23a";
+			} else if (v > 50) {
+				return "rgba(142, 113, 199, 0.7)";
+			} else if (v > 25) {
+				return "#409eff";
+			} else {
+				return "#f56c6c";
+			}
+		},
+		defaultData() {}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = Object.assign({}, this.formData, {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		});
+		this.getNewData();
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		echartLine: () => import("@/components/echart/echartLine.vue"),
+		itemPage: () => import("./item.vue"),
+		exportPage: () => import("@/components/export/common.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

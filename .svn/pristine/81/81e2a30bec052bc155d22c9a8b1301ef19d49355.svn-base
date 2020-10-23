@@ -1,0 +1,277 @@
+<template>
+    <div class="report row-flex flex-start">
+        <section style="min-width:130px;margin-left:-10px;">
+            <sidebarMenu :activePath="activePath" :routesList="routesList" :width="130"></sidebarMenu>
+        </section>
+        <section
+            class="bg-white paddingTB-sm paddingLR-md full-width"
+            v-loading="loading"
+        >
+            <filtePage @getNewData="getNewData" @exportState="exportState"></filtePage>
+            <!-- page -->
+            <div>
+                <div
+                    v-for="(item,i) in pageList"
+                    :key="i"
+                    class="inline-block m-right-md marginTB-sm padding-sm border"
+                    style="width:150px"
+                >
+                    <div>{{item.label}}</div>
+                    <div>
+                        <span v-text="dataData.info[item.value]?dataData.info[item.value]:0"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- table-->
+            <el-table
+                border
+                :data="tebleList"
+                header-row-class-name="bg-theme text-white"
+                class="full-width"
+            >
+                <el-table-column prop="BILLNO" label="单号" width="150"></el-table-column>
+                <el-table-column prop="DATESTR" label="日期" width="110"></el-table-column>
+                <el-table-column prop="SHOPNAME" label="门店"></el-table-column>
+                <el-table-column prop="VIPNAME" label="会员"></el-table-column>
+                <el-table-column prop="QTY" label="数量"></el-table-column>
+                <el-table-column prop="PAYMONEY" label="金额"></el-table-column>
+                <el-table-column prop="LONGGOODSNAME" label="详情"></el-table-column>
+                <el-table-column prop="PAYTYPENAME" label="支付方式"></el-table-column>
+                <el-table-column prop="REMARK" label="备注"></el-table-column>
+                <el-table-column label="更多" width="80">
+                    <template slot-scope="props">
+                        <el-button type="text" @click="getSaleItem(props.row)" class="no-padding">详情</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <!-- 分页 -->
+            <div v-show="tebleList.length>0" class="m-top-sm clearfix elpagination">
+                <el-pagination
+                    @size-change="handlePageChange"
+                    @current-change="handlePageChange"
+                    :current-page.sync="pagination.PN"
+                    :page-size="pagination.PageSize"
+                    layout="prev, pager, next, jumper"
+                    :total="pagination.TotalNumber"
+                    class="text-center"
+                ></el-pagination>
+                <div class="text-center clearfix">
+                    <span
+                        class="inline-block"
+                    >共{{pagination.TotalNumber}}条，每页{{pagination.PageSize}}条</span>
+                </div>
+            </div>
+        </section>
+        <el-dialog :title="title" :visible.sync="isShowList" width="90%" style="max-width:100%;">
+            <goodsItem @closeModal="isShowList=false" :pageState="isShowList" :isReport="false"></goodsItem>
+            <!-- <listPage
+                @closeModal="isShowList=false"
+                :dataType="{'data':ruleFrom2,'state':isShowList}"
+            >
+                <slot>
+                    <div
+                        v-for="(item,i) in pageList"
+                        :key="i"
+                        class="inline-block m-right-md marginTB-sm padding-sm border"
+                        style="width:150px"
+                    >
+                        <div>{{item.label}}</div>
+                        <div>
+                            <span
+                                v-text="dataListState.data&&dataListState.data.SumInfo[item.value]?dataListState.data.SumInfo[item.value]:0"
+                            ></span>
+                        </div>
+                    </div>
+                </slot>
+            </listPage>-->
+        </el-dialog>
+    </div>
+    <!-- 销售查询 -->
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXINS_INDEX.IS_SHOW_POPUP,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            pageList: [
+                { label: "销售总额", value: "MONEY" },
+                { label: "销售笔数", value: "BILLCOUNT" },
+                { label: "销售数量", value: "QTY" }
+            ],
+            tebleList: [],
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 0
+            },
+            pageData: { PN: 1 }
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataData: "saleInquiryData",
+            dataState: "saleInquiryState",
+            dataList: "saleInquiryList",
+            dataListState: "saleInquiryListState",
+            dataListArr: "saleInquiryListARR",
+            dataItem: "CCGoodsItem",
+            dataExportState: "saleInquiryListExportState", // 销售查询导出
+        })
+    },
+    watch: {
+        dataState(data) {
+            this.loading = false;
+            if (data.success) {
+                this.defaultData();
+            }
+        },
+        dataExportState(data) {
+            if (data.success) {
+                // 销售查询导出
+                this.exportList = [...data.data.List];
+                if (this.exportList.length > 0) {
+                    let list = [...this.exportList];
+                    let head = [
+                        "单号",
+                        "日期",
+                        "门店",
+                        "会员",
+                        "数量",
+                        "金额",
+                        "详情",
+                        "支付方式"
+                    ];
+                    let val = [
+                        "BILLNO",
+                        "DATESTR",
+                        "SHOPNAME",
+                        "VIPNAME",
+                        "QTY",
+                        "PAYMONEY",
+                        "LONGGOODSNAME",
+                        "PAYTYPENAME",
+                        "REMARK"
+                    ];
+                    let title = "销售查询" + this.getNowDateTime();
+
+                    this.export2Excel(head, val, list, title);
+                } else {
+                    this.$message({
+                        message: "数据不能为空",
+                        type: "error"
+                    });
+                }
+            } else {
+                this.exportList = [];
+                this.$message({
+                    message: "数据有误，导出失败",
+                    type: "error"
+                });
+            }
+            this.loading = false;
+        },
+        dataItem(data) {
+            if (data.success) {
+                this.isShowList = true;
+            }
+        }
+    },
+    methods: {
+        exportState(data) {
+            // 销售查询导出
+            this.$store
+                .dispatch("getsaleInquiryReportData_Export", this.ruleFrom)
+                .then(() => {
+                    this.loading = true;
+                });
+        },
+        getNewData(data) {
+            let sendData = Object.assign({}, data);
+            this.$store.dispatch("clearsaleInquiryList2").then(() => {
+                this.$store.dispatch("getsaleInquiryData", sendData);
+                this.loading = true;
+                this.ruleFrom = Object.assign({}, sendData);
+                this.pageData.PN = 1;
+            });
+        },
+        getSaleItem(item) {
+            this.$store
+                .dispatch("getCCGoodsItem", {
+                    ShopId: this.ruleFrom.ShopId,
+                    BillId: item.BILLID
+                })
+                .then(() => {
+                    this.title = "销售查询明细";
+                });
+        },
+        handlePageChange: function(currentPage) {
+            if (this.pageData.PN == currentPage || this.loading) {
+                return;
+            }
+            this.pageData.PN = parseInt(currentPage);
+            this.$store
+                .dispatch(
+                    "getsaleInquiryData",
+                    Object.assign({}, this.ruleFrom, this.pageData)
+                )
+                .then(() => {
+                    this.loading = true;
+                });
+        },
+        defaultData() {
+            this.tebleList = [...this.dataData.List];
+            this.pagination = {
+                TotalNumber: this.dataData.paying.TotalNumber,
+                PageNumber: this.dataData.paying.PageNumber,
+                PageSize: this.dataData.paying.PageSize,
+                PN: this.dataData.paying.PN
+            };
+            this.pageData.PN = this.dataData.paying.PN;
+        }
+    },
+    created() {
+        this.$store
+            .dispatch("getsaleInquiryData", {
+                ShopId: this.theShopId,
+                BeginDate: this.getTimeStamp(),
+                EndDate: new Date().getTime()
+            })
+            .then(() => {
+                this.loading = true;
+                 this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+            });
+    },
+    components: {
+        listPage: () => import("@/components/reports/management/tableList"),
+        goodsItem: () =>
+            import("@/components/consumptionCheckout/CCGoodsItem.vue")
+    }
+};
+</script>
+<style scoped>
+.active {
+    background: #fff;
+    border-color: #409eff;
+    color: #409eff;
+}
+</style>
+
+
+
+

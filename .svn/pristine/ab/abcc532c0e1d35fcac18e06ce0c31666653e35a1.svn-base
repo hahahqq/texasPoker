@@ -1,0 +1,21 @@
+<template>
+	<div>
+		<!-- <component :is="componentName"></component> -->
+		{{ $route.path }}
+	</div>
+</template>
+<script>
+import page1 from "./page1.vue";
+
+export default {
+	props: ["activePageIdx"],
+	data() {
+		return {
+			componentName: "page1"
+		};
+	},
+	components: {
+		page1
+	}
+};
+</script>

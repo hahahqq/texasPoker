@@ -1,0 +1,120 @@
+import { getUserInfo, getHomeData } from "@/api/index";
+
+// import { indexQuery } from "@/store/modules2/report/indexFun.js";
+// indexQuery.fun(this, "", sendData);
+
+const reportQuery = {
+   balance_integral: function(that, type = "rlist", data) {
+      // 会员余额查询_余额积分
+      if (!data.ShopId) {
+         that.$message.error("请选择店铺");
+         return;
+      }
+
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: "6010312",
+         CompanyId: homeInfo.shop.COMPANYID,
+         ShopId: data.ShopId,
+         VipFlag: data.VipFlag ? data.VipFlag : "", //会员标识: 空字符=不过滤 传会员标识='标识1','标识2'
+         LevelName: data.LevelName ? data.LevelName : "", //会员等级: 空字符=不过滤 传折扣名称='折扣1','折扣2'
+         PayCount: data.PayCount ? data.PayCount : "-1", // 消费次数: -1或0=不过滤 1=有过消费 其他的传数值
+         LossVip: data.LossVip ? data.LossVip : "-1", // 流失会员: -1或0=不过滤 传天数 0=今天 1=昨天
+         VipCode: data.VipCode ? data.VipCode : "",
+         PN: data.PN ? data.PN : 1
+      };
+      that.$store
+         .dispatch("getList", {
+            type: type,
+            sendData: sendData
+         })
+         .then(() => {
+            console.log("会员数=VipCount,合计余额=TotalMoney,合计积分=TotalIntegral");
+         });
+   },
+   balance_number: function(that, type = "rlist", data) {
+      // 会员余额查询_会员余次
+      if (!data.ShopId) {
+         that.$message.error("请选择店铺");
+         return;
+      }
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: "6010313",
+         CompanyId: homeInfo.shop.COMPANYID,
+         ShopId: data.ShopId,
+         VipFlag: data.VipFlag ? data.VipFlag : "", //会员标识: 空字符=不过滤 传会员标识='标识1','标识2'
+         LevelName: data.LevelName ? data.LevelName : "", //会员等级: 空字符=不过滤 传折扣名称='折扣1','折扣2'
+         PayCount: data.PayCount ? data.PayCount : "-1", // 消费次数: -1或0=不过滤 1=有过消费 其他的传数值
+         LossVip: data.LossVip ? data.LossVip : "-1", // 流失会员: -1或0=不过滤 传天数 0=今天 1=昨天
+         VipCode: data.VipCode ? data.VipCode : "",
+         PN: data.PN ? data.PN : 1,
+         GoodsName: data.GoodsName ? data.GoodsName : "", // 计次项目名称
+         isinvalid: data.isinvalid ? data.isinvalid : "-1" // 是否已过期: -1或0=全部 1=未过期  2=已过期
+      };
+      that.$store
+         .dispatch("getList", {
+            type: type,
+            sendData: sendData
+         })
+         .then(() => {
+            console.log("会员数=VipCount");
+         });
+   },
+
+   expend_item: function(that, type, data) {
+      // 支出分析详情
+      if (!data.ShopId) {
+         that.$message.error("请选择店铺");
+         return;
+      }
+      if (!data.id) {
+         that.$message.error("请选择支出项目");
+         return;
+      }
+      let userInfo = getUserInfo();
+      let sendData = {
+         InterfaceCode: "6010307_01",
+         CompanyId: userInfo.CompanyID,
+         ShopId: data.ShopId,
+         BeginDate: data.BeginDate ? data.BeginDate : 1,
+         EndDate: data.EndDate ? data.EndDate : 9999999999999,
+         ItemId: data.id, // 支出项目ID
+         PN: data.PN ? data.PN : 1
+      };
+      that.$store
+         .dispatch("getList", {
+            type: type,
+            sendData: sendData
+         })
+         .then(() => {
+            console.log();
+         });
+   },
+   employee_praise: function(that, type, data) {
+      // 员工排行-好评
+      if (!data.id) {
+         that.$message.error("请选择员工");
+         return;
+      }
+      let userInfo = getUserInfo();
+      let sendData = {
+         InterfaceCode: "60102100604",
+         Companyid: userInfo.CompanyID,
+         BeginDate: data.BeginDate ? data.BeginDate : 1,
+         EndDate: data.EndDate ? data.EndDate : 9999999999999,
+         Empid: data.id,
+         PN: data.PN ? data.PN : 1
+      };
+      that.$store
+         .dispatch("getList", {
+            type: type,
+            sendData: sendData
+         })
+         .then(() => {
+            console.log();
+         });
+   }
+};
+
+export { reportQuery };

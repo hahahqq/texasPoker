@@ -1,0 +1,901 @@
+<template>
+<el-container>
+  <el-container>
+    <el-aside width="100px">
+        <section style="min-width:100px;">
+        <sidebarMenu :activePath="activePath" :routesList="routesList" :width="100"></sidebarMenu>
+        </section>
+    </el-aside>
+    <el-container>
+        <div class="t-botton-timescountc" style="height:100%;" ref="elememtt">
+            <div class="f-botton-fs" style="height: 100%;">
+                <div style="position: absolute;top: 0px;bottom: 0px;left:100px;right:0px;">
+                   <el-row :gutter="24" style="height:100%;margin-right: 0px;margin-left: 0px;">
+                        <el-col
+                            :span="8"
+                            style="height: 100%;position: relative;padding-right: 0px;padding-left: 0px;background: rgb(248, 248, 249);"
+                        >
+                            <div class="commodityc-top">
+                                <span class="title">计次消费</span>
+                                <span class="commodityc-top-text" @click="clearData">清空页面</span>
+                            </div>
+                            <div style="padding-top:10px;padding-left:10px;padding-right:10px;">
+                                <dropdown @changeMemberIDnull="changeMemberIDnull" @getmemberID="getmemberID" :details="Object.keys(selmember).length>0?selmember:new Object()"></dropdown>
+                                <div class="timescountc_left overflowscroll" ref="addsockheight">
+                                    <ul id="addshopList" v-if="addobjCountList.length>0">
+                                        <li class="danpintr" v-for="(item,i) in addobjCountList" :key="i">
+                                            <el-row class="danpintr-top">
+                                                <el-col :span="12"><span style="margin-left:20px;">{{item.goodsname}}</span></el-col>
+                                                <el-col :span="12"  style="text-align:right"><i class="el-icon-delete" @click="deleteChange(i)"></i></el-col>
+                                            </el-row>
+                                            <el-row class="danpintr-bottom">
+                                                <el-col :span="12">
+                                                    <div v-if="item.isSelect==true"></div>
+                                                    <div v-else><span class="danpintr-bottom-degree">剩余次数:{{item.degree}}</span></div>
+
+                                                    </el-col>
+                                                <el-col :span="12" class="danpintr-bottom-qty">
+                                                    <div class="cateringProductNamebox text-center">
+                                                        <div class="sumchange">
+                                                            <el-input-number style="width:100px;" @click.native.stop @change="addjiajianhao1(i,item.Qty)" size="mini" v-model.number="item.Qty"></el-input-number>
+                                                        </div>
+                                                    </div>
+                                                    <span class="ci">x{{item.Qty}}</span>
+                                                </el-col>
+                                            </el-row>
+                                        </li>
+                                    </ul>
+                                    <div v-else class="show-goodImg">
+                                        <div>
+                                            <img :src="goodImg" class="goodImg">
+                                        </div>
+                                        <div class="goodImg-text">没有消费信息</div>
+                                    </div>
+                                </div>
+                                <div class="timescountc_left_footer" ref="footer">
+                                    <div v-show="showOptions">
+                                        <el-select class="g-public-multi-select" v-model="value" placeholder="请选择销售员" multiple style="width:100%">
+                                            <el-option
+                                            v-for="item in options"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                            </el-option>
+                                        </el-select>
+                                    </div>
+                                    <div v-show="showRarmark" style="margin-top:5px;">
+                                        <el-input
+                                            :rows="2"
+                                            v-model="Remark"
+                                            placeholder="请输入备注信息">
+                                        </el-input>
+                                    </div>
+                                    <div class="footer_top" style="margin: 12px 0;">
+                                    <el-row>
+                                        <el-col :span="12" style="text-align:center">
+                                            <el-checkbox v-model="checkedreceipt">打印小票</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="12" style="text-align:center">
+                                            <el-checkbox v-model="IsSms">短信通知</el-checkbox>
+                                        </el-col>
+                                    </el-row>
+                                    </div>
+                                    <div class="footer_top" style="margin: 6px 0;background-color: #fff;height:60px;line-height: 60px;">
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <div style="width:10px;height:10px;"></div>
+                                            </el-col>
+                                            <el-col :span="6">
+                                                <div style="width:10px;height:10px;"></div>
+                                            </el-col>
+                                            <el-col :span="6">
+                                                <el-button style="width:95%;" type="danger" @click="timescountsok" :loading="loading" size="medium">收款</el-button>
+                                            </el-col>
+                                        </el-row>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="16" style="padding-left:0px;padding-right: 0px;">
+                        <div class="commodity-right">
+                                <div class="search_sock">
+                                    <el-row>
+                                        <el-col :span="16" class="member-header">
+                                            <div style="padding-left:20px;">
+                                            会员余次清单
+                                            </div>
+                                        </el-col>
+                                        <el-col :span="8" class="shop">
+                                            <span class="name">{{shopInfo.SHOPNAME}}</span>
+                                            <span class="">
+                                                <el-popover placement="bottom" width="140" trigger="hover" popper-class="no-padding">
+                                                    <el-button style="border: none!important;"  @click="changeShop()" class="full-width" icon='icon-exchange'>&nbsp;&nbsp;切换店铺</el-button>
+                                                    <el-button style="border: none!important;"  class="full-width no-m-left border-top" icon='icon-user'>&nbsp;&nbsp; 账号信息</el-button>
+                                                    <el-button style="border: none!important;"  @click="logout()" class="full-width no-m-left border-top" icon='icon-signout'>&nbsp;&nbsp;退出账号</el-button>
+                                                    <a slot="reference" class="hitem">
+                                                        <i class='icon-reorder'></i>
+                                                    </a>
+                                                </el-popover>
+                                            </span>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                                <div class="commodity-right-good-list">
+                                    <div class="commodityc_rightsock">
+                                        <div class="tablelist scrollstyle font-12">
+                                            <el-row :gutter="20" class="timescountc_right">
+                                                <el-col
+                                                    :span="8"
+                                                    style="margin-bottom:10px;"
+                                                    v-for="(item,i) in objCount"
+                                                    :key="i"
+                                                >
+                                                    <div class="tablelcenter" @click="addobjcountsum(item)">
+                                                            <div class="img-box">
+                                                            <div class="img">
+                                                            <div>
+                                                                <img :src="item.showgoodsimg" onerror="this.src='static/images/shopzj.png'" style="width:60px;height:60px;">
+                                                            </div>
+                                                            <div style="margin-left:7px;">
+                                                                <div style="height:30px;line-height:35px;width:190px;">
+                                                                <el-row>
+                                                                    <el-col :span="13"><div style="height:30px;width:110px;line-height:35px;text-overflow: ellipsis;overflow:hidden;white-space:nowrap;">{{item.GOODSNAME}}</div></el-col>
+                                                                    <el-col :span="10" style="text-align:right">
+                                                                        <div v-if="item.isSelect==true"><div class="titlename-time-shiduan">时段卡</div> </div>
+                                                                        <div v-else>剩余 <span class="titlename-time-ci">{{item.CALCCOUNT}}</span> 次</div>
+                                                                    </el-col>
+                                                                </el-row>
+
+                                                                </div>
+                                                                <div style="height:30px;width:190px;line-height:25px;">
+                                                                    <el-row>
+                                                                        <div v-if="item.isSelect==true">
+                                                                            <el-col style="text-align:left">
+                                                                                <span style="font-size:8px;">{{item.BEGINDATE}}</span> - <span style="font-size:8px;">{{item.INVALIDDATE}}</span>
+                                                                            </el-col>
+                                                                        </div>
+                                                                        <div v-else>
+                                                                            <el-col :span="6">
+                                                                                <span class="font-600 text-theme2" style="width:60%;">
+                                                                                    <span>&yen;{{item.DISPRICE == undefined ? item.PRICE : item.DISPRICE}}</span>
+                                                                                </span>
+                                                                            </el-col>
+                                                                            <el-col :span="17"  style="text-align:right">
+                                                                                <span>有效期至 {{item.INVALIDDATE}}</span>
+                                                                            </el-col>
+                                                                        </div>
+                                                                    </el-row>
+                                                                </div>
+                                                            </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
+            </div>
+        </div>
+        <el-dialog title="请选择门店" :visible.sync="isShowShop" width="300px" :before-close="handleClose">
+            <div class='shopListClass'>
+                <ul>
+                    <li v-for='(item, index) in theshopList' :key="index" @click="setShop(item)">
+                        {{item.SHOPNAME}}
+                    </li>
+                </ul>
+            </div>
+        </el-dialog>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+import Vue from "vue";
+import { mapState, mapGetters } from "vuex";
+import { GOODS_IMGURL } from "@/util/define";
+import { getDayindate } from "@/util/Printing";
+import yjemployee from "@/components/employee/YJemployee";
+import { getUserInfo,getHomeData, getOthersData } from '@/api/index'
+
+import MIXINS_CHECKOUT from "@/mixins/checkout";
+import MIXINS_MONEY from "@/mixins/money";
+import MIXINS_CLEAR from "@/mixins/clearAllData";
+export default {
+    mixins: [MIXINS_CHECKOUT.CHOOSE_MEMBER,MIXINS_MONEY.MONEY_MENU,MIXINS_CLEAR.LOGOUT,MIXINS_CLEAR.LOGOUT],
+    data() {
+        return {
+            goodImg: "static/images/noneGoods.png",
+            options: [],
+            showOptions:false,
+            showRarmark:false,
+            Remark:"",
+            value: '',
+            searchText: "",
+            memberId: "",
+            objCount: [],
+            addobjCountList: [],
+            total: 0,
+            checkedreceipt: getOthersData().isprint ? true : false,
+            IsSms: false,
+            ruleFormsock: {},
+            shopitemList: {},
+            datalistval: {},
+            GoodsList:[],
+            isneedsaler:'',
+            shopInfo: getHomeData().shop,
+            isShowShop:false,
+            theshopList: [],
+            activePath: "",
+            shopName:getUserInfo().CompanyName,
+            loading: false,
+            theshopList: [],
+        };
+    },
+    computed: {
+        ...mapGetters({
+            memberState: "memberState",
+            employeeList: "employeeList",
+            timescountcconsumptionState: "timescountcconsumptionState",
+            shopList: "shopList",
+            shopListState:'shopListState'
+        })
+    },
+    created(){  //生命周期里接收参数
+        this.defaultData();
+        let getInfo = getUserInfo();
+        this.isneedsaler=getInfo.CompanyConfig.ISNEEDSALER
+    },
+    watch: {
+        memberState(data) {
+            if (data.success) {
+                for(var t in data.data.objCount){
+                   this.$set(data.data.objCount[t], "isSelect" , false)
+                   this.objCount.push(data.data.objCount[t])
+                }
+                for(var j in data.data.objTime){
+                   this.$set(data.data.objTime[j], "isSelect" , true)
+                   this.objCount.push(data.data.objTime[j])
+                }
+                for (let i = 0; i < this.objCount.length; i++) {
+                    this.objCount[i].showgoodsimg =
+                        GOODS_IMGURL + this.objCount[i].GOODSID + ".png";
+                }
+            }
+        },
+        timescountcconsumptionState(data) {
+            if (data.success) {
+                this.$message("计次消费成功");
+                this.closeModal();
+                let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
+                if (this.$store.state.recharge.isPrintsatus) {
+                    getDayindate("210020532_1",data.data.BillId,2,qresurl);
+                }
+            } else {
+                this.$message(data.message)
+            }
+            this.loading= false
+        },
+        employeeList(data) {
+            this.options=[]
+            let employeemen=data;
+            for(var i in employeemen){
+                let Obj={
+                    value:employeemen[i].ID,
+                    label:employeemen[i].NAME
+                    }
+                    this.options.push(Obj)
+            }
+        },
+    },
+    methods: {
+        handleClose(done) {
+            this.isShowShop = false;
+        },
+        logout: function() { //退出登录
+            var _this = this;
+            this.$confirm("确认退出吗?", "提示").then(() => {
+                _this.$store.dispatch("toLogOut").then(() => {
+                    _this.clearAllData();
+                    _this.$router.push("/login");
+                })
+            }).catch(() => {
+                console.log("logout");
+            })
+        },
+        setShop(item) { //切换店铺
+            this.$store.dispatch("choosingShop", item).then(() => {
+                this.isShowShop = false;
+                this.clearAllData();
+                this.defaultData();
+                console.log("11111111111111111111111")
+                this.$router.push({
+                    path: "/home"
+                })
+            })
+        },
+        defaultData() {
+            let homeData = getHomeData();
+            if (homeData.shop) {
+                this.shopInfo = Object.assign({}, homeData.shop);
+            }
+            this.UserName = getUserInfo().UserName;
+            if (this.shopList.length == 0) {
+                this.$store.dispatch("getShopList")
+            }
+        },
+        changeShop() {
+            let userInfo = getUserInfo();
+            if (userInfo.CODE2 == "boss") {
+                this.theshopList = [...this.shopList];
+            } else {
+                this.theshopList = [];
+                for (let i = 0; i < userInfo.ShopList.length; i++) {
+                    if (userInfo.ShopList[i].ISPURVIEW == 1) {
+                        this.theshopList.push({
+                            ID : userInfo.ShopList[i].SHOPID,
+                            NAME : userInfo.ShopList[i].SHOPNAME
+                        });
+                    }
+                }
+            }
+            this.isShowShop = true;
+        },
+        changeMemberIDnull(e){
+            this.objCount = []
+            this.showOptions=false;
+            this.showRarmark=false;
+        },
+        //清空页面方法
+        clearData() {
+            this.addobjCountList = [];
+            this.VipId = "";
+            this.BillId = "";
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: new Object()
+            }).then(()=>{
+                this.VipId = '';
+                this.VipIdrows = {}
+            });
+        },
+        //删除商品的方法
+        deleteChange(i){
+            console.log(this.addobjCountList)
+            this.addobjCountList.splice(i, 1);
+            console.log(this.addobjCountList)
+        },
+        setcommonHeightb() {
+            var elememtheight = this.$refs.elememtt.offsetHeight;
+            var footerheight = this.$refs.footer.offsetHeight;
+            this.$refs.addsockheight.style.height =
+                elememtheight - footerheight - 200 + "px";
+        },
+        getmemberDetail(item) {
+            this.objCount = []
+            this.$store.dispatch("getMemberItem", item).then(() => {});
+        },
+        getmemberID(id, data) {
+            this.addobjCountList = [];
+            this.memberId = id;
+            if(this.memberId!=null){
+                this.showOptions=true;
+                this.showRarmark=true;
+            }
+            let item = {
+                ID: this.memberId
+            };
+            this.getmemberDetail(item);
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: data
+            });
+        },
+        addjiajianhao1(i,e){
+            this.addobjCountList[i].Qty=e;
+        },
+        // addjiajianhao(status, calccount, maxcalccount, GoodsId) {
+        //     if (status == 2) {
+        //         if (calccount >= maxcalccount) {
+        //             this.$message({
+        //                 showClose: true,
+        //                 message: "消费次数不能大于商品次数"
+        //             });
+        //             return;
+        //         }
+        //     }
+        //     for (let i = 0; i < this.addobjCountList.length; i++) {
+        //         if (this.addobjCountList[i].GoodsId == GoodsId) {
+        //             if (status == 1) {
+        //                 this.addobjCountList[i].Qty = this.addobjCountList[i].Qty - 1;
+        //                 this.addobjCountList[i].degree=this.addobjCountList[i].maxcalccount - this.addobjCountList[i].Qty;
+        //                 if (this.addobjCountList[i].Qty == 0) {
+        //                     this.addobjCountList.splice(i, 1);
+        //                 }
+        //             } else {
+        //                 this.addobjCountList[i].Qty = this.addobjCountList[i].Qty + 1;
+        //                 this.addobjCountList[i].degree=this.addobjCountList[i].maxcalccount - this.addobjCountList[i].Qty;
+        //             }
+        //             this.jisuantotal();
+        //             break;
+        //         } else {
+        //             if (i + 1 < this.addobjCountList.length) {
+        //                 continue;
+        //             } else {
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // },
+
+        addobjcountsum(item) {
+            console.log(item)
+            console.log(item.CALCCOUNT)
+
+            item.GOODSMODE = 1;
+            item.ID = item.GOODSID;
+            this.setcommonHeightb();
+            let count = 1;
+            if (this.addobjCountList.length > 0) {
+                if(this.addobjCountList[0].isSelect==item.isSelect){
+                    for (let i = 0; i < this.addobjCountList.length; i++) {
+                        if (this.addobjCountList[i].GoodsId == item.GOODSID) {
+                            if (this.addobjCountList[i].Qty >= item.CALCCOUNT) {
+                                this.$message({
+                                    showClose: true,
+                                    message: "消费次数不能大于商品次数"
+                                });
+                            } else {
+                                this.addobjCountList[i].Qty =this.addobjCountList[i].Qty + 1;
+                                this.addobjCountList[i].degree=item.CALCCOUNT - this.addobjCountList[i].Qty;
+                            }
+                            break;
+                        } else {
+                            if (i + 1 < this.addobjCountList.length) {
+                                continue;
+                            } else {
+                                if(item.isSelect==true){
+                                    this.addobjCountList=[]
+                                    this.addobjCountList.push({
+                                        goodsname: item.GOODSNAME,
+                                        Qty: 1,
+                                        GoodsId: item.GOODSID,
+                                        maxcalccount: 1,
+                                        Price: item.PRICE,
+                                        itemObj: item,
+                                        degree:item.CALCCOUNT-count,
+                                        isSelect:item.isSelect,
+                                    });
+                                    break;
+                                }else{
+                                    this.addobjCountList.push({
+                                        goodsname: item.GOODSNAME,
+                                        Qty: count,
+                                        GoodsId: item.GOODSID,
+                                        maxcalccount: item.CALCCOUNT,
+                                        Price: item.PRICE,
+                                        itemObj: item,
+                                        degree:item.CALCCOUNT-count,
+                                        isSelect:item.isSelect,
+                                    });
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    this.$message({
+                        showClose: true,
+                        message: "一次消费只能选择一种消费方式"
+                    });
+                }
+
+            } else {
+                this.addobjCountList.push({
+                    goodsname: item.GOODSNAME,
+                    Qty: count,
+                    GoodsId: item.GOODSID,
+                    maxcalccount: item.CALCCOUNT,
+                    Price: item.PRICE,
+                    itemObj: item,
+                    degree:item.CALCCOUNT-count,
+                    isSelect:item.isSelect,
+                });
+            }
+            console.log(this.addobjCountList)
+            this.jisuantotal();
+        },
+        jisuantotal() {
+            this.total = 0;
+            for (let i in this.addobjCountList) {
+                this.total += this.addobjCountList[i].Qty;
+            }
+            return this.total;
+        },
+        closeModal() {
+            this.GoodsList=[];
+            this.total = 0;
+            this.memberId = "";
+            this.objCount = [];
+            this.addobjCountList = [];
+            this.datalistval = {};
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: new Object()
+            }).then(()=>{
+                this.VipId = '';
+            });
+        },
+        //结账事件方法
+        timescountsok() {
+            this.$store.dispatch("selectingMember", {});
+            let agentPermission = getUserInfo().List
+            let arr = agentPermission.filter(element => element.MODULECODE == '210040302');
+            if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
+                this.$message.warning('您还没有获得相关权限!')
+            } else {
+                if(this.isneedsaler==true){
+                    if(this.value.length>0){
+                    }else{
+                        this.$message("请选择销售员");
+                        return;
+                    }
+                }
+                if (this.addobjCountList.length == 0) {
+                    this.$message("请选择商品");
+                    return;
+                }
+                this.loading=true;
+                let IsSms = this.IsSms == true ? 1 : 0;
+                for (var i in this.addobjCountList) {
+                    let Obj ={
+                        "GoodsId":this.addobjCountList[i].GoodsId,
+                        "Qty":this.addobjCountList[i].Qty
+                    }
+                    this.GoodsList.push(Obj)
+                }
+                console.log(this.checkedreceipt)
+
+                if (this.checkedreceipt) {
+                    this.$store.state.recharge.isPrintsatus = true;
+                } else {
+                    this.$store.state.recharge.isPrintsatus = false;
+                }
+
+                let param = this.value, str = ''  // 销售员
+                for(let i in param){
+                    str += param[i] + ','
+                }
+                if(str.length>0){  //去掉最后一个逗号
+                    str=str.substring(0,str.length-1)
+                }
+
+                if(this.addobjCountList[0].isSelect==true){
+                    let setDateman = Object.assign({},this.value)
+
+                    let AllsendData = {
+                        InterfaceCode:'210020511',
+                        VipId: this.memberId,
+                        GoodsId:this.addobjCountList[0].GoodsId,
+                        Qty:this.addobjCountList[0].Qty,
+                        SaleEmpList: str,
+                        Remark: this.Remark,
+                        IsSms: IsSms,
+                        BillDate: new Date().getTime()
+                    };
+                    this.$store
+                        .dispatch("gettimescountcconsumption", AllsendData)
+                        .then(() => {});
+                }else{
+                    let  setDate = Object.assign({},this.GoodsList)
+                    let  setDateman = Object.assign({},this.value)
+                    let AllsendData = {
+                        InterfaceCode:'210020507_1',
+                        VipId: this.memberId,
+                        SaleEmpList: str,
+                        Remark: this.Remark,
+                        IsSms: IsSms,
+                        GoodsList:setDate,
+                        BillDate: new Date().getTime()
+                    };
+                    this.$store
+                        .dispatch("gettimescountcconsumption", AllsendData)
+                        .then(() => {});
+                    }
+
+            }
+        },
+        selectYJemployee(item) {
+            this.showyjemployee = true;
+            this.shopitemList = item;
+        },
+    },
+    components: {
+        yjemployee
+    },
+    beforeCreate() {
+        let list1 = this.$store.state.employee.employeeList;
+        if (list1.length == 0) {
+            this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID }).then(() => {
+                console.log(this.$store.state.employee.employeeList);
+            });
+        }
+    },
+    mounted() {
+        this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID }).then(() => {
+            console.log(this.$store.state.employee.employeeList);
+        });
+
+    }
+};
+</script>
+<style scoped>
+.el-icon-delete{
+    margin-right: 15px;
+    color: #B6B6B6;
+    cursor: pointer;
+}
+.danpintr{
+    width: 100%;
+    height: 80px;
+    background: #fff;
+}
+.employee_ms .el-form-item__content {
+    width: 70%;
+}
+
+.f-botton-fs .el-form-item__label {
+    text-align: left !important;
+}
+
+.f-botton-fs .fastc_top {
+    margin-top: 50px;
+}
+
+.f-botton-fssock .el-dialog__body {
+    padding: 5px 20px;
+}
+
+.employeetitle {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    overflow: hidden;
+    color: #130606;
+    text-align: center;
+}
+
+.timescountc_left ul#addshopList {
+    /* padding: 0 12px; */
+}
+
+.timescountc_left ul#addshopList li {
+    margin-top: 6px;
+    width: 100%;
+    overflow: hidden;
+    padding: 4px 0;
+}
+
+.timescountc_left ul#addshopList li .cateringProductMoreinfo {
+    overflow: hidden;
+    width: 100%;
+    float: left;
+    color: #9e9e9e;
+    font-size: 12px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.timescountc_left ul#addshopList .cateringProductNamebox {
+    width: 50%;
+    float: left;
+}
+
+.timescountc_left_footer {
+    position: absolute;
+    bottom: 0px;
+    left: 10px;
+    right: 10px;
+    /* background: #fff; */
+}
+
+/*模板样式*/
+.timescountc_right .tablelcenter {
+    height: 60px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #E3E3E3;
+    cursor: pointer;
+}
+
+.timescountc_right .tablelcenter .menu-img img {
+    height: 50px;
+    width: 50px;
+    vertical-align: middle;
+    border: 0;
+    float: left;
+    margin-right: 5px;
+}
+
+.timescountc_right .tablelcenter .menu-txt {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+}
+.memberList{
+    width: 100%;
+    height: 35px;
+    background: #fff;
+    line-height: 35px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.show-goodImg{
+    text-align: center;
+    margin-top: 200px;
+}
+.goodImg-text{
+    color: #9e9e9e;
+    font-size: 11px;
+}
+.goodImg-text span{
+    color: #2589FF;
+}
+.danpintr-top{
+    display: flex;
+    height: 35px;
+    align-items: center;
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(51,51,51,1);
+}
+.danpintr-bottom{
+    display: flex;
+    height: 35px;
+    align-items: center;
+}
+.danpintr-bottom-degree{
+    margin-left: 20px;
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(187,187,187,1);
+}
+.danpintr-bottom-qty{
+    text-align: right;
+
+}
+.danpintr-bottom-qty .ci{
+    margin-right: 15px;
+    font-size:14px;
+    font-family:HelveticaCyr Upright;
+    font-weight:bold;
+    color:rgba(255,0,0,1);
+
+}
+.titlename-money{
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:300;
+    color:rgba(255,0,0,1);
+}
+.titlename-time{
+    text-align: right;
+    font-size:12px;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(153,153,153,1);
+    }
+.titlename-name{
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(102,102,102,1);
+}
+.titlename-time-ci{
+    font-size:14px;
+    font-family:HelveticaCyr Upright;
+    font-weight:400;
+    color:rgba(255,0,0,1);
+}
+.titlename-time-shiduan{
+    height: 15px;
+    width: 40px;
+    border: solid 1px #F56C6C;
+    line-height: 15px;
+    text-align: center;
+    margin-top: 8px;
+    font-size: 8px;
+    color: #F56C6C;
+    margin-left: 40px;
+}
+.commodity-right-good-list{
+    padding-top:10px;
+    width: 100%;
+    padding-right: 10px;
+}
+.commodity-right{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.search_sock{
+    height: 50px;
+    line-height: 50px;
+    background: #fff;
+    width: 100%;
+    border-left: solid 1px #EBEDF0;
+    border-bottom: solid 1px #EBEDF0;
+    /* text-align: center; */
+}
+::-webkit-scrollbar {width: 3px;}
+::-webkit-scrollbar-track{background-color:#E3E3E5;}
+::-webkit-scrollbar-thumb{background-color:#979799;}
+
+.commodityc_rightsock {
+    width: 100%;
+    /* margin-top: 12px; */
+}
+.timescountc_right .tablelcenter .menu-txt {
+    display: flex;
+}
+.tablelcenter {
+    height: 59px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #E3E3E3;
+    /* padding: 8px; */
+    cursor: pointer;
+    background: #fff;
+}
+.img-box{
+    width: 100%;
+    height: 59px;
+    overflow: hidden;
+
+}
+.img{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 59px;
+}
+.img:hover{
+    transform: scale(1.03,1.03);
+}
+.timescountc_left_footer >>>.el-input__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+    font-size: 12px;
+    color: #444444;
+}
+.timescountc_left_footer >>>.el-textarea__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+    font-size: 12px;
+    padding: 0 15px!important;
+    min-height: 40px!important;
+    line-height: 3!important;
+}
+.shop{
+  line-height: 50px;
+  height: 50px;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #EBEDF0;
+  background: #fff;
+}
+.shop .name{
+    margin-right: 8px;
+}
+.icon-reorder{
+    color: #2589FF;
+    cursor: pointer;
+}
+</style>

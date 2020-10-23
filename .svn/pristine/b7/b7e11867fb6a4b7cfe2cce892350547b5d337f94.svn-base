@@ -1,0 +1,183 @@
+<template>
+    <div>
+        <input type="file" ref="upload" accept=".xls, .xlsx" class="outputlist_upload hide">
+        <el-row :gutter="10" >
+            <el-col :xs="24" :sm="12" :md="6">
+                <span>店铺 </span> 
+                <el-select size='small' v-model="ShopId" multiple collapse-tags clearable @change="getNewData" placeholder="请选择店铺">
+                    <el-option v-for="item in shopList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+                </el-select>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="6">
+                <span>商品分类</span>
+                <el-select size='small' v-model="TypeId" multiple collapse-tags clearable @change="getNewData" placeholder="请选择商品分类">
+                    <el-option v-for="item in commoditycflList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+                </el-select>
+            </el-col>
+
+            <el-col :xs="24" :sm="12" :md="4">
+                <!-- <el-button class="pull-right" icon="el-icon-download" size="small">导 出</el-button> -->
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8">
+                <el-input class="pull-right"
+                    type="default" style="width: 350px"
+                    v-model="ruleForm.Filter" size='small'
+                    autofocus="true"
+                    placeholder="请输入商品名称或商品编码"
+                    @input="getNewData()"
+                >
+                    <!-- <el-button slot="append" type="default" icon="el-icon-search" ></el-button> -->
+                </el-input>
+            </el-col>
+        </el-row>
+
+        <el-table 
+            border size='small' 
+            header-row-class-name="bg-theme2 text-white" 
+            :height="tableHeight"
+            :data="tableData"
+            v-loading='loading' 
+            element-loading-text='数据加载中...'
+            :highlight-current-row='true'
+            class="full-width table-top">
+            <!-- <el-table-column type="selection"></el-table-column> -->
+            <el-table-column label="店铺" prop="SHOPNAME"></el-table-column>
+            <el-table-column label="商品" prop="GOODSNAME"></el-table-column>
+            <el-table-column label="分类" align="center" prop="TYPENAME"></el-table-column>
+            <el-table-column label="单位" align="center" prop="UNITNAME"></el-table-column>
+            <el-table-column label="价格" align="center" prop="PRICE"></el-table-column>
+            <el-table-column label="成本" align="center">
+                <template slot-scope='scope'>
+                    {{isPurViewFun(210040601) ? scope.row.PURPRICE : '****'}}
+                </template>
+            </el-table-column>
+            <el-table-column label="库存" align="center" prop="QTY"></el-table-column>
+        </el-table>
+
+        <div class="m-top-sm clearfix elpagination" v-if='pagination.TotalNumber > 0'>
+            <el-pagination
+            background
+            @size-change="handlePageChange"
+            @current-change="handlePageChange"
+            :current-page.sync="pagination.PN"
+            :page-size="pagination.PageSize"
+            layout="total, prev, pager, next, jumper"
+            :total="pagination.TotalNumber"
+            class="text-right"
+            ></el-pagination>
+        </div>
+    </div>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+    export default{
+        data(){
+            return {
+                ShopId: [ getHomeData().shop.SHOPID ],
+                TypeId: [],
+                tableData:[],
+                tableHeight: document.body.clientHeight - 260,
+                ruleForm: {
+                    ShopId: '',
+                    TypeId: '',
+                    Filter: '',
+                    PN: 1
+                },
+                pagination: {
+                    TotalNumber: 0,
+                    PageNumber: 0,
+                    PageSize: 20,
+                    PN: 1
+                },
+                loading: false
+            }
+        },
+        computed: {
+            ...mapGetters({
+                shopList: "shopList",
+                commoditycflListState: "commoditycflListState",
+                commoditycflList: "commoditycflList",
+                stockDetailsState: 'stockDetailsState'
+            })
+        },
+        watch:{
+            shopList(data){
+                console.log("店铺信息",data)
+
+            },
+            stockDetailsState(data){
+                let agentPermission = getUserInfo().List
+                let arr = agentPermission.filter(element => element.MODULENAME == "查看成本价");
+                this.loading = false
+                if(data.success){
+                    this.tableData = data.data.PageData.DataArr
+                    if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
+                        for(var i in this.tableData){
+                            this.tableData[i].PURPRICE='***'
+                        }
+                    }
+                    this.pagination =  {
+                        TotalNumber: data.data.PageData.TotalNumber,
+                        PageNumber: data.data.PageData.PageNumber,
+                        PageSize: data.data.PageData.PageSize,
+                        PN: data.data.PageData.PN
+                    }
+                }else{
+                    this.$message.error(data.message)
+                }
+            }
+        },
+        mounted() {
+            if (this.shopList.length == 0) {
+                this.$store.dispatch("getShopList")
+            }
+            let list = this.$store.state.commodityc.commoditycflList;
+            if (list.length == 0) {
+                this.$store.dispatch("getcommoditycflList", {})
+            }
+            this.getNewData()
+        },
+        methods:{
+            handlePageChange: function(currentPage) {
+                if (this.ruleForm.PN == currentPage || this.loading) {
+                    return;
+                }
+                this.ruleForm.PN = parseInt(currentPage);
+                this.getNewData()
+            },
+            getNewData(){
+                console.log("选择店铺id")
+                if(this.ShopId.length == 0){
+                    this.ruleForm.ShopId = ''
+                }else{
+                    let shopList = this.ShopId, str = ''
+                    for(var i in shopList){
+                       str += shopList[i] + ","
+                    }
+                    if(str.length>0){  //去掉最后一个逗号
+                        str=str.substring(0,str.length-1) 
+                    }
+                    this.ruleForm.ShopId = str
+                }
+
+                if(this.TypeId.length == 0){
+                    this.ruleForm.TypeId = ''
+                }else{
+                    let typeList = this.TypeId, str = ''
+                    for(var i in typeList){
+                       str += typeList[i] + ','
+                    }
+                    if(str.length>0){  //去掉最后一个逗号
+                        str=str.substring(0,str.length-1) 
+                    }
+                    this.ruleForm.TypeId = str
+                }
+                this.$store.dispatch('GetStockDetails', this.ruleForm).then(() => {
+                    this.loading = true
+                })
+            }
+        }
+    }
+</script>  

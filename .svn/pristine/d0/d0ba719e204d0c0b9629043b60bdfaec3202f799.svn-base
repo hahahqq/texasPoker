@@ -1,0 +1,126 @@
+<template>
+   <el-container>
+      <div class="content-new-fex">
+         <div class="content-eighty">
+            <div class="content-center">
+               <span>
+                  日期：
+                  <el-date-picker
+                     size="small"
+                     v-model="dateList"
+                     type="daterange"
+                     align="right"
+                     range-separator="至"
+                     start-placeholder="开始日期"
+                     end-placeholder="结束日期"
+                  >
+                  </el-date-picker>
+               </span>
+
+               <span style='margin-left: 20px'>
+                  赛事：
+                  <el-select size='small' style="width:150px" placeholder="请选择赛事"></el-select>
+               </span>
+
+               <span style='margin-left: 20px'>
+                  状态：
+                  <el-select size='small' style="width:150px" placeholder="请选择状态"></el-select>
+               </span>
+
+               <span style='margin-left: 20px'>
+                  店铺：
+                  <el-select size='small' style="width:150px" placeholder="请选择店铺"></el-select>
+               </span>
+
+               <el-button style="float:right; margin-top: 24px" type="primary" size="small">扫码核销 </el-button>
+
+            </div>
+         </div>
+
+         <div class="content-table4">
+            <div class="content-table-center">
+               <el-table  size='small' :data="tableData" style="width: 100%;" :height='tableHeight' header-row-class-name="bg-F1F2F3">
+                  <el-table-column prop="" label="赛事名称"></el-table-column>
+                  <el-table-column prop="" label="比赛类型"></el-table-column>
+                  <el-table-column prop="" label="报名积分"></el-table-column>
+                  <el-table-column prop="" label="开赛时间"></el-table-column>
+                  <el-table-column prop="" label="报名时间"></el-table-column>
+                  <el-table-column prop="" label="核销时间"></el-table-column>
+                  <el-table-column prop="" label="核销券码"></el-table-column>
+                  <el-table-column prop="" label="会员名"></el-table-column>
+                  <el-table-column prop="" label="卡号"></el-table-column>
+                  <el-table-column prop="" label="手机号"></el-table-column>
+                  <el-table-column prop="" label="状态"></el-table-column>
+                  <el-table-column prop="" label="操作">
+                     <template slot-scope="scope">
+                        <el-button @click="printFun(scope.row)">打印</el-button>
+                     </template>
+                  </el-table-column>
+               </el-table>
+
+            </div>
+         </div>
+      </div>
+   </el-container>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs';
+export default {
+   data() {
+      return {
+         dateList:null,
+         activeName: "first",
+         ruleFrom: {
+            ShopId: "",
+            BeginDate: "1",
+            EndDate: "9999999999999"
+         },
+         height:window.innerHeight -70,
+         tableHeight: document.body.clientHeight - 280,
+         tableData: []
+      }
+   },
+   computed: {
+        ...mapGetters({
+
+        })
+   },
+   watch: {
+
+   },
+   methods: {
+
+   },
+   mounted(){
+         // let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));
+         // let curMonth = Number(dayjs().month())+1;
+         // let todayDate = dayjs(new Date().getTime());
+         // let nowHourMius = todayDate.format('HH:mm');
+         // let yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+         // let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+         // let beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate;
+
+         // let beginTime = beginFormat + " " + this.bussinessTime+':00' ;
+         // let endTime = todayDate.format('YYYY-MM-DD HH:mm');
+
+         // let firstDate = new Date(beginTime).getTime();
+         // let lastDate = new Date(endTime).getTime();
+         // this.ruleFrom = {
+         //    ShopId: getHomeData().shop.ID,
+         //    BeginDate: firstDate,
+         //    EndDate: lastDate
+         // };
+      // this.$store.dispatch("getparameterstate", {});
+   },
+   components: {
+      // filtePage: () => import("@/views/member/vipFilterPage"),
+   },
+   created(){
+      this.ruleFrom = Object.assign({}, {ShopId:this.theShopId});
+   },
+}
+</script>

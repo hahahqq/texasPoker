@@ -1,0 +1,125 @@
+<template>
+   <el-container>
+      <div class="content-new-fex">
+         <div class="content-eighty">
+            <div class="content-center">
+            <filtePage @getNewData="getNewData" :isAll="true"></filtePage>
+            </div>
+         </div>
+
+         <div class="content-table4">
+            <div class="content-table-center">
+               <el-table
+                  size='small'
+                  :data="tableData"
+                  ref="Table"
+                  style="width: 100%;"
+                  :height="tableHeight"
+                  header-row-class-name="bg-F1F2F3"
+               >
+                  <el-table-column prop="NAME" label="会员信息" width="160">
+                     <template slot-scope="scope">
+                           <img :src="scope.row.IMAGEURL" alt="" style='float:left; border-radius:8px; width:40px; height:40px; margin-right:8px'>
+                           <span style='height:40px;width:102px'>
+                              <i class="text-3399ff pull-left inline-block" style="color:#2589FF;width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap;">
+                                 {{scope.row.NAME ? scope.row.NAME : ' '}}
+                                 &nbsp;&nbsp;<img :src="scope.row.SEX == 0 ? 'static/images/icon_man.png' : 'static/images/icon_woman.png'" style="width:13px;height:13px; vertical-align: middle">
+                                 </i>
+                              <i class="text-3399ff pull-left inline-block" style="width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap ">{{scope.row.CODE}}</i>
+                           </span>
+                     </template>
+                  </el-table-column>
+                  <el-table-column label="归属店铺"></el-table-column>
+                  <el-table-column label="会员等级"></el-table-column>
+                  <el-table-column label="标签"></el-table-column>
+                  <el-table-column label="生日时间"></el-table-column>
+                  <el-table-column label="顾问"></el-table-column>
+                  <el-table-column label="储值积分"></el-table-column>
+                  <el-table-column label="竞技积分"></el-table-column>
+                  <el-table-column label="欠款"></el-table-column>
+                  <el-table-column label="操作">
+                     <template slot-scope="scope">
+                        <el-button type='text' @click='handleItem(scope.row, scope.$index)'>续期</el-button>
+                     </template>
+                  </el-table-column>
+               </el-table>
+            </div>
+         </div>
+      </div>
+   </el-container>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs';
+export default {
+   data() {
+      return {
+         activeName: "first",
+         ruleFrom: {
+            ShopId: "",
+            BeginDate: "1",
+            EndDate: "9999999999999"
+         },
+         tablename:document.body.clientHeight-300,
+         tableData: [],
+         bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE
+      }
+   },
+   computed: {
+        ...mapGetters({
+
+        })
+   },
+   watch: {
+
+   },
+   methods: {
+      handleItem(item, idx){
+
+      },
+      getNewData(data) {
+         let shopList = data.ShopId.split(',')
+         let str = '', id = ''
+         for(let i in shopList){
+            str += "'"+shopList[i] + "',"
+         }
+         if(str.length>0){  //去掉最后一个逗号
+            str=str.substring(0,str.length-1)
+         }
+         data.ShopIdList = str
+
+         console.log(data)
+         this.ruleFrom = data
+      },
+   },
+   mounted(){
+         let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));
+         let curMonth = Number(dayjs().month())+1;
+         let todayDate = dayjs(new Date().getTime());
+         let nowHourMius = todayDate.format('HH:mm');
+         let yesterdayDate = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+         let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+         let beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate;
+
+         let beginTime = beginFormat + " " + this.bussinessTime+':00' ;
+         let endTime = todayDate.format('YYYY-MM-DD HH:mm');
+
+         let firstDate = new Date(beginTime).getTime();
+         let lastDate = new Date(endTime).getTime();
+         this.ruleFrom = {
+            ShopId: getHomeData().shop.ID,
+            BeginDate: firstDate,
+            EndDate: lastDate
+         };
+   },
+   components: {
+      filtePage: () => import("@/views/member/vipFilterPage"),
+   },
+   created(){
+      this.ruleFrom = Object.assign({}, {ShopId:this.theShopId});
+   },
+}
+</script>

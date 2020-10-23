@@ -1,0 +1,262 @@
+<template>
+    <div class="report row-flex flex-start">
+        <section style="min-width:130px;margin-left:-10px;">
+            <sidebarMenu :activePath="activePath" :routesList="routesList" :width="130"></sidebarMenu>
+        </section>
+        <section
+            class="bg-white marginLR-sm paddingTB-sm paddingLR-md full-width"
+            v-loading="loading"
+        >
+            <filtePage @getNewData="getNewData" @exportState="exportState"></filtePage>
+            <!-- page -->
+            <div>
+                <div
+                    v-for="(item,i) in pageList"
+                    :key="i"
+                    v-if="i<3"
+                    class="inline-block m-right-md marginTB-sm padding-sm border"
+                    style="width:150px"
+                >
+                    <div>{{item.label}}</div>
+                    <div>
+                        <span
+                            v-text="dataData[item.value]&&dataData[item.value]!='undefined'?dataData[item.value]:0"
+                        ></span>
+                    </div>
+                </div>
+            </div>
+            <!-- table-->
+            <el-table
+                border
+                :data="tebleList"
+                header-row-class-name="bg-theme text-white"
+                class="full-width"
+            >
+                <el-table-column prop="EMPNAME" label="员工" width="80"></el-table-column>
+                <el-table-column prop="POSITION" label="职位" width="80"></el-table-column>
+                <el-table-column prop="EMPMONEY" label="提成" width="80"></el-table-column>
+                <el-table-column label="提成">
+                    <template slot-scope="props">
+                        <div>
+                            <span>{{props.row.EMPMONEY}}</span>
+                            <el-progress
+                                :text-inside="true"
+                                :stroke-width="18"
+                                :percentage="
+                (props.row.EMPMONEY/props.row.TOTALMONEY)<1?
+                parseFloat((props.row.EMPMONEY /props.row.TOTALMONEY *100).toFixed(2))
+                :100"
+                                :color="getColor(props.row.EMPMONEY /props.row.TOTALMONEY *100)"
+                            ></el-progress>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="BASEWAGES" label="工资"></el-table-column>
+                <el-table-column prop="TOTALMONEY" label="合计"></el-table-column>
+                <el-table-column label="更多" width="80">
+                    <template slot-scope="props">
+                        <el-button type="text" @click="getNewList(props.row)" class="no-padding">详情</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </section>
+        <!-- list -->
+        <el-dialog :title="title" :visible.sync="isShowList" width="90%" style="max-width:100%;">
+            <listPage
+                @closeModal="isShowList=false"
+                :dataType="dataType"
+            >
+                <slot>
+                    <div class="text-left">
+                        <el-button
+                            plain
+                            v-for="(item, i) in pageList"
+                            :key="i"
+                            v-if="i>2"
+                            @click="getNewList2(item.index)"
+                            class="marginTB-sm paddingLR-sm font-14 as-el-button"
+                            :class="{'active':autofocus==item.index}"
+                            style="width:150px"
+                        >
+                            <div>{{item.label}}</div>
+                            <div class="m-top-xs">
+                                <span
+                                    v-text="dataListState2[item.value]?dataListState2[item.value]:0"
+                                ></span>
+                            </div>
+                        </el-button>
+                    </div>
+                </slot>
+            </listPage>
+        </el-dialog>
+    </div>
+    <!-- 业绩统计 -->
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_INDEX from "@/mixins/index";
+import MIXNINS_EXPORT from "@/mixins/exportData.js";
+export default {
+    mixins: [
+        MIXINS_REPORT.SIDERBAR_MENU,
+        MIXINS_REPORT.COMMOM_PAGE,
+        MIXINS_INDEX.IS_SHOW_POPUP,
+        MIXNINS_EXPORT.TOEXCEL,
+        MIXNINS_EXPORT.TODATA
+    ],
+    data() {
+        return {
+            pageList: [
+                { label: "总营业额", value: "TotalMoney" },
+                { label: "总提成额", value: "TotalEmpMoney" },
+                { label: "提成比例", value: "Frate" },
+                { label: "合计提成金额", value: "TotalMoney", index: 0 }, // 详情--v
+                { label: "售卡提成", value: "EmpMoney1", index: 1 },
+                { label: "充值提成", value: "EmpMoney2", index: 2 },
+                { label: "快速消费提成", value: "EmpMoney3", index: 3 },
+                { label: "商品消费提成", value: "EmpMoney4", index: 4 },
+                { label: "计次消费提成", value: "EmpMoney5", index: 5 }
+            ],
+            tebleList: [],
+            isShowItem: false,
+            autofocus: 0,
+            dataListState2: {},
+            dataType:{}
+        };
+    },
+    computed: {
+        ...mapGetters({
+            dataData: "achievementReportData",
+            dataState: "achievementReportState",
+            dataList: "achievementReportList",
+            dataListState: "achievementReportListState",
+            dataListArr: "achievementReportListARR",
+            dataItem: "achievementReportItem"
+        })
+    },
+    watch: {
+        dataState(data) {
+            this.loading = false;
+            if (data.success) {
+                this.defaultData();
+            }
+        },
+        dataItem(data) {
+            this.isShowItem = data.success;
+            if (!data.success) {
+                this.$message.error(data.message);
+            }
+        },
+        dataListState(data) {
+            if (this.autofocus == 0)
+                this.dataListState2 = Object.assign({}, data.data);
+        }
+    },
+    methods: {
+        exportState(data) {
+            var list = this.tebleList; // 业绩统计，没有分页
+            var head = ["员工", "职位", "提成", "工资", "合计"];
+            var val = [
+                "EMPNAME",
+                "POSITION",
+                "EMPMONEY",
+                "BASEWAGES",
+                "TOTALMONEY"
+            ];
+            var title = "业绩统计表" + this.getNowDateTime();
+            this.export2Excel(head, val, list, title);
+            if (list.length == 0) {
+                this.$message({
+                    message: "数据不能为空",
+                    type: "success"
+                });
+            } else {
+                this.export2Excel(head, val, list, title);
+            }
+        },
+        getNewData(data) {
+            let sendData = Object.assign({}, data);
+            this.$store
+                .dispatch("getachievementReportData", sendData)
+                .then(() => {
+                    this.loading = true;
+                    this.ruleFrom = Object.assign({}, sendData);
+                });
+        },
+        getNewList(item) {
+            this.autofocus = 0;
+            let index = 0;
+            let sendData = {
+                obj: { index: index, obj: "achievement" },
+                data: Object.assign({}, this.ruleFrom, { id: item.EMPID })
+            };
+            this.ruleFrom2 = Object.assign({}, sendData);
+            this.dataType = {'data':this.ruleFrom2,'state':true};
+            this.$store
+                .dispatch("clearachievementReportList", index)
+                .then(() => {
+                    this.$store.dispatch("getachievementReportList", sendData);
+                    this.title = this.dataListArr[index].title;
+                });
+        },
+        getNewList2(index) {
+            this.autofocus = index;
+            this.ruleFrom2.obj.index = index;
+            this.dataType = {'data':this.ruleFrom2,'state':true};
+            this.$store
+                .dispatch("clearachievementReportList", index)
+                .then(() => {
+                    this.$store.dispatch(
+                        "getachievementReportList",
+                        this.ruleFrom2
+                    );
+                    this.title = this.dataListArr[index].title;
+                });
+        },
+        defaultData() {
+            this.tebleList = [...this.dataData.EmpMoneyList];
+        },
+        formatSex: function(row, column) {
+            return row.SEX == 1 ? "女" : "男";
+        },
+        getColor: function(v) {
+            if (v > 75) {
+                return "#67c23a";
+            } else if (v > 50) {
+                return "rgba(142, 113, 199, 0.7)";
+            } else if (v > 25) {
+                return "#409eff";
+            } else {
+                return "#f56c6c";
+            }
+        }
+    },
+    created() {
+        this.$store
+            .dispatch("getachievementReportData", {
+                ShopId: this.theShopId,
+                BeginDate: this.getTimeStamp(),
+                EndDate: new Date().getTime()
+            })
+            .then(() => {
+                this.loading = true;
+                 this.ruleFrom = {
+                    ShopId: this.theShopId,
+                    BeginDate: this.getTimeStamp(),
+                    EndDate: new Date().getTime()
+                }
+            });
+    },
+    components: {
+        listPage: () => import("@/components/reports/management/tableList")
+    }
+};
+</script>
+
+<style scoped>
+.as-el-button.active {
+    color: #c9607b;
+    border-color: #c9607b;
+}
+</style>

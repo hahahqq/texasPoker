@@ -1,0 +1,92 @@
+<template>
+	<div v-loading="loading">
+		<el-table :data="tableData" stripe style="width: 100%">
+			<el-table-column prop="date" label="日期" width="180"></el-table-column>
+			<el-table-column prop="name" label="姓名" width="180"></el-table-column>
+			<el-table-column prop="address" label="地址"></el-table-column>
+		</el-table>
+	</div>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+export default {
+	props: {
+		typeData: {
+			type: Object,
+			default: {
+				show: false
+			}
+		}
+	},
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "" },
+			tableData: [
+				{
+					date: "2016-05-02",
+					name: "王小虎",
+					address: "上海市普陀区金沙江路 1518 弄"
+				},
+				{
+					date: "2016-05-04",
+					name: "王小虎",
+					address: "上海市普陀区金沙江路 1517 弄"
+				},
+				{
+					date: "2016-05-01",
+					name: "王小虎",
+					address: "上海市普陀区金沙江路 1519 弄"
+				},
+				{
+					date: "2016-05-03",
+					name: "王小虎",
+					address: "上海市普陀区金沙江路 1516 弄"
+				}
+			]
+		};
+	},
+	computed: {
+		...mapGetters({
+			dataListState: ""
+		})
+	},
+	watch: {
+		typeData(data) {
+			if (data.show) {
+				this.defaultData();
+			}
+		},
+		dataListState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.tableData = [];
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		getNewData() {
+			let sendData = Object.assign({}, this.formData);
+			delete sendData.show;
+			this.$store.dispatch("", sendData).then(() => {
+				this.loading = true;
+			});
+		},
+		defaultData() {
+			this.formData = Object.assign({}, this.typeData);
+
+			this.getNewData();
+		}
+	},
+	created() {
+		if (this.typeData.show) {
+			this.defaultData();
+		}
+	}
+};
+</script>

@@ -1,0 +1,283 @@
+<template>
+    <el-container>
+        <el-header style="height:50px; padding: 0">
+            <headerPage></headerPage>
+        </el-header>
+        <el-container>
+            <el-aside width="100px">
+                <section style="min-width:100px;">
+                    <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+                </section>
+            </el-aside>
+            <el-container>
+                <el-main :style="{height:height+'px'}">
+                    <div class="content-eighty">
+                        <div class="content-center">
+                            <div class="m-bottom-sm">
+                                <el-button size="small" type="primary" @click="handleEdit({ID:''})" icon="el-icon-plus">添加支付方式</el-button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--列表-->
+                    <div class="content-table">
+                        <div class="content-table-center">
+                            <el-table
+                            border size='small'
+                            :data="dataList"
+                            v-loading="loading"
+                            height="500"
+                            header-row-class-name="bg-theme2 text-white"
+                            >
+                            <el-table-column prop="NAME" label="支付方式"></el-table-column>
+                            <el-table-column label="启用状态">
+                                <template slot-scope="scope">
+                                    <el-switch
+                                    @change=showChange(scope.row,scope.row.ISHIDE)
+                                    v-model="scope.row.ISHIDE">
+                                    </el-switch>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="操作">
+                                <template slot-scope="scope">
+                                <el-button-group>
+                                    <el-button style="margin-right:10px;" type="text" size="small" @click="handleMove(scope.row.ID,scope.$index)">上移</el-button>
+                                    <el-button type="text" size="small" v-if="!scope.row.ISSYS" @click="handleEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
+                                    <el-button style="margin-left:10px;" type="text" size='small' v-if="!scope.row.ISSYS" @click='handleDel(scope.row, scope.$index)' icon='el-icon-delete'>删除</el-button>
+                                </el-button-group>
+                                </template>
+                            </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                        <el-dialog :title='`${dialogTitle}支付方式`' width="400px" style="max-width:100%" :visible.sync="showAddPayWay" append-to-body >
+                            <el-form ref='addRuleForm' :model='addRuleForm' :rules='addRules' label-width="80px">
+                                <el-form-item label="支付方式" prop='Name'>
+                                    <el-input v-model="addRuleForm.Name" placeholder="请输入支付方式名称"></el-input>
+                                </el-form-item>
+                                <el-form-item label="备 注">
+                                    <el-input v-model="addRuleForm.Remark" maxlength="20" placeholder="不超过20字"></el-input>
+                                    </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click='submitPayWay()'>确认</el-button>
+                                    <el-button type="info" @click='showAddPayWay = false; addRuleForm.Name = ""; addRuleForm.Remark = "" '>取消</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-dialog>
+                </el-main>
+            </el-container>
+        </el-container>
+    </el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_SETUP from "@/mixins/setup";
+export default {
+    mixins: [MIXINS_SETUP.SIDERBAR_MENU],
+    data() {
+        return {
+            loading: false,
+            ruleForm1: {
+                OutPaytypeId: "",
+                InPaytypeId: "",
+                Money: 0,
+                Remark: ""
+            },
+            addRuleForm:{
+                Name:'',
+                Remark:''
+            },
+            addRules:{
+                Name:[{ required: true, message: '请输入名称', trigger: 'blur' }]
+            },
+            dealType: "add",
+            showForm: false,
+            formLoading: false,
+            showForm2: false,
+            showAddPayWay:false,
+            curDelIndex:0,
+            height:window.innerHeight -60,
+            dataList:[],
+            dialogTitle: '',
+            value1:true,
+        }
+    },
+    computed: {
+        ...mapGetters({
+            dataState: "accountState",
+            dealState: "dealAccountState",
+            addPayWayInfoState:'addPayWayInfoState',
+            delPayWayInfoState:'delPayWayInfoState',
+            dataListState:'rechargeListState'
+        })
+    },
+    watch: {
+        delPayWayInfoState(data){
+            this.$message({
+                type: data.success ? 'success' : 'error',
+                message: data.message,
+            })
+            if(data.success){
+                
+            }
+          this.getNewData();
+        },
+        dataListState(data){
+            this.loading = false
+            this.dataList=[]
+            if(data.success){
+                console.log("支付列表",data.data.List)
+                let Obj= data.data.List;
+                for(var i in Obj){
+                    if(Obj[i].ISHIDE==false){
+                        Obj[i].ISHIDE=true
+                    }else{
+                        Obj[i].ISHIDE=false
+                    }
+                    this.dataList.push(Obj[i])
+                }
+                // this.dataList = data.data.List
+            }
+        },
+        addPayWayInfoState(data){
+            this.$message({
+                type: data.success ? 'success' : 'error',
+                message: data.message,
+            })
+            if(data.success){
+                
+            }
+          this.getNewData();
+        },
+        dealState(data) {
+            if (data.success) {
+                this.showForm = false
+                this.$refs['ruleForm1'].resetFields()
+                this.ruleForm1.Money = 0
+            }
+            this.$message({
+                message: data.message,
+                type: data.success ? "success" : "error"
+            })
+            this.getNewData();
+        }
+    },
+    methods: {
+        handleMove(code, dir) {
+            console.log(code,dir)
+            if(dir==0){
+                this.$message('已经到顶');
+            }else{
+                let moveComm = (curIndex, nextIndex) => {
+                    let arr = this.dataList
+                    arr[curIndex] = arr.splice(nextIndex, 1, arr[curIndex])[0]
+                    return arr
+                }
+                this.dataList.some((val, index) => {
+                    if (val.ID === code) {
+                            let nextIndex = dir === 0 ? index + 1 : index - 1
+                            this.dataList = moveComm(index, nextIndex)
+                        return true
+                    }
+                    return false
+                })
+                let setDate=[];
+                for(var i in this.dataList){
+                    let Obj={
+                        PayTypeId:this.dataList[i].ID
+                    }
+                      setDate.push(Obj)
+                }
+                this.$store.dispatch("sortPaywayList", JSON.stringify(setDate)).then(() => {
+                })
+            }
+        },
+
+        showChange(item,i){
+            console.log(event,i)
+            let IsHide
+            if(i==true){
+                IsHide=0
+            }else{
+               IsHide=1            }
+            this.$store.dispatch("addPayWayState", { ID: item.ID, Name: item.NAME, Remark: '',IsHide:IsHide }).then(() => {
+                this.loading = true;
+            })
+        },
+        resetForm(formName){
+            this.showForm = false
+            this.$refs[formName].resetFields()
+        },
+        getNewData() {
+            this.$store.dispatch("getrechargeList", { codestatus : 2 ,IsHide:'-1'}).then(() => {
+                this.loading = true
+            })
+        },
+        handleDel(item, idx){
+            this.$confirm('确认删除 【' + item.NAME +'】?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$store.dispatch('delPayWayState',{ ID : item.ID}).then(()=>{
+                this.curDelIndex = idx
+                })
+            }).catch(() => {})
+        },
+        handleEdit(item) {
+            console.log(item)
+            this.dialogTitle = item.ID == '' ? '新增' : '编辑'
+            if (Object.keys(item).length > 0) {
+                this.dealType = "edit";
+                this.$prompt("", item.ID == '' ? '新增' : '编辑', {
+                    confirmButtonText: "确定",
+                    cancelButtonText: "取消",
+                    inputValue: item.ID == '' ? '' : item.NAME,
+                    inputPlaceholder: "请输入支付方式名称",
+                }).then(({ value }) => {
+                    if(value == ''){
+                         this.$message({ type: "success", message: "请输入支付试名称" })
+                    }else{
+                        this.$store.dispatch("addPayWayState", { ID: item.ID, Name: value, Remark: '' }).then(() => {
+                            this.loading = true;
+                        })
+                    }
+                    
+                }).catch(() => { });
+            } else {
+                this.dealType = "add"
+            }
+        },
+        transferfun() {
+            this.$refs.ruleForm1.validate(valid => {
+                if (valid) {
+                    this.$store.dispatch("inoutAccountPay", this.ruleForm1).then(() => {
+                        this.formLoading = true;
+                    });
+                }
+            });
+        },
+        submitPayWay(){
+            this.$refs.addRuleForm.validate(valid => {
+                if(valid){
+                    this.$store.dispatch('addPayWayState', { Name: this.addRuleForm.Name, Remark: this.addRuleForm.Remark}).then(()=>{
+                        this.showAddPayWay = false
+                    })
+                }
+            })
+        },
+  },
+  mounted() {
+    this.getNewData()
+  },
+  components: {
+    // flowPage: () => import("./flowDetails.vue")
+    headerPage: () => import("@/components/header")
+  }
+}
+</script>
+
+<style scoped>
+.el-header{
+  padding: 0 !important;
+}
+</style>

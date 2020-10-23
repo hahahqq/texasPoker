@@ -1,0 +1,253 @@
+<template>
+    <div class="content-new-fex">
+        <div class="content-bigty">
+            <div class="content-center">
+                <div class="content-center-list">
+                    <el-row :gutter="10">
+                        <el-col :span='5'>
+                            <el-radio-group size="small" v-model='chooseDateIdx' @change="chooseDate(chooseDateIdx)">
+                                <el-radio-button v-for="(item,index) in ['本月','上月','全部','其它']" :key='index' :label='index'>{{item}}</el-radio-button>
+                            </el-radio-group>
+                        </el-col>
+                        <el-col :span='7'>
+                            <el-date-picker v-if="isShowDate"
+                                ref="dateBE"
+                                size="small"
+                                v-model="dateBE"
+                                @change="chooseDate2" 
+                                type="daterange"
+                                value-format="timestamp"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期"
+                            ></el-date-picker>
+                        </el-col>
+                        
+                        <el-col :span='7' class="pull-right">
+                            <el-input size="small" style="width: 100%" v-model="ruleForm.Filter" clearable prefix-icon="el-icon-search" @input="searchData()" placeholder="请输入商家名称或商品编码">
+                                <!-- <el-button slot="append" type="default" >搜索</el-button> -->
+                            </el-input>
+                        </el-col>
+                        <el-col :span='5' class="pull-right text-right">
+                            <!-- <el-button type="primary" size="small" plain >
+                                <i class="el-icon-upload el-icon--right"></i> 导出表格
+                            </el-button> -->
+                        </el-col>
+                    </el-row>
+                </div>
+                <div class="content-center-list">
+                    <el-row :gutter="10">
+                        <el-col :span="5">
+                            店 铺
+                            <el-select size='small' style="width: 150px" v-model="ruleForm.ShopId" clearable @change="searchData()" placeholder="请选择店铺" class="full-width">
+                                <el-option v-for="item in shopList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+                            </el-select>
+                        </el-col>
+                        <el-col :span="5">
+                            分 类
+                            <el-select v-model="TypeId" multiple collapse-tags style="width: 150px" clearable size='small' @change="searchData()" placeholder="请选择分类" class="full-width">
+                                <el-option v-for="(item,i) in categoryList" :key="i" :label="item.NAME" :value="item.ID"></el-option>
+                            </el-select>
+                        </el-col>
+                    </el-row>
+                </div>
+            </div>
+        </div>
+        <div class="content-table-inventory" :style="{height:tablename+'px'}">
+          <div class="content-table-center">
+        <el-table 
+            border size='small' 
+            :data="tableList" 
+            :height="tableHeight"
+            v-loading='loading' 
+            element-loading-text='数据加载中...'
+            style="margin-top:5px; width: 100%"
+            header-row-class-name="bg-theme2 text-white" 
+
+            >
+            <el-table-column prop="NAME" label="商品"></el-table-column>
+            <el-table-column prop="CODE" label="编码"></el-table-column>
+            <el-table-column prop="TYPENAME" label="分类" align="center"></el-table-column>
+            <el-table-column prop="UNITNAME" label="单位" width="90" align="center"></el-table-column>
+
+            <el-table-column label="盘点数量"></el-table-column>
+            <el-table-column label="盘点前数量"></el-table-column>
+            <el-table-column label="盈亏数量"></el-table-column>
+            <el-table-column label="零售价"></el-table-column>
+            <el-table-column label="盈亏金额"></el-table-column>
+            <el-table-column label="成本价"></el-table-column>
+            <el-table-column label="盈亏成本"></el-table-column>
+        </el-table>
+
+        <div class="m-top-sm clearfix elpagination" v-if='pagination.TotalNumber > 0'>
+            <el-pagination
+            background
+            @size-change="handlePageChange"
+            @current-change="handlePageChange"
+            :current-page.sync="pagination.PN"
+            :page-size="pagination.PageSize"
+            layout="total, prev, pager, next, jumper"
+            :total="pagination.TotalNumber"
+            class="text-right"
+            ></el-pagination>
+        </div>
+          </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+import dayjs from 'dayjs'
+    export default{
+        data(){
+            return {
+                chooseDateIdx: 0,
+                dateBE: [],
+                loading: false,
+                isShowDate: false,
+                TypeId:[],
+                ruleForm: {
+                    Filter: '',
+                    dateChoose:[
+                        new Date(this.getCustomDay(-7)).getTime(),
+                        new Date().getTime()
+                    ],
+                    ShopId: '',
+                    PN: 1
+                },
+                tableHeight: document.body.clientHeight - 260,   
+                pagination: {
+                    TotalNumber: 0,
+                    PageNumber: 0,
+                    PageSize: 20,
+                    PN: 1
+                },
+                shopList:[],
+                tablename:document.body.clientHeight-200,
+            }
+        },
+        computed: {
+            ...mapGetters({
+                categoryList: "categoryList",
+                shopData: "shopList",
+                tableList:'InventoryReportList',
+                getInventoryReportState:'getInventoryReportState'
+            })
+        },
+        watch: {
+            shopData(data){
+                this.shopList = data
+                this.ruleForm.ShopId = getHomeData().shop.SHOPID
+            },
+            getInventoryReportState(data){
+                this.loading = false
+                if(data.success){
+                    this.pagination =  {
+                        TotalNumber: data.data.PageData.TotalNumber,
+                        PageNumber: data.data.PageData.PageNumber,
+                        PageSize: data.data.PageData.PageSize,
+                        PN: data.data.PageData.PN
+                    }
+                    this.dataObj = data.data.Obj
+                }else{
+                    this.$message.error(data.message)
+                }
+            }
+        },
+        methods: {
+            chooseDate2(v) {
+                this.ruleForm.dateChoose = [v[0], v[1]];
+                this.ruleForm.PN = 1
+                this.searchData();
+            },
+            chooseDate(i) {
+                this.chooseDateIdx = i;
+                if (i < 3 ) {
+                    this.isShowDate = false;
+                }
+                switch (i) {
+                    case 0:
+                        let arr2 = this.getAroundMonth();
+                        this.ruleForm.dateChoose = [dayjs().startOf('month').valueOf(), dayjs().endOf('month').valueOf()] ;
+                        this.searchData();
+                        break;
+                    case 1:
+                        var nowdays = new Date();
+                        var year = nowdays.getFullYear();
+                        var month = nowdays.getMonth();
+                        if(month==0) {
+                            month=12;
+                            year=year-1;
+                        }
+                        if (month < 10) {
+                            month = "0" + month;
+                        }
+                        var firstDay = year + "-" + month + "-" + "01";//上个月的第一天
+                        var myDate = new Date(year, month, 0);  //上个月最后一天
+                        var lastDay = year + "-" + month + "-" + myDate.getDate();//上个月的最后一天
+                        this.ruleForm.dateChoose = [dayjs(firstDay).valueOf(), dayjs(lastDay).valueOf()]
+                        this.searchData()
+                        break;
+                    case 2:
+                        this.ruleForm.dateChoose = ['1', '9999999999999']
+                        this.searchData()
+                        break;
+                    case 3:
+                        this.isShowDate = !this.isShowDate;
+                        break;
+                }
+            },
+            searchData(){
+                if(this.TypeId.length == 0){
+                    this.ruleForm.TypeId = ''
+                }else{
+                    let typeList = this.TypeId, str = ''
+                    for(var i in typeList){
+                       str += typeList[i] + ','
+                    }
+                    if(str.length>0){  //去掉最后一个逗号
+                        str=str.substring(0,str.length-1) 
+                    }
+                    this.ruleForm.TypeId = str
+                }
+
+                this.$store.dispatch('GetInventoryReport', this.ruleForm).then(()=>{
+                    this.loading = true
+                })
+            },
+            handlePageChange: function(currentPage) {
+                if (this.ruleForm.PN == currentPage || this.loading) {
+                    return;
+                }
+                this.ruleForm.PN = parseInt(currentPage);
+                this.searchData()
+            },
+            handleView(item, idx){
+                console.log(item)
+                this.$message.warning(item.GOODSNAME)
+            }
+        },
+        mounted(){
+            if (this.categoryList.length == 0) {
+                this.$store.dispatch("getCategoryList");
+            }
+        },
+        beforeCreate() {
+            this.$store.dispatch("getShopList")
+        },
+    }
+</script>
+<style scoped>
+.content-center-list{
+    height: 60px;
+    line-height: 60px;
+}
+.content-table-inventory{
+  margin-top: 10px;
+  /* height: 550px; */
+  width: 100%;
+  background: #fff;
+}
+</style>  

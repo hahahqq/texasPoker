@@ -1,0 +1,58 @@
+<template>
+  <el-container>
+        <el-header style="height:50px; padding: 0">
+            <headerPage></headerPage>
+        </el-header>
+        <el-container>
+            <el-aside width="100px">
+                <section style="min-width:100px;">
+                    <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+                </section>
+            </el-aside>
+            <el-container>
+                <el-main>
+                    <div class="content-table1">
+                        <div>
+                      <el-tabs v-model="activeName">
+                          <el-tab-pane label="推荐人报表" name="first">
+                              <referencesReport></referencesReport>
+                          </el-tab-pane>
+                          <el-tab-pane label="佣金提现" name="second">
+                              <commissionWarn></commissionWarn>
+                          </el-tab-pane>
+                          <el-tab-pane label="推荐设置" name="third">
+                              <recommendSet></recommendSet>
+                          </el-tab-pane>
+                      </el-tabs>
+                  </div>
+                    </div>
+                </el-main>
+            </el-container>
+        </el-container>
+    </el-container>
+</template>
+<script>
+import MIXINS_MARKETING from "@/mixins/marketing.js";
+export default {
+  mixins: [MIXINS_MARKETING.MARKETING_MENU],
+  data() {
+    return {
+      activeName: "first"
+    }
+  },
+  components: {
+    referencesReport : () => import("@/components/marketing/referencesReport"),
+    commissionWarn: () => import("@/components/marketing/commissionWarn.vue"),
+    recommendSet: () => import("@/components/marketing/recommendSet.vue"),
+    headerPage: () => import("@/components/header")
+  },
+}
+</script>
+<style scoped>
+.content-table >>> .el-tabs__nav-scroll{
+  width: 96%!important;
+
+  padding-left: 2%!important;
+  padding-right: 2%!important;
+}
+</style>

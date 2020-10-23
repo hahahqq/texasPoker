@@ -1,0 +1,49 @@
+<template>
+    <div class="content-new-fex">
+        <div class="content-table1-stock" :style="{height:tablename+'px'}">
+          <div class="content-table-center">
+            <el-tabs v-model="activeName" type="card" @tab-click="handleTabClick(activeName)">
+                <el-tab-pane
+                    :key="item.name"
+                    v-for="item in tableTabs"
+                    :label="item.label"
+                    :name="item.name"
+                >
+                </el-tab-pane>
+            </el-tabs>
+            <stockDetails v-if="activeName == 'first'"></stockDetails>
+            <stockSum v-else></stockSum>
+          </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        data() {
+            return {
+                activeName: 'first',
+                tablename:document.body.clientHeight-70,
+                tableTabs:[{ name: 'first', label: '库存明细'}, { name: 'second', label: '库存汇总'}],
+            }
+        },
+        methods:{
+            handleTabClick(activeName){
+                console.log(activeName)
+            }
+        },
+        components:{
+            stockDetails : () => import('./stockDetails.vue'),
+            stockSum: () => import('./stockSum.vue')
+        }
+    }
+</script>  
+<style scoped>
+.content-table1-stock{
+  margin-top: 0px;
+  /* height: 600px; */
+  width: 100%;
+  background: #fff;
+}
+
+</style>

@@ -1,0 +1,352 @@
+<template>
+  <el-container>
+    <el-header style="height: 50px; padding: 0">
+      <headerPage></headerPage>
+    </el-header>
+    <el-container>
+      <el-aside width="100px">
+        <section style="min-width: 100px">
+          <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+        </section>
+      </el-aside>
+      <el-container>
+        <el-main :style="{ height: height + 'px' }">
+          <div class="content-table1">
+            <div class="content-table-center">
+              <div class="parameter">
+                <div class="setparametersock">
+                  <ul>
+                    <li>
+                      <span>
+                        <i></i>
+                        营业时间
+                      </span>
+
+                      <el-time-picker
+                        v-model="TimeDifference"
+
+                        size='small'
+                        format="HH:mm"
+                        style="margin-left: 20px; width: 100px"
+                        placeholder="任意时间点">
+                     </el-time-picker>
+
+                      <!-- <span style="color: #999; margin-left: 20px">
+                        例：9月2日10:00到9月3日10:00的单据都计入9月2日
+                      </span> -->
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        会员卡号自动生成
+                      </span>
+                      <span style="color: #999; margin-left: 20px">按6位数流水号自动生成</span>
+
+                      <el-switch
+                        v-model="ruleForm.autogenvipcode"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        商品编码自动生成
+                      </span>
+                      <el-switch
+                        v-model="ruleForm.autogengoodscode"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        自动发送短信
+                      </span>
+                      <span style="color: #999; margin-left: 20px">
+                        启用后对应充值、消费、调整单据将发送相应短信通知
+                      </span>
+
+                      <el-switch
+                        v-model="autosendsms"
+                        @change="isshowautosendsms"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+
+                      <span
+                        v-if="autosendsms"
+                        style="width: 100%; padding-left: 3%; margin-top: 10px; display: table"
+                      >
+                        <el-checkbox v-model="ruleForm.autosendaddsms">充值短信</el-checkbox>
+                        <el-checkbox v-model="ruleForm.autosendenrollsms">报名短信</el-checkbox>
+                        <el-checkbox v-model="ruleForm.autosendprizesms">领奖短信</el-checkbox>
+                        <el-checkbox v-model="ruleForm.autosendpaysms">消费短信</el-checkbox>
+                        <el-checkbox v-model="ruleForm.autosendchanagesms">调整短信</el-checkbox>
+                      </span>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        消费时需要密码
+                      </span>
+                      <span style="color: #999; margin-left: 20px">
+                        启用后消费时会员必须输入密码之后才能消费，启用之前的会员将使用“888888”作为初始密码
+                      </span>
+
+                      <el-switch
+                        v-model="ruleForm.IsUseVipPassword"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        是否区分储值积分和竞技积分
+                      </span>
+                      <span style="color: #999; margin-left: 20px">
+                        启用后储值和积分赛赢取的积分为储值积分，比赛赛事赢取的积分为竞技积分
+                      </span>
+
+                      <el-switch
+                        v-model="IntegralType"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        启用积分赛
+                      </span>
+                      <span style="color: #999; margin-left: 20px">启用后可进行积分赛</span>
+
+                      <el-switch
+                        v-model="ruleForm.IsIntegralMatch"
+                        active-color="#rgb(251, 120, 154)"
+                        inactive-color="##9E9E9E"
+                        class="pull-right"
+                      ></el-switch>
+                    </li>
+
+                    <li>
+                      <span>
+                        <i></i>
+                        销售抹零设置
+                      </span>
+                      <el-select
+                        size="small"
+                        style="margin-left: 20px; width: 150px"
+                        v-model="ruleForm.ZeroType"
+                        placeholder="请选择抹零方式"
+                      >
+                        <el-option
+                          v-for="item in zeroTypeList"
+                          :key="item.ID"
+                          :label="item.NAME"
+                          :value="item.ID"
+                        ></el-option>
+                      </el-select>
+                    </li>
+                  </ul>
+                </div>
+                <div class="tm-top-lg text-right">
+                  <el-button type="primary" @click="handleSubmit" :loading="loading">
+                    保 存
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-main>
+      </el-container>
+    </el-container>
+  </el-container>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getUserInfo, getHomeData, setUserInfo } from "@/api/index";
+import MIXINS_SETUP from "@/mixins/setup";
+import dayjs from 'dayjs'
+export default {
+  mixins: [MIXINS_SETUP.SIDERBAR_MENU],
+  data() {
+    return {
+      CompanyCode: "",
+      TimeDifference: '',
+      IntegralType: false,
+      ruleForm: {
+        IsAutoGoodsCode: false,
+        autogengoodscode: false,
+        autogenvipcode: false,
+        autosendaddsms: false,
+        autosendpaysms: false,
+        autosendchanagesms: false,
+
+        IntegralRate: "",
+        ZeroType: 1,
+        autosendprizesms: false,
+        autosendenrollsms: false,
+        IsUseVipPassword: false,
+        IsIntegralMatch: false
+      },
+      autosendsms: false,
+      Integralsval: "",
+      loading: false,
+      pagelist: [],
+      zeroTypeList: [
+        { ID: 0, NAME: "不抹零" },
+        { ID: 1, NAME: "尾数抹零到元" },
+        { ID: 2, NAME: "尾数抹零到角" },
+        { ID: 3, NAME: "四舍五入到元" },
+        { ID: 4, NAME: "四舍五入到角" }
+      ],
+      height: window.innerHeight - 60
+    };
+  },
+  computed: {
+    ...mapGetters({
+      gparameterstate: "gparameterstate",
+      sparameterstate: "sparameterstate",
+      dataList: "integralList",
+      dataListState: "integralListState"
+    })
+  },
+  watch: {
+    gparameterstate(data) {
+      let CompanyConfig = data.data.CompanyConfig;
+      if (Object.keys(CompanyConfig).length > 0) {
+        for (let key in this.ruleForm) {
+          let UCkey = key.toUpperCase();
+          this.ruleForm[key] = CompanyConfig[UCkey];
+        }
+        this.Integralsval = CompanyConfig.INTEGRALRATE;
+
+         let TIMEDIFFERENCE = CompanyConfig.TIMEDIFFERENCE.split(":")
+        this.TimeDifference = new Date(dayjs().year(), dayjs().month() , dayjs().day(), TIMEDIFFERENCE[0], TIMEDIFFERENCE[1]);
+        console.log(this.TimeDifference )
+        this.IntegralType = CompanyConfig.INTEGRALTYPE;
+        if (
+          CompanyConfig.AUTOSENDADDSMS ||
+          CompanyConfig.AUTOSENDCHANAGESMS ||
+          CompanyConfig.AUTOSENDPAYSMS ||
+          CompanyConfig.AUTOSENDPRIZESMS ||
+          CompanyConfig.AUTOSENDENROLLSMS
+        ) {
+          this.autosendsms = true;
+        } else {
+          this.autosendsms = false;
+        }
+      }
+    },
+    sparameterstate(data) {
+      this.loading = false;
+      if (data.success) {
+        this.$message.success("参数设置成功！");
+      } else {
+        this.$message(data.message);
+      }
+    },
+    dataListState(data) {
+      this.loading = false;
+      if (data.success) {
+        this.pagelist = [...this.dataList];
+      }
+    }
+  },
+
+  methods: {
+    isshowautosendsms() {
+      if (this.autosendsms) {
+        this.ruleForm.autosendaddsms = true;
+        this.ruleForm.autosendpaysms = true;
+        this.ruleForm.autosendchanagesms = true;
+        this.ruleForm.autosendprizesms = false;
+        this.ruleForm.autosendenrollsms = false
+      }
+    },
+    defaultData() {
+      this.$store.dispatch("getparameterstate", {});
+    },
+    handleSubmit() {
+      if (this.CompanyCode.length < 11) {
+        this.$message.error("体验账号不能进行该操作");
+        return;
+      }
+      this.loading = true;
+      this.ruleForm.IntegralRate = this.Integralsval;
+      this.ruleForm.IntegralType = this.IntegralType ? 1 : 0
+
+      this.ruleForm.TimeDifference = dayjs(new Date(this.TimeDifference)).format('HH:mm')
+
+      if (this.autosendsms == false) {
+        this.ruleForm.autosendaddsms = false;
+        this.ruleForm.autosendpaysms = false;
+        this.ruleForm.autosendchanagesms = false;
+        this.ruleForm.autosendprizesms = false;
+        this.ruleForm.autosendenrollsms = false
+
+      }
+      this.$store.dispatch("setparameterstate", this.ruleForm);
+
+      let getInfo = getUserInfo();
+      setUserInfo(getInfo);
+    }
+  },
+  mounted() {
+    let userInfo = getUserInfo();
+    let homeInfo = getHomeData();
+    this.CompanyCode = userInfo.CompanyID == homeInfo.shop.COMPANYID ? userInfo.CompanyCode : "";
+    this.defaultData();
+    this.$store.dispatch("getIntegralList", {});
+  },
+  components: {
+    headerPage: () => import("@/components/header")
+  }
+};
+</script>
+<style>
+.parameter .el-radio-button__inner {
+  background: transparent;
+  border: 1px solid #dcdfe6;
+  width: 100%;
+}
+
+.setparametersock,
+.tm-top-lg {
+  width: 100%;
+  float: left;
+}
+
+.tm-top-lg {
+  margin-top: 10px;
+}
+.setparametersock ul {
+  float: left;
+}
+
+.setparametersock ul li {
+  padding: 12px 0 12px 12px;
+  width: 100%;
+  float: left;
+  border-bottom: 1px dashed #ddd;
+}
+.IntegralRate input.el-input__inner {
+  border: none;
+  border-bottom: 1px solid #ff92ae;
+  text-align: center;
+}
+</style>

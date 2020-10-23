@@ -1,0 +1,1202 @@
+<template>
+<el-container>
+  <el-container>
+    <el-aside width="100px">
+        <section style="min-width:100px;">
+          <sidebarMenu :activePath="activePath" :routesList="routesList" :width="100"></sidebarMenu>
+        </section>
+    </el-aside>
+    <el-container>
+        <div class="t-botton-timescountc" style="height: 100%;" ref="elememt">
+            <div class="f-botton-fs" style="height: 100%;">
+                <div style="position: absolute;top: 0px;bottom: 0px;left:100px;right:0px;">
+                        <el-row :gutter="24" style="height: 100%;margin-right: 0px;margin-left: 0px">
+                            <el-col
+                                :span="8"
+                                style="height: 100%;position: relative;background: rgb(248, 248, 249);padding-right: 0px;padding-left: 0px"
+                            >
+                                <div class="commodityc-top">
+                                    <span class="title">商品消费</span>
+                                    <span class="commodityc-top-text" @click="clearData">清空页面</span>
+                                </div>
+                                <div style="padding-top:10px;padding-left:10px;padding-right:10px;">
+                                    <div class="ssmemberul" v-if="addobjCountList.length > 0">
+                                        <div class="ssmemberul-cont">
+                                            <div class="ssmemberul-imgUrl">
+                                            <img :src="memberImg" onerror="this.src='static/images/merberpic.png'">
+                                            </div>
+                                            <div class="ssmemberul-massge">
+                                            <div>
+                                                <span>{{member.VIPNAME}}</span>
+                                                <span>{{member.VIPTEL}}</span>
+                                            </div>
+                                            <div>
+                                                <span>余额 : {{member.VIPMONEY}}</span>
+                                                <span style="margin-left:20px;">积分 : {{member.VIPINTEGRAL}}</span>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="timescountc_left overflowscroll" ref="addsockheight">
+                                        <ul id="addshopList" class="p-bottom-sm" v-if="addobjCountList.length>0">
+                                            <li
+                                            v-for="(item,i) in addobjCountList"
+                                            :key="i"
+                                            @click="open"
+                                            class="addshopList-cont"
+                                            >
+                                                <el-row class="addshopList-cont-list">
+                                                    <el-col :span="20" class="addshopList-cont-list-name">{{item.goodsname}}</el-col>
+                                                    <el-col :span="4"  style="text-align:right;margin-right:5px;"><i class="el-icon-delete"></i></el-col>
+                                                </el-row>
+                                                <el-row class="addshopList-cont-list">
+                                                    <el-col :span="8" class="discountMoney">￥{{item.discountMoney}}</el-col>
+                                                    <el-col :span="8" style="text-align:center">
+                                                    <div class="sumchange">
+                                                        <el-input-number style="width:100px;" :disabled="true" size="mini" v-model.number="item.Qty"></el-input-number>
+                                                    </div>
+                                                    </el-col>
+                                                    <el-col :span="8" class="shopMoney"><span style="margin-right:5px;">￥{{item.shopMoney}}</span></el-col>
+                                                </el-row>
+                                            </li>
+                                        </ul>
+                                        <div v-else class="show-goodImg">
+                                            <div>
+                                                <img :src="goodImg" class="goodImg">
+                                            </div>
+                                            <div class="goodImg-text">没有消费信息</div>
+                                        </div>
+                                    </div>
+                                    <div class="timescountc_left_footer" ref="footer" @click="open">
+                                        <el-row style="width:100%;margin-top:5px;">
+                                        <div v-if="addobjCountList.length>0">
+                                            <el-select class="g-public-multi-select" disabled v-model="value" placeholder="请选择销售员" multiple style="width:100%">
+                                                <el-option
+                                                v-for="item in options"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                                </el-option>
+                                            </el-select>
+                                        </div>
+                                        <div v-if="addobjCountList.length>0">
+                                            <el-input
+                                                disabled
+                                                :rows="2"
+                                                placeholder="请输入备注信息">
+                                            </el-input>
+                                        </div>
+                                        <div>
+                                            <el-row style="height:40px;width:100%; line-height:40px;margin-top:5px;">
+                                                <el-col :span="7" class="discount">
+                                                    <div class="discount-title">折</div>
+                                                        <el-dropdown  style="margin-left:10px;">
+                                                            <span class="el-dropdown-link">
+                                                                <i v-if="shouDisvalue" style="color:#C0C4CC;font-size:12px">选择卡</i>
+                                                                <i>{{disvalue}}</i>
+                                                            </span>
+                                                            <i class="el-icon-arrow-down el-icon--right" style="margin-left:15px;"></i>
+                                                        <el-dropdown-menu slot="dropdown" disabled>
+                                                        </el-dropdown-menu>
+                                                        </el-dropdown>
+                                                </el-col>
+                                                <el-col :span="7" style="text-align:center" class="discount">
+                                                    <div class="discount-title">券</div>
+                                                    <el-popover
+                                                    disabled
+                                                    >
+                                                    <el-row class="coupon">
+                                                    </el-row>
+                                                    <div slot="reference" style="margin-left:5px;">
+                                                        <span v-if="showCoupn" style="color:#C0C4CC;font-size:12px">优惠券</span>
+                                                        <span v-else>已优惠{{coupon}}元</span>
+                                                    </div>
+                                                    </el-popover>
+                                                    <i class="el-icon-arrow-down el-icon--right gright"></i>
+                                                </el-col>
+                                                <el-col :span="7" class="discount" style="height:40px;">
+                                                    <div>
+                                                        <div class="discount-title">￥</div>
+                                                    </div>
+                                                    <div>
+                                                        <input class="showEit-input1" disabled placeholder="输入优惠金额" v-model="inputCouponMoney"/>
+                                                    </div>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                        <div class="footer_top" style="margin: 6px 0;background-color: #fff;height:60px;line-height: 60px;">
+                                            <el-row>
+                                                <el-col :span="12">
+                                                    <span style="display: inline-block;margin-left:10px;">数量&nbsp;&nbsp;{{totalTotal.num}}</span>,
+                                                    <span style="display: inline-block;margin-left:5px;">金额&nbsp;&nbsp;<span class="priceTol">￥{{(parseInt(totalTotal.price*tate - coupon -inputCouponMoney))}}</span></span>
+                                                </el-col>
+                                                <el-col :span="6">
+                                                    <el-button type="success" @click.native.stop="putUpok" size="medium">取单</el-button>
+                                                </el-col>
+                                                <el-col :span="6">
+                                                    <el-button style="width:95%;" type="danger" @click="co_reckoning" size="medium">收款</el-button>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                        </el-row>
+                                    </div>
+                                </div>
+                            </el-col>
+                            <el-col :span="16" style="padding-left:0px;padding-right: 0px;">
+                                <div class="commodity-right">
+                                    <div class="listCot">
+                                        <el-row>
+                                            <el-col :span="16" class="member-header">
+                                                <div style="padding-left:20px;">
+                                                    挂单列表
+                                                </div>
+                                            </el-col>
+                                            <el-col :span="8" class="shop">
+                                                <span class="name">{{shopInfo.SHOPNAME}}</span>
+                                                <span class="">
+                                                    <el-popover placement="bottom" width="140" trigger="hover" popper-class="no-padding">
+                                                        <el-button style="border: none!important;"  @click="changeShop()" class="full-width" icon='icon-exchange'>&nbsp;&nbsp;切换店铺</el-button>
+                                                        <el-button style="border: none!important;"  class="full-width no-m-left border-top" icon='icon-user'>&nbsp;&nbsp; 账号信息</el-button>
+                                                        <el-button style="border: none!important;"  @click="logout()" class="full-width no-m-left border-top" icon='icon-signout'>&nbsp;&nbsp;退出账号</el-button>
+                                                        <a slot="reference" class="hitem">
+                                                            <i class='icon-reorder'></i>
+                                                        </a>
+                                                    </el-popover>
+                                                </span>
+                                            </el-col>
+                                        </el-row>
+                                    </div>
+                                    <div class="commodity-right-good-list">
+                                        <div v-loading="loading" element-loading-text="拼命加载中" class="list-bitt-cont">
+                                            <el-row class="list-contsName">
+                                                <el-col style="text-align:left;width:25%;"><span style="margin-left:20px;">客户</span></el-col>
+                                                <el-col style="text-align:center;width:25%;">商品</el-col>
+                                                <el-col style="text-align:center;width:15%;">数量</el-col>
+                                                <el-col style="text-align:center;width:15%;">销售人员</el-col>
+                                                <el-col style="text-align:right;width:20%;"><span style="margin-right:20px;">金额</span></el-col>
+                                            </el-row>
+                                            <div class="list-contsName-shop">
+                                                <el-row class="right-list" v-for="(items,i) in goodBillList" :key="i">
+                                                    <span  @click="selctBillList(items,i)">
+                                                        <el-row class="right-list-time">
+                                                        <el-col :span="12">
+                                                            <span style="margin-left:20px;">下单时间 :</span>
+                                                            <span>{{new Date(items.BILLDATE) | timehf}}</span>
+                                                        </el-col>
+                                                        <el-col :span="12" style="text-align:right"><i style="margin-right:21px;" @click.stop="deleteBillList(items,i)" class="el-icon-delete"></i></el-col>
+                                                        </el-row>
+                                                        <el-row class="right-list-goods">
+                                                            <el-col style="width:25%;">
+                                                            <el-row >
+                                                                <el-col :span="8">
+                                                                <div class="right-list-img">
+                                                                    <img :src="items.showgoodsimg" onerror="this.src='static/images/merberpic.png'">
+                                                                </div>
+                                                                </el-col>
+                                                                <el-col :span="16">
+                                                                <div>{{items.VIPNAME}}</div>
+                                                                <div>{{items.VIPCODE}}</div>
+                                                                </el-col>
+                                                            </el-row>
+                                                            </el-col>
+                                                            <el-col  style="text-align:center;width:25%;">
+                                                            <div style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden;width:100%;">
+                                                                <span  v-for="(ite ,t) in items.name" :key="t">{{ite}} , </span>
+                                                            </div>
+                                                            </el-col>
+                                                            <el-col style="text-align:center;width:15%;">
+                                                            <div>{{items.name.length}}</div>
+                                                            </el-col>
+                                                            <el-col style="text-align:center;width:15%;">
+                                                            <div></div>
+                                                            </el-col>
+                                                            <el-col style="text-align:right;width:20%;">
+                                                            <div class="right-list-goods-money">￥{{items.MONEY}}</div>
+                                                            </el-col>
+                                                        </el-row>
+                                                    </span>
+                                                </el-row>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-col>
+                        </el-row>
+                </div>
+            </div>
+            <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+                <recharge
+                    @closeModalrecharge="showRecharge=false"
+                    :totalprice="totalPrice"
+                    :isselectvip="VipId"
+                    @CashRecharge="CashRecharge"
+                    ref="SurveyForm"
+                ></recharge>
+            </el-dialog>
+            <el-dialog title="请选择门店" :visible.sync="isShowShop" width="300px" :before-close="handleClose">
+                <div class='shopListClass'>
+                    <ul>
+                        <li v-for='(item, index) in theshopList' :key="index" @click="setShop(item)">
+                            {{item.SHOPNAME}}
+                        </li>
+                    </ul>
+                </div>
+            </el-dialog>
+        </div>
+    </el-container>
+  </el-container>
+</el-container>
+</template>
+<script>
+import Vue from "vue";
+import { GOODS_IMGURL } from "@/util/define";
+import { nscreenexCodeFun } from "@/util/objectivity";
+import { getparametersetup } from "@/util/com/index";
+import { getDayindate } from "@/util/Printing";
+import { mapState, mapGetters } from "vuex";
+import { VIPIMAGESIMG } from "@/util/define";
+
+import yjemployee from "@/components/employee/YJemployee";
+import recharge from "@/components/Recharge/Recharge";
+import Swiper from "swiper";
+import MIXINS_CLEAR from "@/mixins/clearAllData";
+import { getHomeData,getUserInfo } from '@/api/index'
+import "swiper/dist/css/swiper.min.css";
+const settheVipPrice_Fun = function(goodsItem, selmember, type, value) {
+    // 设置会员折扣 type：0=商品选择，1=挂单商品， 2=all, 3=更改折扣
+    let gPrice = 0;
+    let price = parseFloat(goodsItem.PRICE),
+        discount = 1,
+        remark = "";
+        console.log(type)
+    return {
+        Price: price,
+        Discount: discount,
+        priceremark: remark,
+        retailprice: gPrice
+    };
+};
+let _ = require("lodash");
+import MIXINS_MONEY from "@/mixins/money";
+import MIXINS_CHECKOUT from "@/mixins/checkout";
+export default {
+    mixins: [MIXINS_CHECKOUT.CHOOSE_MEMBER,MIXINS_MONEY.MONEY_MENU,MIXINS_CLEAR.LOGOUT],
+    data() {
+        return {
+            loading:true,
+            dateBE: [
+                new Date(this.getCustomDay(-7)).getTime(),
+                new Date().getTime()
+            ],
+            goodImg: "static/images/noneGoods.png",
+            memberImg:"",
+            member:"",
+            showCoupont1:true,
+            listName:["客户","商品","数量","销售人员","金额"],
+            goodBillList:[],
+            delloading: false,
+            curtab: 0,
+            ListObj: {},
+            BillList: [],
+            GoodsObj: [],
+            BillId: '',
+            showCoupont2:false,
+            showOptions:false,
+            showRarmark:false,
+            eitdiscount:"",
+            inputCouponMoney:"",
+            visible:false,
+            eitcontant:false,
+            options: [],
+            value: '',
+            shouDisvalue:true,
+            disoptions: [],
+            disvalue: '',
+            getgoodsIMGURL: "",
+            eitprice:"",
+            eitDatashop:[],
+            current: "ok",
+            index:'ok',
+            indexs:1,
+            searchText: "",
+            VipId: "",
+            VipIdrows: "",
+            BillId: "",
+            objCount: [],
+            addobjCountList: [],
+            totalTotal: {
+                num: 0,
+                price: 0,
+            },
+            totalPrice:{
+                num: 0,
+                price: 0,
+            },
+            checkedreceipt: false,
+            checkedmessage: false,
+            pagelist: [],
+            pagination: {
+                TotalNumber: 0,
+                PageNumber: 0,
+                PageSize: 20,
+                PN: 0
+            },
+            pageData: {
+                PN: 1,
+                Filter: "",
+                Status: 1,
+                Mode: -1,
+                TypeID: "", //商品类别ID
+                DescType: 0
+            },
+            showyjemployee: false,
+            showRecharge: false,
+            showEitshop:false,
+            showCoupon:false,
+            shopitemList: {},
+            showTishi: "",
+            putUpokstatus: "",
+            pageCouponList: {
+                VipId: "",
+                Type: "",
+                PN: 1
+            },
+            indexCouponlist:"",
+            dataLists:[],
+            selectlist:[],
+            coupon:"",
+            showCoupn:true,
+            showCoupnmoney:true,
+            tate:1,
+            shopInfo: getHomeData().shop,
+            isShowShop:false,
+            theshopList: [],
+            activePath: "",
+            shopName:getUserInfo().CompanyName
+        };
+    },
+    computed: {
+        ...mapGetters({
+            memberState: "memberState",
+            employeeList: "employeeList",
+            commoditycflDiscountList:"commoditycflDiscountList",
+            commoditycflListState: "commoditycflListState",
+            commoditycflList: "commoditycflList",
+            dataList: "goodsListNew",
+            dataListState: "goodsListNewState",
+            commoditycconsumption: "commoditycconsumption",
+            goodsState: "goodsState",
+            goodsItem: "goodsItem",
+            couponList:"couponList",
+            guadancxlistState:"guadancxlistState",
+            delguadancdlistState:"delguadancdlistState",
+            guadancdlState:"guadancdlState",
+            shopList: "shopList",
+            shopListState:'shopListState'
+        })
+    },
+    watch: {
+        guadancdlState(data){
+            this.member=data.data.Obj
+            let goods=data.data.GoodsObj;
+            this.addobjCountList=[];
+            for(var i in goods){
+                let Obj={
+                    goodsname: goods[i].GOODSNAME,
+                    Qty: goods[i].QTY,
+                    GoodsId: goods[i].GOODSID,
+                    itemObj: goods[i].UNITNAME,
+                    shopMoney:goods[i].MONEY,
+                    discountMoney:goods[i].GOODSPRICE,
+                }
+                this.addobjCountList.push(Obj);
+            }
+
+        },
+        //删除单号返回数据方法
+        delguadancdlistState(data){
+            console.log(data.success)
+            if(data.success) {
+                this.$message({
+                    message: data.message,
+                    type: "success"
+                });
+                this.$store.dispatch("getguadancxlistState", {});
+            }else{
+                this.$message({
+                    message: data.message,
+                    type: "error"
+                });
+            }
+        },
+        guadancxlistState(data) {
+          if (data.success) {
+            this.curtab = 0;
+            this.goodBillList=[];
+            this.BillList = [...data.data.BillList];
+            for(var i in this.BillList){
+                let Obj={
+                  name:this.BillList[i].LONGGOODSNAME.split(','),
+                  BILLDATE:this.BillList[i].BILLDATE,
+                  VIPNAME:this.BillList[i].VIPNAME,
+                  VIPCODE:this.BillList[i].VIPCODE,
+                  QTY:this.BillList[i].QTY,
+                  MONEY:this.BillList[i].MONEY,
+                  showgoodsimg:this.BillList[i].IMAGEURL,
+                  BILLID:this.BillList[i].BILLID
+                }
+                this.goodBillList.push(Obj)
+            }
+          }
+          this.loading=false;
+        },
+        couponList(data){
+        let msl=[];
+        msl=data;
+        this.dataLists=[];
+        msl.forEach(item => {
+            this.$set(item, "isSelect" , false)
+            this.dataLists.push(item)
+        })
+        },
+        employeeList(data) {
+            this.options=[]
+            let employeemen=data;
+            for(var i in employeemen){
+                let Obj={
+                    value:employeemen[i].ID,
+                    label:employeemen[i].NAME
+                    }
+                    this.options.push(Obj)
+            }
+        },
+        commoditycflDiscountList(data) {
+             this.disoptions=[];
+             let discount=data;
+             for(var i in discount){
+                 let Obj= {
+                    value:discount[i].ID,
+                    label:discount[i].NAME
+                 }
+                 this.disoptions.push(Obj)
+             }
+        },
+        searchText() {
+            this.searchfun();
+        },
+        commoditycflList(data) {
+            this.fenleiscrollwidth();
+        },
+        memberState(data) {
+            if (data.success) {
+                this.objCount = data.data.objCount;
+            }
+        },
+
+        dataListState(data) {
+            // this.loading = false;
+            this.isFilter = false;
+            this.pagelist = [...this.dataList];
+            this.getgoodsIMGURL = GOODS_IMGURL;
+            for (let i = 0; i < this.pagelist.length; i++) {
+                this.pagelist[i].showgoodsimg =
+                    this.getgoodsIMGURL + this.pagelist[i].ID + ".png";
+            }
+            if (data.success) {
+                this.pagination = {
+                    TotalNumber: data.paying.TotalNumber,
+                    PageNumber: data.paying.PageNumber,
+                    PageSize: data.paying.PageSize,
+                    PN: data.paying.PN
+                };
+            }
+        },
+        //根据单号获取商品信息
+        commoditycconsumption(data) {
+            if (data.success) {
+                this.clearData();
+                let qresurl = this.$store.state.commodityc.saveQRcodeIMG; // 注意获取图片
+                this.$message({
+                    message: this.showTishi,
+                    type: "success"
+                });
+                if (this.putUpokstatus != 1) {
+                    if (this.$store.state.recharge.isPrintsatus) {
+                        getDayindate("601020406",data.data.OutBillId,1,qresurl);
+                    }
+                }
+                this.$store.dispatch("getguadancxlistState", {});
+            } else {
+                this.$message.error(data.message);
+            }
+        },
+        goodsState(data) {
+            if (data.success && !this.showyjemployee) {
+                this.shopitemList.itemObj = Object.assign({},this.goodsItem,this.shopitemList.itemObj);
+                this.showyjemployee = true;
+            }
+        }
+    },
+    methods: {
+        handleClose(done) {
+            this.isShowShop = false;
+        },
+        logout: function() { //退出登录
+            var _this = this;
+            this.$confirm("确认退出吗?", "提示").then(() => {
+                _this.$store.dispatch("toLogOut").then(() => {
+                    _this.clearAllData();
+                    _this.$router.push("/login");
+                })
+            }).catch(() => {
+                console.log("logout");
+            })
+        },
+        setShop(item) { //切换店铺
+            this.$store.dispatch("choosingShop", item).then(() => {
+                this.isShowShop = false;
+                this.clearAllData();
+                this.defaultData();
+                console.log("11111111111111111111111")
+                this.$router.push({
+                    path: "/home"
+                })
+            })
+        },
+        defaultData() {
+            let homeData = getHomeData();
+            if (homeData.shop) {
+                this.shopInfo = Object.assign({}, homeData.shop);
+            }
+            this.UserName = getUserInfo().UserName;
+            if (this.shopList.length == 0) {
+                this.$store.dispatch("getShopList")
+            }
+        },
+        changeShop() {
+            let userInfo = getUserInfo();
+            if (userInfo.CODE2 == "boss") {
+                this.theshopList = [...this.shopList];
+            } else {
+                this.theshopList = [];
+                for (let i = 0; i < userInfo.ShopList.length; i++) {
+                    if (userInfo.ShopList[i].ISPURVIEW == 1) {
+                    this.theshopList.push({
+                        ID : userInfo.ShopList[i].SHOPID,
+                        NAME : userInfo.ShopList[i].SHOPNAME
+                    });
+                    }
+                }
+            }
+            this.isShowShop = true;
+        },
+      open() {
+        this.$message({
+          message: '点击取单之后才可以修改',
+          type: 'warning'
+        });
+      },
+        //删除单号
+        deleteBillList(item,i){
+          let billId=item.BILLID
+          this.$store.dispatch("deleteguadancdlState",billId).then(() => {});
+        },
+        //选择单号，显示单号中的商品信息
+        selctBillList(item,i){
+          this.memberImg=item.showgoodsimg;
+          let billId=item.BILLID
+          this.$store.dispatch("getguadancdlState",billId).then(() => {});
+        },
+        //选择优惠卡
+        handleCommand(event){
+            let discountlist = this.commoditycflDiscountList
+            for(var i in discountlist){
+                if(event==discountlist[i].NAME){
+                    this.tate=discountlist[i].RATE
+                }
+            }
+            this.disvalue=event;
+            this.shouDisvalue=false;
+        },
+        // 获取挂单商品
+        firstclick() {
+            let Obj = Object.assign(
+                {},
+                this.$store.state.guadanc.guadancdlistobj
+            );
+            let GoodsObj = [...this.$store.state.guadanc.guadancdlistGoodsObj];
+
+            this.BillId = Obj.BILLID;
+            this.addobjCountList = [];
+            if (Obj.VIPID == undefined || Obj.VIPID == "") {
+                this.VipId = "";
+                this.VipIdrows = {};
+            } else {
+                this.VipId = Obj.VIPID;
+                this.VipIdrows = {
+                    NAME: Obj.VIPNAME,
+                    LEVELNAME: Obj.LEVELNAME,
+                    MONEY: Obj.VIPMONEY,
+                    INTEGRAL: Obj.VIPINTEGRAL,
+                    DISCOUNT: Obj.DISCOUNT,
+                    SERVICEDISCOUNT: Obj.SERVICEDISCOUNT?Obj.SERVICEDISCOUNT:1
+                };
+            }
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: this.VipIdrows
+            });
+            for (let i = 0; i < GoodsObj.length; i++) {
+                let item = GoodsObj[i];
+                let dd = this.settheVipPrice(item, 1);
+                let newItem = Object.assign(
+                    {
+                        goodsname: item.GOODSNAME,
+                        Qty: item.QTY,
+                        GoodsId: item.GOODSID,
+                        itemObj: Object.assign({}, item, Obj),
+                        EmpId1: item.EMPID1,
+                        EmpMoney1: item.EMPMONEY1,
+                        EmpId2: item.EMPID2,
+                        EmpMoney2: item.EMPMONEY2,
+                        EmpId3: item.EMPID3,
+                        EmpMoney3: item.EMPMONEY3,
+                        showempremark: item.EMPMONEYNAME
+                    },
+                    item,
+                    dd
+                );
+                this.addobjCountList.push(newItem);
+            }
+            this.dealTotalData();
+        },
+        getmemberDetail(item) {
+            this.$store.dispatch("getMemberItem", item).then(() => {});
+        },
+        getNewData() {
+            this.$store.dispatch("getGoodsListNew", this.pageData).then(() => {
+                this.loading = true;
+            });
+        },
+        //点击商品页面请求商品数据方法
+        handlePageChange: function(currentPage) {
+            if (this.pageData.PN == currentPage || this.loading) {
+                return;
+            }
+            this.pageData.PN = parseInt(currentPage);
+            this.getNewData();
+        },
+        searchfun: _.debounce(function() {
+            this.searchfun2(0);
+        }, 1000),
+        searchfun2(type) {
+            if (type == 1 && !this.searchText) {
+                return;
+            }
+            this.pageData.Filter = this.searchText;
+            this.getNewData();
+        },
+        settheVipPrice(goodsItem, type, value) {
+            return settheVipPrice_Fun(goodsItem, this.VipIdrows, type, value);
+        },
+        //清空页面方法
+        clearData() {
+            this.addobjCountList = [];
+            this.VipId = "";
+            this.BillId = "";
+            this.totalTotal = {
+                    num: 0,
+                    price: 0
+                };
+            this.$store.dispatch("selectingMember", {
+                isArr: false,
+                data: new Object()
+            }).then(()=>{
+                this.VipId = '';
+                this.VipIdrows = {}
+            });
+        },
+        //统计总价钱的方法
+        dealTotalData() {
+            let tnum = 0, tprice = 0, tdiscount = 0;
+            for (let i = 0; i < this.addobjCountList.length; i++) {
+                let tt = parseFloat(this.addobjCountList[i].Price) * parseInt(this.addobjCountList[i].Qty);
+                tnum += parseInt(this.addobjCountList[i].Qty);
+                tprice += tt;
+            }
+            this.totalTotal = {
+                num: tnum,
+                price: tprice,
+            };
+        },
+        //增加选中的商品数量或者减少的方法
+        addjiajianhao(status, calccount, maxcalccount, GoodsId, i) {
+
+        },
+        //触发分类
+        ck_commoditycflList(flID, index) {
+            this.current = index;
+            this.pageData.TypeID = flID;
+            this.pageData.PN = 1;
+            this.getNewData();
+        },
+        //判断有没有选择商品
+        co_reckoning() {
+            if (this.addobjCountList.length == 0) {
+                this.$message("请选择商品");
+                return;
+            } else {
+
+            }
+            if(this.showOptions==false){
+                this.$message("请选择会员");
+                return;
+            }
+            this.showRecharge = true;
+            this.dealTotalData();
+            this.totalPrice.price= this.totalTotal.price*this.tate - this.coupon -this.inputCouponMoney
+            console.log(this.totalPrice)
+        },
+        //挂单方法
+        putUpok() {
+            if (this.addobjCountList.length == 0) {
+                this.$message("请选择商品");
+                return;
+            }
+            console.log("取单成功吗")
+            this.$router.push({  //核心语句
+                path:'/money/commoditycPage',   //跳转的路径
+                query:{           //路由传参时push和query搭配使用 ，作用时传递参数
+                  id:1,
+                }
+            })
+        },
+        // 结账
+        CashRecharge(data) {
+            this.totalPrice.price=0;
+            this.putUpokstatus = "";
+            let GoodsDetaila = {};
+            this.showRecharge = false;
+            this.showTishi = "结账成功";
+            let otherdata = {
+                DeskId: "",
+                GoodsDetail: JSON.stringify(GoodsDetaila),
+                VipId: this.VipId,
+                Remark: "",
+                BillId: this.BillId
+            };
+            let AllsendData = Object.assign({}, otherdata, data);
+            if(AllsendData.PayMoney){
+                AllsendData.PayMoney = parseFloat(AllsendData.PayMoney).toFixed(2)
+            }
+            console.log(AllsendData)
+            this.$store
+                .dispatch("getcommoditycconsumption", AllsendData)
+                .then(() => {});
+        },
+        setcommonHeight() {
+            let elememtheight = this.$refs.elememt.offsetHeight;
+            let footerheight = this.$refs.footer.offsetHeight;
+            this.$refs.addsockheight.style.height =
+                elememtheight - footerheight - 200 + "px";
+        },
+        setfenleiWidth() {
+            // let elefenleiWidthsock = this.$refs.fenleiWidthsock.offsetWidth;
+            // this.$refs.swipercontainersock.style.width =
+            //     elefenleiWidthsock - 179 + "px";
+        },
+        fenleiscrollwidth() {
+            this.$nextTick(function() {
+                var mySwiper = new Swiper(".swiper-container", {
+                    slidesPerView: 6,
+                    paginationClickable: !0,
+                    spaceBetween: 4,
+                    freeMode: !0
+                });
+            });
+        }
+    },
+    components: {
+        yjemployee,
+        recharge
+    },
+    beforeCreate() {
+        let list = this.$store.state.commodityc.commoditycflList;
+        if (list.length == 0) {
+            this.$store.dispatch("getcommoditycflList", {}).then(() => {});
+        }
+        this.$store.dispatch("getGoodsListNew", {
+            Status: 1,
+            Mode: -1,
+            Filter: "",
+            PN: 1,
+            TypeID: ''
+        });
+        let list1 = this.$store.state.employee.employeeList;
+        if (list1.length == 0) {
+            this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID }).then(() => {
+                console.log(this.$store.state.employee.employeeList);
+            });
+        }
+        let list2 = this.$store.state.commodityc.commoditycflDiscountList;
+        if (list2.length == 0) {
+            this.$store.dispatch("getcommoditycDiscountList", {}).then(() => {
+            });
+        }
+    },
+    mounted() {
+        this.setcommonHeight();
+        this.setfenleiWidth();
+        this.fenleiscrollwidth();
+        this.pagination = {
+            TotalNumber: this.dataListState.paying.TotalNumber,
+            PageNumber: this.dataListState.paying.PageNumber,
+            PageSize: this.dataListState.paying.PageSize,
+            PN: this.dataListState.paying.PN
+        };
+        this.pagelist = [...this.dataList];
+
+        this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID }).then(() => {
+            console.log(this.$store.state.employee.employeeList);
+        });
+        this.$store.dispatch("getcommoditycDiscountList", {}).then(() => {
+        });
+    }
+};
+</script>
+<style scoped>
+.coupont-list-top-money{
+    font-size:20px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(255,255,255,1);
+    margin-left:5px;
+}
+.coupont-list-top-allmoney{
+    margin-left: 5px;
+    font-size:5px !important;
+    font-family:Microsoft YaHei;
+    color:rgba(255,255,255,1);
+}
+.coupon-title{
+    position: relative;
+    height: 40px;
+    width: 100%;
+    line-height: 30px;
+    text-align: center;
+    border-bottom: solid 1px rgba(242,242,242,1);
+    font-size:8px;
+    font-family:Microsoft YaHei;
+    font-weight:400;
+    color:rgba(102,102,102,1);
+}
+.el-icon-close{
+    position: absolute;
+    right: 0;
+    font-size: 20px;
+    margin-top: 10px;
+}
+.discount-title{
+    margin-left: 5px;
+    height: 20px;
+    width: 20px;
+    line-height: 20px;
+    text-align: center;
+    background: #3399FF;
+    color: #fff;
+    border-radius: 100%;
+    font-size: 4px;
+}
+.el-dropdown-link{
+    width: 100%;
+    height: 20px;
+}
+.commodity-right{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.discount{
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin-left: 12px;
+}
+.gright{
+    position: absolute;
+    right: 5px;
+}
+.goodsName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    height: 36px;
+}
+
+.employee_ms .el-form-item__content {
+    width: 70%;
+}
+
+.f-botton-fs .el-form-item__label {
+    text-align: left !important;
+}
+
+.f-botton-fs .fastc_top {
+    margin-top: 50px;
+}
+
+.f-botton-fssock .el-dialog__body {
+    padding: 5px 20px;
+}
+
+.timescountc_left ul.productNav {
+    /*padding: 0 12px;*/
+    overflow: hidden;
+    height: 26px;
+    line-height: 26px;
+    color: #795548;
+    background-color: rgba(251, 120, 154, 0.3294117);
+}
+
+.timescountc_left ul.productNav li {
+    float: left;
+    text-align: center;
+}
+.timescountc_left ul#addshopList li {
+    margin-top: 6px;
+    width: 100%;
+    overflow: hidden;
+    padding: 4px 0;
+    background: #fff;
+}
+
+.timescountc_left ul#addshopList li .cateringProductMoreinfo {
+    overflow: hidden;
+    width: 100%;
+    float: left;
+    color: #9e9e9e;
+    font-size: 12px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.timescountc_left ul#addshopList .cateringProductNamebox {
+    width: 15%;
+    float: left;
+    text-align: center;
+}
+
+.timescountc_left_footer {
+    position: absolute;
+    bottom: 0px;
+    left: 10px;
+    right: 10px;
+}
+
+/*模板样式*/
+.timescountc_right .tablelcenter {
+    height: 70px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #ded9d9;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.timescountc_right .tablelcenter .menu-img img {
+    height: 50px;
+    width: 50px;
+    vertical-align: middle;
+    border: 0;
+    float: left;
+    margin-right: 5px;
+}
+
+.timescountc_right .tablelcenter .menu-txt {
+    position: absolute;
+    bottom: 9px;
+    right: 8px;
+    padding-top: 25px;
+}
+.addshopList-cont-list{
+    display: flex;
+    height: 35px;
+    align-items: center;
+    width: 96%;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+.addshopList-cont-list .name{
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(51,51,51,1);
+}
+.addshopList-cont-list .discountMoney{
+    font-size:14px;
+    font-family:HelveticaCyr Upright;
+    font-weight:bold;
+    color:rgba(153,153,153,1);
+}
+.shopMoney{
+    text-align:right;
+    font-size:14px;
+    font-family:HelveticaCyr Upright;
+    font-weight:bold;
+    color:rgba(255,0,0,1);
+}
+.show-goodImg{
+    text-align: center;
+    margin-top: 200px;
+    }
+.goodImg-text{
+    color: #9e9e9e;
+    font-size: 11px;
+}
+.show-goodImgCoupont{
+    margin-top: 120px;
+    margin-left: 150px;
+    width: 100%;
+    }
+.goodImgCoupont{
+    width: 100px;
+    height: 100px;
+}
+.goodImg-textCoupont{
+    color: #9e9e9e;
+}
+.list-bitt{
+    width: 99%;
+}
+.listCot{
+    height: 50px;
+    line-height: 50px;
+    background: #fff;
+    width: 100%;
+    border-left: solid 1px #EBEDF0;
+    border-bottom: solid 1px #EBEDF0;
+}
+.list-contsName{
+  height: 60px;
+  line-height: 60px;
+  background: #fff;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+.right-list{
+  /* height: 100px; */
+  background: #fff;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.right-list-time{
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+.right-list-img img{
+  margin-left: 20px;
+  height: 40px;
+  width: 40px;
+  /* background: rebeccapurple; */
+  border-radius: 100%;
+}
+.right-list-goods{
+  /* height: 60px; */
+  display: flex;
+  align-items: center;
+}
+.ssmemberul {
+ height: 55px;
+ width: 100%;
+ background: #fff;
+ /* border: solid 1px #00a0e9; */
+}
+.ssmemberul-cont{
+  width: 92%;
+  margin-left: 4%;
+  margin-right: 4%;
+  display: flex;
+  align-items: center;
+  height: 55px;
+}
+.ssmemberul-imgUrl img{
+  height: 35px;
+  width: 35px;
+  border-radius: 100%;
+}
+.ssmemberul-massge{
+  margin-left: 10px;
+  font-size: 12px;
+}
+.el-icon-delete{
+    color: #B6B6B6;
+
+}
+.showEit-input1{
+    border: none !important;
+    margin-left: 5px;
+}
+.addshopList-cont-list-name{
+    font-size:14px;
+    font-family:Microsoft YaHei;
+    font-weight:bold;
+    color:rgba(51,51,51,1);
+}
+.right-list-goods-money{
+    margin-right: 21px;
+    font-size:14px;
+    font-family:HelveticaCyr Upright;
+    font-weight:bold;
+    color:rgba(255,0,0,1);
+}
+::-webkit-scrollbar {width: 3px;}
+::-webkit-scrollbar-track{background-color:#E3E3E5;}
+::-webkit-scrollbar-thumb{background-color:#979799;}
+/* .list-bitt-cont{
+    overflow-y: auto;
+    height: 650px;
+} */
+.timescountc_left_footer >>>.el-input__inner{
+    border: 1px solid #fff!important;
+    background: #fff;
+    font-size: 12px;
+    color: #444444;
+}
+input::-webkit-input-placeholder{
+    color: #C0C4CC;
+    font-size: 12px;
+}
+.commodity-right-good-list{
+    padding-top:10px;
+    width: 100%;
+    padding-right: 10px;
+}
+.list-contsName-shop{
+    height: 550px;
+    overflow: auto;
+}
+.shop{
+  line-height: 50px;
+  height: 50px;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #EBEDF0;
+  background: #fff;
+}
+.shop .name{
+    margin-right: 8px;
+}
+.icon-reorder{
+    color: #2589FF;
+    cursor: pointer;
+}
+.priceTol{
+    color: #DC2823;
+    font-weight: bold;
+    font-size: 20px;
+}
+</style>

@@ -1,0 +1,173 @@
+<template>
+  <div class="checkout" style="height: 100%;">
+     收银
+    <!-- <el-tabs v-model="activeName" @tab-click="handleClick" style="height: 100%;" :tab-position="positionTal">
+      <el-tab-pane label="商品消费" name="first" style="height: 100%;">
+        <commoditycPage ref="firstclick"></commoditycPage>
+      </el-tab-pane>
+      <el-tab-pane label="计次消费" name="second" style="height: 100%;">
+        <timescountcPage></timescountcPage>
+      </el-tab-pane>
+      <el-tab-pane label="快速消费" name="third" style="height: 100%;">
+        <fastcPage></fastcPage>
+      </el-tab-pane>
+      <el-tab-pane name="four" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+        <span slot="label" @click="notifyFun(601050201)">储值充值</span>
+        <storagevaluerPage></storagevaluerPage>
+      </el-tab-pane>
+      <el-tab-pane  name="five" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+       <span slot="label" @click="notifyFun(601050201)">计次充值</span>
+        <timescountrPage ref="child"></timescountrPage>
+      </el-tab-pane>
+      <el-tab-pane  name="" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+       <span slot="label" @click="notifyFun(601050201)">时段充值</span>
+       
+      </el-tab-pane>
+      <el-tab-pane label="挂单" name="seven" style="height: 100%;">
+        <span slot="label" style="position: relative;">挂单/取单
+          <i class="subscribe">{{this.$store.state.guadanc.guadancxlistBillCount}}</i>
+        </span>
+        <guadancPage @routertabclick="routertabclick"></guadancPage>
+      </el-tab-pane>
+
+      <el-tab-pane name="six" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+        <span slot="label" @click="notifyFun(601050201)">积分兑换</span>
+        <integralExchangePage></integralExchangePage>
+      </el-tab-pane>
+      <el-tab-pane name="" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+        <span slot="label" @click="notifyFun(601050201)">新增会员</span>
+       <addmemberPage></addmemberPage>
+      </el-tab-pane>
+      <el-tab-pane name="" style="height: 100%;" :disabled="!isPurViewFun(601050201)">
+        <span slot="label" @click="notifyFun(601050201)">营业查询</span>
+        <businesstablePage></businesstablePage>
+      </el-tab-pane>
+    </el-tabs> -->
+  </div>
+</template>
+<script>
+import commonSend from "@/api/api";
+import { ROOT_URLQRCODE } from "@/util/define";
+import { getHomeData, getUserInfo } from "@/api/index";
+import { mapState, mapGetters } from "vuex";
+import $ from "jquery";
+import qrcode from "qrcode";
+var QRCode = require("qrcode");
+import commoditycPage from "./commodityc.vue";
+// import timescountcPage from "./timescountc.vue";
+import fastcPage from "./fastc.vue";
+import storagevaluerPage from "./storagevaluer.vue";
+import timescountrPage from "./timescountr.vue";
+// import setmealrPage from "./setmealr.vue";
+import guadancPage from "./guadanc.vue";
+import addmemberPage from "./addmember.vue"
+import businesstablePage from "./businesstable.vue"
+import integralExchangePage from "./IntegralExchange.vue"
+export default {
+  data() {
+    return {
+      activeName: "first",
+      positionTal:"left"
+    };
+  },
+  computed: {
+    ...mapGetters({
+      memberQRcodeurlstate: "memberQRcodeurlstate"
+    })
+  },
+  watch: {
+    memberQRcodeurlstate(data) {
+      let that = this;
+      if (data.success) {
+        that.qrcodeTitle(data.data.BarCode);
+      }
+    }
+  },
+  methods: {
+    handleClick(tab, event) {
+      this.$store.dispatch('selectingMember',{isArr:false,data:new Object()})
+      if (tab.name == "five") {
+        this.myclick();
+      }
+      if (tab.name == "four"){
+        // let addMoneyGiftID = getUserInfo().CompanyConfig.ADDMONEYGIFTID
+        this.$store.dispatch("getMarketingRechargeStatus",{});
+      }
+      if (tab.name == "first") this.$refs.firstclick.clearData();
+    },
+    myclick: function() {
+      this.$refs.child.clickme();
+    },
+    qrcodeTitle(erweimastr) {
+      QRCode.toDataURL(erweimastr)
+        .then(url => {
+          const img = new Image();
+          this.$store.state.commodityc.saveQRcodeIMG = url;
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    routertabclick() {
+      this.activeName = "first";
+      this.$refs.firstclick.firstclick();
+    },
+    notifyFun(number) {
+      if (!this.isPurViewFun(number)) {
+        this.$notify({
+          title: "警告",
+          message: "没有权限",
+          type: "warning"
+        });
+      }
+    }
+  },
+  components: {
+    commoditycPage,
+    // timescountcPage,
+    fastcPage,
+    storagevaluerPage,
+    timescountrPage,
+    // setmealrPage,
+    guadancPage,
+    addmemberPage,
+    businesstablePage,
+    integralExchangePage
+  },
+  beforeCreate() {
+    this.$store.dispatch("getguadancxlistState", {}).then(() => {});
+    this.$store.dispatch('selectingMember',{isArr:false,data:new Object()})
+  },
+  activated() {},
+  mounted() {
+    this.$store.dispatch("getmemberQRcodeurlstate", {}).then(() => {});
+  }
+};
+</script>
+<style>
+.Choiceinput .el-input__inner {
+  cursor: pointer !important;
+}
+.checkout .subscribe {
+  background: #fb789a;
+  display: inline-block;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+  width: 24px;
+  position: absolute;
+  top: -6px;
+  left: 27px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.checkout .el-tabs__content {
+  position: absolute;
+  left: 120px;
+  top: 10px;
+  bottom: 0;
+  right: 0;
+}
+</style>

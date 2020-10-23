@@ -1,0 +1,134 @@
+<template>
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					:isNoDate="false"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white m-bottom-sm">
+			<div class="marginLR-md">
+				<div class="p-top-md"></div>
+				<component :is="componentName" :pageData="formData">
+					<div slot="button">
+						<el-button-group>
+							<el-button
+								v-for="(item, i) in pageList"
+								:key="i"
+								type="primary"
+								size="small"
+								:plain="isActive != item.value"
+								@click="chooseStateFun(item.value)"
+							>
+								<span>{{ item.label }}</span>
+							</el-button>
+						</el-button-group>
+					</div>
+				</component>
+			</div>
+		</div>
+		<!-- 数据导出 -->
+		<el-dialog
+			append-to-body
+			:close-on-click-modal="false"
+			:close-on-press-escape="false"
+			:show-close="false"
+			title="数据导出"
+			:visible.sync="exportData.show"
+			width="400px"
+		>
+			<exportPage
+				:dataType="exportData"
+				:isPage="true"
+				@closeModal="exportData.show = false"
+			></exportPage>
+		</el-dialog>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import page1 from "./saleOrder";
+import page2 from "./saleDetails.vue";
+import page3 from "./goodsSummary.vue";
+import page4 from "./dateSummary.vue";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1, type: 1, show: false },
+			componentName: "page1",
+			pageList: [
+				{
+					label: "销售单据",
+					value: 1
+				},
+				{
+					label: "销售明细",
+					value: 2
+				},
+				{
+					label: "商品汇总",
+					value: 3
+				},
+				{
+					label: "日期汇总",
+					value: 4
+				}
+			],
+			isActive: 1,
+			exportData: { show: false }
+		};
+	},
+	computed: {
+		...mapGetters({})
+	},
+	watch: {},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({ PN: 1, show: true }, this.formData, data);
+		},
+		getNewData() {},
+		chooseStateFun(v) {
+			this.isActive = v;
+			this.componentName = "page" + v;
+			this.$nextTick(() => {
+				this.formData = Object.assign({}, this.formData, { PN: 1, type: v, show: true });
+			});
+		},
+		defaultData() {}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = Object.assign({}, this.formData, {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime(),
+			show: true
+		});
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		page1,
+		page2,
+		page3,
+		page4,
+		exportPage: () => import("@/components/export/common.vue")
+	}
+};
+</script>
+<style scoped>
+</style>
