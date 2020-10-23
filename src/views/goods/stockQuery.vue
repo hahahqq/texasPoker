@@ -157,7 +157,7 @@ export default {
           PageNumber: data.paying.PageNumber,
           PageSize: data.paying.PageSize,
           PN: data.paying.PN
-        };
+        }
       }
     }
   },
