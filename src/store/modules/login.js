@@ -52,7 +52,7 @@ const actions = {
   toLogin({ commit }, data = {}) {
     let sendData = Object.assign({}, data, {
       InterfaceCode: '2100102',
-      AppType: 0, // 0=PC 
+      AppType: 0, // 0=PC
       VersionText: SYSTEM_INFO.VERSION,
       IMEI: "",
       platform: 0
@@ -82,7 +82,7 @@ const actions = {
       commit(REGISTER, { data })
     }, sendData)
   },
-  getTradeServerList({commit}, data){  // 行业列表 -服务 
+  getTradeServerList({commit}, data){  // 行业列表 -服务
     let sendData = {
       InterfaceCode: '2100122',
       Type: 1
