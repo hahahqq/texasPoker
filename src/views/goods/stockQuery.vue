@@ -11,7 +11,6 @@
       </el-aside>
       <el-container>
         <div class="content-new-fex">
-          <div class="shopquery">
             <div class="content-eighty">
               <div class="content-center">
                 <el-input
@@ -98,7 +97,6 @@
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </el-container>
     </el-container>
