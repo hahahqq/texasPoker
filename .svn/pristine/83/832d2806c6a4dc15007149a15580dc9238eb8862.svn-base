@@ -267,7 +267,7 @@ export default {
                 Filter: "",
                 Status: -1,
                 Mode: -1,
-                TypeID: "",  //商品类别ID
+                TypeID: "", //商品类别ID
                 DescType: 0
             },
             multipleSelection: [],
