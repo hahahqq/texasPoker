@@ -516,7 +516,6 @@ export default {
           let sendData = {
             Name: this.ruleForm.Name,
             Status: 0,
-
             EventId: this.ruleForm.EventId,
             DeskId: this.ruleForm.DeskId,
             PlayTime: dayjs(this.ruleForm.PlayTime).valueOf(),
@@ -524,7 +523,6 @@ export default {
             Remark: this.ruleForm.Remark,
             RewardType: this.ruleForm.RewardType,
             RewardList: newArr,
-
             ChipsQty: this.ruleForm.ChipsQty,
             BuyinMoney: this.ruleForm.BuyinMoney,
             ChargesType: this.ruleForm.ChargesType,
