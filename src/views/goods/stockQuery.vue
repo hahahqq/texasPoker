@@ -163,6 +163,7 @@ export default {
       }
     }
   },
+
   methods: {
     handlePageChange: function (currentPage) {
       if (this.pageData.PN == currentPage || this.loading) {

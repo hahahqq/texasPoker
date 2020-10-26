@@ -1,36 +1,53 @@
 <template>
-<el-container>
-  <el-header style="height:50px;">
-    <headerPage></headerPage>
-  </el-header>
   <el-container>
-    <el-aside width="100px">
-        <section style="min-width:100px;">
-        <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
-        </section>
-    </el-aside>
+    <el-header style="height: 50px">
+      <headerPage></headerPage>
+    </el-header>
     <el-container>
-      <el-main :style="{height:height+'px'}">
-        <div class="myShop">
+      <el-aside width="100px">
+        <section style="min-width: 100px">
+          <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+        </section>
+      </el-aside>
+      <el-container>
+        <el-main :style="{ height: height + 'px' }">
+          <div class="myShop">
             <el-row>
               <div class="myShop-bacse">
                 <div class="dmt"></div>
                 <div><span class="h5">商家信息</span></div>
-                <div style="margin-left:15px;"><el-button type="text" @click="showEdit=true">修改</el-button></div>
+                <div style="margin-left: 15px">
+                  <el-button type="text" @click="showEdit = true">修改</el-button>
+                </div>
               </div>
               <div class="myShop-bacse-cont">
                 <ul>
                   <li>
                     <div class="myShop-logo">
-                      <div>商家logo : </div>
-                      <img :src="sysLogo" class="inline-block full-width">
+                      <div>商家logo :</div>
+                      <img :src="sysLogo" class="inline-block full-width" />
                     </div>
                   </li>
-                  <li class="myShop-logo">商家名称 :&nbsp;<span> {{dataInfo.name}}</span></li>
-                  <li class="myShop-logo">所属行业 :&nbsp;<span>{{dataInfo.tradename}}</span></li>
-                  <li class="myShop-logo">联系人 :&nbsp;<span>{{dataInfo.linker}}</span></li>
-                  <li class="myShop-logo">联系电话 :&nbsp;<span>{{dataInfo.phoneno}}</span></li>
-                  <li class="myShop-logo">联系地址 :&nbsp;<span>{{dataInfo.address}}</span></li>
+                  <li class="myShop-logo">
+                    商家名称 :&nbsp;
+                    <span>{{ dataInfo.name }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    所属行业 :&nbsp;
+                    <span>{{ dataInfo.tradename }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    联系人 :&nbsp;
+                    <span>{{ dataInfo.linker }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    联系电话 :&nbsp;
+                    <span>{{ dataInfo.phoneno }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    联系地址 :&nbsp;
+                    <span>{{ dataInfo.address }}</span>
+                  </li>
                 </ul>
               </div>
             </el-row>
@@ -38,50 +55,76 @@
               <div class="myShop-bacse">
                 <div class="dmt"></div>
                 <div><span class="h5">店铺信息</span></div>
-                <div style="margin-left:15px;"><el-button type="text" @click="editShopfun">修改</el-button></div>
+                <div style="margin-left: 15px">
+                  <el-button type="text" @click="editShopfun">修改</el-button>
+                </div>
               </div>
               <div class="myShop-bacse-cont">
                 <ul>
-                  <li class="myShop-logo">店铺名称 :&nbsp;<span> {{getMyShop.NAME}}</span></li>
-                  <li class="myShop-logo">有效时间 :&nbsp;<span> {{new Date(getMyShop.INVALIDDATE) | time}}</span></li>
-                  <li class="myShop-logo">联系人 :&nbsp;<span> {{getMyShop.MANAGER}}</span></li>
-                  <li class="myShop-logo">联系电话 :&nbsp;<span> {{getMyShop.PHONENO}}</span></li>
-                  <li class="myShop-logo">店铺地址 :&nbsp;<span> {{getMyShop.ADDRESS}}</span></li>
-                  <li class="myShop-logo">注册时间 :&nbsp;<span> {{new Date(getMyShop.WRITETIME) | time}}</span></li>
+                  <li class="myShop-logo">
+                    店铺名称 :&nbsp;
+                    <span>{{ getMyShop.NAME }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    有效时间 :&nbsp;
+                    <span>{{ new Date(getMyShop.INVALIDDATE) | time }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    联系人 :&nbsp;
+                    <span>{{ getMyShop.MANAGER }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    联系电话 :&nbsp;
+                    <span>{{ getMyShop.PHONENO }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    店铺地址 :&nbsp;
+                    <span>{{ getMyShop.ADDRESS }}</span>
+                  </li>
+                  <li class="myShop-logo">
+                    注册时间 :&nbsp;
+                    <span>{{ new Date(getMyShop.WRITETIME) | time }}</span>
+                  </li>
                 </ul>
               </div>
             </el-row>
-          <el-dialog
-            width="500px"
-            title="修改商家信息"
-            :visible.sync="showEdit"
-            append-to-body
-            style="max-width:100%;"
-          >
-            <editPage
-              @closeModal="showEdit=false"
-              @resetList="showEdit=false;resetInfo_fun()"
-              :propsData="{state:showEdit}"
-            ></editPage>
-          </el-dialog>
-          <el-dialog
-            width="500px"
-            title="修改店铺信息"
-            :visible.sync="showEdit2"
-            append-to-body
-            style="max-width:100%;"
-          >
-            <editShopPage
-              @closeModal="showEdit2=false;"
-              @resetList="showEdit2=false;resetShop_fun()"
-              :propsData="{state:showEdit2}"
-            ></editShopPage>
-          </el-dialog>
-        </div>
-      </el-main>
+            <el-dialog
+              width="500px"
+              title="修改商家信息"
+              :visible.sync="showEdit"
+              append-to-body
+              style="max-width: 100%"
+            >
+              <editPage
+                @closeModal="showEdit = false"
+                @resetList="
+                  showEdit = false;
+                  resetInfo_fun();
+                "
+                :propsData="{ state: showEdit }"
+              ></editPage>
+            </el-dialog>
+            <el-dialog
+              width="500px"
+              title="修改店铺信息"
+              :visible.sync="showEdit2"
+              append-to-body
+              style="max-width: 100%"
+            >
+              <editShopPage
+                @closeModal="showEdit2 = false"
+                @resetList="
+                  showEdit2 = false;
+                  resetShop_fun();
+                "
+                :propsData="{ state: showEdit2 }"
+              ></editShopPage>
+            </el-dialog>
+          </div>
+        </el-main>
+      </el-container>
     </el-container>
   </el-container>
-</el-container>
 </template>
 <script>
 import { mapState, mapGetters } from "vuex";
@@ -92,23 +135,23 @@ export default {
   mixins: [MIXINS_SETUP.SIDERBAR_MENU],
   data() {
     return {
-      sysLogo: "static/images/"+ROOT_STATE+"/sysLogo.png",
+      sysLogo: "static/images/" + ROOT_STATE + "/sysLogo.png",
       showEdit: false,
       showEdit2: false,
       activeNames: "",
       shopItem: {},
-      height:window.innerHeight -60,
+      height: window.innerHeight - 60
     };
   },
   computed: {
     ...mapGetters({
       dataInfo: "myinfo",
-      getMyShop:"getMyShop",
+      getMyShop: "getMyShop"
     })
   },
-  watch:{
-    getMyShop(data){
-      console.log(data)
+  watch: {
+    getMyShop(data) {
+      console.log(data);
     }
   },
   methods: {
@@ -144,27 +187,27 @@ export default {
 };
 </script>
 <style scoped>
-  .t-name{
-    display: inline-block;
-width: 124px;
-padding: 4px 0px;
-  }
-  .t-label{
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius:3px;
-  }
-.el-header{
+.t-name {
+  display: inline-block;
+  width: 124px;
+  padding: 4px 0px;
+}
+.t-label {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+.el-header {
   padding: 0 !important;
 }
-.member-main-top{
+.member-main-top {
   width: 99%;
   margin-left: 0.5%;
   margin-right: 0.5%;
   height: 100px;
   background: #fff;
 }
-.member-main-table{
+.member-main-table {
   margin-top: 8px;
   width: 99%;
   margin-left: 0.5%;
@@ -172,38 +215,38 @@ padding: 4px 0px;
   height: 600px;
   background: #fff;
 }
-.myShop{
+.myShop {
   width: 100%;
   background: #fff;
   overflow-y: auto !important;
 }
-.myShop-bacse{
+.myShop-bacse {
   display: flex;
   align-items: center;
   height: 40px;
   width: 96%;
   margin-top: 20px;
   margin-left: 30px;
-  background: #F7F8FA;
+  background: #f7f8fa;
 }
-.myShop-bacse .dmt{
-    margin-left: 15px;
-    margin-right: 10px;
-    height: 16px;
-    width: 6px;
-    background: #3399FF;
+.myShop-bacse .dmt {
+  margin-left: 15px;
+  margin-right: 10px;
+  height: 16px;
+  width: 6px;
+  background: #3399ff;
 }
-.myShop-bacse-cont{
+.myShop-bacse-cont {
   /* margin-top: 62px; */
   margin-left: 80px;
 }
-.myShop-logo{
+.myShop-logo {
   display: flex;
   align-items: center;
   height: 45px;
   /* width: 200px; */
 }
-.myShop-logo img{
+.myShop-logo img {
   width: 45px;
   height: 45px;
   margin-left: 20px;
