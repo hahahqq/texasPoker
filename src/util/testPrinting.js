@@ -108,7 +108,7 @@ const getDayindata = function(printData, printType, qresurl) {
       if(i<3){
          hPos = PrintLODOPcommon(printData.saleInfo[i].label, printData.saleInfo[i].value, hPos);
       }else{  // 扣减方式
-         PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, printData.saleInfo[i].label, {  });
+         PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, printData.saleInfo[i].label, { });
          PrintLODOP_Text(hPos, pageLabel + pageLeft, printValueW-10, rowHeight, printData.saleInfo[i].value, {
             TextNeatRow: true,
             LineSpacing: 0.5
