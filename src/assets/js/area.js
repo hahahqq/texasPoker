@@ -1974,7 +1974,7 @@ const CityInfo=[
           {value: 1587, label: '沙市区'},
           {value: 1588, label: '荆州区'},
           {value: 1589, label: '公安县'},
-          {value: 1590, label: '监利县'},
+          {value: 1590, label: '监利市'},
           {value: 1591, label: '江陵县'},
           {value: 1592, label: '石首市'},
           {value: 1593, label: '洪湖市'},

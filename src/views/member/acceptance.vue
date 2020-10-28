@@ -38,13 +38,14 @@
                 <div class="content-table4">
                     <div class="content-table-center">
                         <el-table
-                            border
+                        size='small'
                             :data="pagelist"
                             :height="tableHeight"
                             v-loading="loading"
                             header-row-class-name="bg-theme2 text-white"
                             style="width: 100%;"
                             >
+                            <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
                             <el-table-column prop="VIPNAME" label="会员名"></el-table-column>
                             <el-table-column prop="MOBILENO" label="手机号码"></el-table-column>
                             <el-table-column prop="SEXNAME" label="性别" width='60' align="center"></el-table-column>

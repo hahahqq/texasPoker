@@ -12,6 +12,7 @@
             height="500"
             header-row-class-name="bg-theme text-white"
         >
+            <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
             <el-table-column prop="NAME" label="名称" width="120" sortable></el-table-column>
             <el-table-column prop="REMARK" label="备注"></el-table-column>
             <el-table-column label="操作">

@@ -22,12 +22,13 @@
         <!--列表-->
         <div class="content-table4">
             <div class="content-table-center">
-              <el-table border :data="pagelist"
+              <el-table :data="pagelist" size='small'
               v-loading="loading"
               :height="tableHeight"
               header-row-class-name="bg-theme2 text-white"
               >
-                <el-table-column prop="NAME" label="名称" width="120">
+               <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
+                <el-table-column prop="NAME" label="名称" width="150">
                 </el-table-column>
                 <el-table-column prop="REMARK" label="备注">
                 </el-table-column>

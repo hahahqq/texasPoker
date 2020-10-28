@@ -147,7 +147,7 @@ export default {
       isShowShop: false,
       theshopList: [],
       activePath: "",
-      shopName: getUserInfo().CompanyName
+      shopName: getUserInfo().CompanyName == 'undefined' ? '' : getUserInfo().CompanyName
     };
   },
   computed: {

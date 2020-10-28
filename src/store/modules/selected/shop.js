@@ -81,12 +81,9 @@ const actions = {
       CityID: data.CityID,
       DistrictID: data.DistrictID,
       PhoneNo: data.PhoneNo,
-      Longitude: '',
-      Latitude: '',
+      Longitude: data.Longitude ? data.Longitude : '',
+      Latitude: data.Latitude ? data.Latitude : ''
     };
-    if (data.ShopID) {
-      sendData.ShopID = data.ShopID
-    }
     commonSend.commonSend('get', data => {
       commit(SHOP_STATE, { data })
     }, sendData)

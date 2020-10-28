@@ -16,6 +16,11 @@ import directive from "./directive";
 import filter from "./filter";
 // import VueQuillEditor from 'vue-quill-editor'
 import VueCropper from "vue-cropper";
+import BaiduMap from "vue-baidu-map";
+
+Vue.use(BaiduMap, {
+   ak: "w0p653goQSLC91ld7SxoGsfNcgWfCP48"
+});
 
 Vue.use(Vuex);
 Vue.use(VueRouter);

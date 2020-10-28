@@ -19,6 +19,7 @@ const IMG_FILEPATH = [
 ];
 const GOODS_IMGURL = ROOT_URL + ROOT_PORT + "/resources/goodsimage/";
 const VIPIMAGESIMG = ROOT_URL + ROOT_PORT + "/resources/vipimages/";
+const SHOPIMAGESIMG = ROOT_URL + ROOT_PORT + "/resources/shopimage/";
 
 const SYSTEM_INFO = {
   NAME: title,
@@ -31,6 +32,7 @@ export {
   APIURL,
   GOODS_IMGURL,
   VIPIMAGESIMG,
+  SHOPIMAGESIMG,
   ROOT_URLQRCODE,
   ROOT_STATE,
   IMGUPLOAD_URL,

@@ -53,6 +53,7 @@
                                 element-loading-text="数据加载中"
                                 element-loading-spinner="el-icon-loading"
                             >
+                            <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
                                 <el-table-column prop="NAME" label="比赛项目">
                                    <template slot-scope="scope">
                                       <el-button type="text" @click="handleViewItem(scope.row, scope.$index)">{{scope.row.NAME}}</el-button>

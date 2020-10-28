@@ -101,6 +101,12 @@
                 element-loading-spinner="el-icon-loading"
                 @row-dblclick="signUpHandle"
               >
+                <el-table-column
+                  type="index"
+                  label="序号"
+                  align="center"
+                  width="80"
+                ></el-table-column>
                 <el-table-column prop="MATCHNAME" label="赛事名称">
                   <template slot-scope="scope">
                     <el-button

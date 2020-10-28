@@ -263,6 +263,15 @@
             {{ zhiDanData }}
           </span>
           <span class="text-right" style="float: right">
+            <el-button
+              style="margin-right: 40px"
+              plain
+              icon="el-icon-upload"
+              @click="showUploadDialog = true"
+            >
+              导 入
+            </el-button>
+
             <el-button type="success" plain icon="el-icon-plus" @click="addNewBill">
               新增单据
             </el-button>
@@ -286,6 +295,20 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+      title="导入采购退货单"
+      :visible.sync="showUploadDialog"
+      width="80%"
+      append-to-body
+      :close-on-click-modal="false"
+    >
+      <uploadBillTable
+        @closeModal="showUploadDialog = false"
+        @GetUploadExportData="getUploadData"
+        :dealUploadData="{ dealState: 'Discount' }"
+      ></uploadBillTable>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -332,7 +355,8 @@ export default {
         Mode: 0
       },
       vCheckGoodsTimeOut: undefined,
-      tableHeight: document.body.clientHeight - 330
+      tableHeight: document.body.clientHeight - 330,
+      showUploadDialog: false
     };
   },
   computed: {
@@ -436,6 +460,47 @@ export default {
     }
   },
   methods: {
+    getUploadData(data) {
+      let arr = [],
+        newArr = [];
+      for (var i in data) {
+        arr.push({
+          GOODSNAME: data[i].GOODSNAME,
+          GOODSID: data[i].GOODSID,
+          GOODSCODE: data[i].GOODSCODE,
+          PRICE: data[i].PRICE,
+          PURPRICE: data[i].GOODSPURPRICE,
+          QTY: data[i].QTY,
+          DISCOUNT: data[i].Discount,
+          isEdit: false
+        });
+      }
+
+      arr.forEach((el) => {
+        const res = newArr.findIndex((ol) => {
+          return el.GOODSNAME == ol.GOODSNAME && el.GOODSID == ol.GOODSID && el.PRICE == ol.PRICE;
+        });
+        if (res !== -1) {
+          newArr[res].QTY = Number(newArr[res].QTY) + Number(el.QTY);
+        } else {
+          newArr.push(el);
+        }
+      });
+
+      this.theGoodsList = newArr.concat({
+        GOODSNAME: "",
+        GOODSID: "",
+        GOODSCODE: "",
+        PRICE: 0,
+        PURPRICE: 1,
+        QTY: 1,
+        DISCOUNT: 0,
+        isEdit: true
+      });
+
+      this.totalfun();
+      this.showUploadDialog = false;
+    },
     changePr(row) {
       row.PRICE = parseFloat(row.PURPRICE * row.DISCOUNT).toFixed(2);
       this.totalfun();
@@ -720,27 +785,29 @@ export default {
         });
       }
 
-      this.$store.dispatch("addReturn", {
-        ShopId: this.shopId,
-        BillId: this.pageData.BILLID,
-        SupplierId: this.pageData.SUPPLIERID,
-        BillDate: dayjs(this.BILLDATE).valueOf(),
-        ManualNo: "", //手工单号
-        PayTypeId: this.pageData.PAYTYPEID, // 付款方式ID
-        PayMoney: this.pageData.PAYMONEY,
-        Remark: this.pageData.REMARK,
-        GoodsList: JSON.stringify(newArr),
-        IsCheck: value, // 0: 草稿  1：确认单
-        FromBillId: "", // 引用采购单号
-        BreaksMoney: this.pageData.BREAKSMONEY,
-        OtherMoney: this.pageData.OTHERMONEY
-      }).then(() => {
-        if (value == 0) {
-          this.CGloading = true;
-        } else {
-          this.loading = true;
-        }
-      });
+      this.$store
+        .dispatch("addReturn", {
+          ShopId: this.shopId,
+          BillId: this.pageData.BILLID,
+          SupplierId: this.pageData.SUPPLIERID,
+          BillDate: dayjs(this.BILLDATE).valueOf(),
+          ManualNo: "", //手工单号
+          PayTypeId: this.pageData.PAYTYPEID, // 付款方式ID
+          PayMoney: this.pageData.PAYMONEY,
+          Remark: this.pageData.REMARK,
+          GoodsList: JSON.stringify(newArr),
+          IsCheck: value, // 0: 草稿  1：确认单
+          FromBillId: "", // 引用采购单号
+          BreaksMoney: this.pageData.BREAKSMONEY,
+          OtherMoney: this.pageData.OTHERMONEY
+        })
+        .then(() => {
+          if (value == 0) {
+            this.CGloading = true;
+          } else {
+            this.loading = true;
+          }
+        });
     },
     handleDel(idx, row) {
       this.theGoodsList.splice(idx, 1);
@@ -811,7 +878,9 @@ export default {
       });
     }
   },
-  components: {}
+  components: {
+    uploadBillTable: () => import("../uploadExportBill.vue")
+  }
 };
 </script>
 

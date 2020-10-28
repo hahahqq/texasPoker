@@ -49,7 +49,7 @@
                     </el-button>
                   </div>
                 </div>
-                <div class="ipt">
+                <!-- <div class="ipt">
                   <el-input
                     v-model="searchText"
                     placeholder="请输入商品"
@@ -60,22 +60,11 @@
                       <span style="font-size: 12px">搜索</span>
                     </template>
                   </el-input>
-                </div>
+                </div> -->
               </div>
               <div class="content-center-button">
                 <el-row class="member-main-top-type">
-                  <!-- <el-col :span="8" v-if="deskmode==1">
-                        商品类型&nbsp;&nbsp;&nbsp;
-                        <el-select v-model="value1" placeholder="请选择" size="small"  @change="selectMode" clearable>
-                            <el-option
-                            v-for="(item,index) in mode"
-                            :key="index"
-                            :label="item.name"
-                            :value="item.id">
-                            </el-option>
-                        </el-select>
-                    </el-col> -->
-                  <el-col :span="8">
+                  <el-col :span="7">
                     商品分类&nbsp;&nbsp;&nbsp;
                     <el-select
                       v-model="value2"
@@ -90,10 +79,19 @@
                         :label="item.NAME"
                         :value="item.ID"
                       ></el-option>
-
+                      <el-option
+                        style="
+                          background: #f5f5f5;
+                          border-top: 1px solid #ddd;
+                          border-bottom: 1px solid #ddd;
+                        "
+                        value="10000"
+                      >
+                        + 新增
+                      </el-option>
                     </el-select>
                   </el-col>
-                  <el-col :span="8">
+                  <el-col :span="7">
                     状态&nbsp;&nbsp;&nbsp;
                     <el-select
                       v-model="value3"
@@ -109,6 +107,21 @@
                         :value="item.id"
                       ></el-option>
                     </el-select>
+                  </el-col>
+
+                  <el-col :span="10" style="text-align: right">
+                    <el-input
+                      v-model="searchText"
+                      placeholder="请输入商品名称或货号"
+                      style="width: 70%"
+                      size="small"
+                    >
+                      <template slot="append">
+                        <span style="font-size: 12px; cursor: default" @click="searchfun2(1)">
+                          搜索
+                        </span>
+                      </template>
+                    </el-input>
                   </el-col>
                 </el-row>
               </div>
@@ -248,6 +261,7 @@
               :dataType="{ value: 2, dealState: 'add' }"
             ></add-new-goods>
           </el-dialog>
+
           <!-- 商品详情 -->
           <el-dialog
             title="商品详情"
@@ -266,6 +280,7 @@
               :dataType="{ value: parseInt(goodsMode) + 1, dealState: 'edit' }"
             ></add-new-goods>
           </el-dialog>
+
           <!-- 出库弹窗 -->
           <el-dialog title="商品出库" :visible.sync="retrievalShow" width="35%">
             <div class="retrieval">
@@ -302,6 +317,7 @@
               </div>
             </div>
           </el-dialog>
+
           <!-- 入库弹窗 -->
           <el-dialog title="商品入库" :visible.sync="unretrievalShow" width="35%">
             <div class="retrieval">
@@ -338,10 +354,51 @@
               </div>
             </div>
           </el-dialog>
+
           <el-dialog title="记录" :visible.sync="notesShow" width="60%">
             <div>
               <recordPage :dataType="dataTypes"></recordPage>
             </div>
+          </el-dialog>
+
+          <!-- 数据导出 -->
+          <el-dialog
+            append-to-body
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            :show-close="false"
+            title="数据导出"
+            :visible.sync="exportData.show"
+            width="400px"
+          >
+            <exportPage
+              :dataType="exportData"
+              :isPage="true"
+              @closeModal="exportData.show = false"
+            ></exportPage>
+          </el-dialog>
+
+          <!-- 新增商品分类 -->
+          <el-dialog title="商品分类" :visible.sync="dialogVisible" width="400px">
+            <el-form
+              ref="formCategory"
+              :model="formCategory"
+              :rules="rulesCategory"
+              label-width="80px"
+            >
+              <el-form-item label="名称" prop="Name">
+                <el-input v-model="formCategory.Name" placeholder="请输入名称"></el-input>
+              </el-form-item>
+              <el-form-item label="备注">
+                <el-input type="textarea" v-model="formCategory.Remark"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="dealData" :loading="loadingCategory">
+                  保存
+                </el-button>
+                <el-button @click="dialogVisible = false">取消</el-button>
+              </el-form-item>
+            </el-form>
           </el-dialog>
         </div>
       </el-container>
@@ -366,6 +423,21 @@ export default {
       retrievalShow: false,
       unretrievalShow: false,
       notesShow: false,
+      dialogVisible: false,
+      formCategory: {
+        Name: "",
+        Remark: ""
+      },
+      rulesCategory: {
+        Name: [
+          {
+            required: true,
+            message: "请输入名称",
+            trigger: "blur"
+          }
+        ]
+      },
+
       pagelist: [],
       mode: [
         { id: 1, name: "服务" },
@@ -448,7 +520,9 @@ export default {
             trigger: "blur"
           }
         ]
-      }
+      },
+      exportData: { show: false },
+      loadingCategory: false
     };
   },
   computed: {
@@ -460,10 +534,22 @@ export default {
       dgoodsdeleteState: "goodsdeleteState",
       exportGoodsState: "exportGoodsState",
       importState: "importGoodsState",
-      gparameterstate: "gparameterstate"
+      gparameterstate: "gparameterstate",
+      dealCategoryState: "dealCategoryState"
     })
   },
   watch: {
+    dealCategoryState(data) {
+      this.loadingCategory = false;
+      if (data.success) {
+        this.$store.dispatch("getcommoditycflList", {}).then(() => {});
+      }
+      this.$message({
+        message: data.message,
+        type: data.success ? "success" : "error"
+      });
+      this.dialogVisible = false;
+    },
     gparameterstate(data) {
       if (data.success && Object.keys(data.data.CompanyConfig).length > 0) {
         let code = data.data.CompanyConfig.AUTOGENGOODSCODE;
@@ -566,17 +652,31 @@ export default {
     }
   },
   methods: {
+    dealData() {
+      var _this = this;
+      this.$refs.formCategory.validate((valid) => {
+        if (valid) {
+          _this.$store.dispatch("dealCategoryItem", _this.formCategory).then(() => {
+            this.loadingCategory = true;
+          });
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
     ExportGoodsData() {
-      this.$store
-        .dispatch("getExportGoodsData", {
-          FilterStr: this.searchText,
+      this.exportData = {
+        show: true,
+        data: {
+          Filter: this.searchText,
           Mode: this.pageData.Mode,
           TypeID: this.pageData.TypeID,
-          Status: this.pageData.Status
-        })
-        .then(() => {
-          this.exportLoading = true;
-        });
+          status: this.pageData.Status,
+          ShopId: this.pageData.ShopId
+        },
+        index: 22
+      };
     },
     exportExcel(arr) {
       // 导出到excel
@@ -643,34 +743,31 @@ export default {
           }
         }
 
-        if (
-          arr[i].__EMPTY_1 == "商品" ||
-          arr[i].__EMPTY_1 == "服务" ||
-          arr[i].__EMPTY_1 == 1 ||
-          arr[i].__EMPTY_1 == 0
-        ) {
-          let item = {
-            Code: strCode,
-            Name: arr[i].__EMPTY == undefined ? "" : arr[i].__EMPTY,
-            GoodsMode:
-              arr[i].__EMPTY_1 == undefined || arr[i].__EMPTY_1 == "商品" || arr[i].__EMPTY_1 == 0
-                ? 0
-                : 1,
-            TypeName: arr[i].__EMPTY_2 == undefined ? "" : arr[i].__EMPTY_2,
-            Specs: arr[i].__EMPTY_3 == undefined ? "" : arr[i].__EMPTY_3,
-            Remark: arr[i].__EMPTY_4 == undefined ? "" : arr[i].__EMPTY_4,
-            UnitName: arr[i].__EMPTY_5 == undefined ? "" : arr[i].__EMPTY_5,
-            Price: arr[i].__EMPTY_6 == undefined ? "" : arr[i].__EMPTY_6,
-            PurPrice: arr[i].__EMPTY_7 == undefined ? "" : arr[i].__EMPTY_7,
-            StockQty: arr[i].__EMPTY_8 == undefined ? "" : arr[i].__EMPTY_8,
-            VipPrice: arr[i].__EMPTY_9 == undefined ? "" : arr[i].__EMPTY_9
-          };
-          newData.push(item);
-        } else {
-          this.$message.error("导入的商品编码填写错误,请重新填写再导入");
-          this.importLoading = false;
-          return;
-        }
+        //   if (
+        //     arr[i].__EMPTY_1 == "商品" ||
+        //     arr[i].__EMPTY_1 == "服务" ||
+        //     arr[i].__EMPTY_1 == 1 ||
+        //     arr[i].__EMPTY_1 == 0
+        //   ) {
+        let item = {
+          Code: strCode,
+          Name: arr[i].__EMPTY == undefined ? "" : arr[i].__EMPTY,
+          GoodsMode: 0,
+          TypeName: arr[i].__EMPTY_1 == undefined ? "" : arr[i].__EMPTY_1,
+          Specs: arr[i].__EMPTY_2 == undefined ? "" : arr[i].__EMPTY_2,
+          Remark: arr[i].__EMPTY_3 == undefined ? "" : arr[i].__EMPTY_3,
+          UnitName: arr[i].__EMPTY_4 == undefined ? "" : arr[i].__EMPTY_4,
+          Price: arr[i].__EMPTY_5 == undefined ? "" : arr[i].__EMPTY_5,
+          PurPrice: arr[i].__EMPTY_6 == undefined ? "" : arr[i].__EMPTY_6,
+          StockQty: arr[i].__EMPTY_7 == undefined ? "" : arr[i].__EMPTY_7,
+          VipPrice: arr[i].__EMPTY_8 == undefined ? "" : arr[i].__EMPTY_8
+        };
+        newData.push(item);
+        //   } else {
+        //     this.$message.error("导入的商品编码填写错误,请重新填写再导入");
+        //     this.importLoading = false;
+        //     return;
+        //   }
       }
       // console.log(newData); return;
       this.$store.dispatch("getImportGoodsData", newData).then(() => {
@@ -830,6 +927,15 @@ export default {
         });
     },
     selectMode(e) {
+      if (this.value2 == "10000") {
+        this.value2 = "";
+        this.formCategory = {
+          Name: "",
+          Remark: ""
+        };
+        this.dialogVisible = true;
+        return;
+      }
       console.log(this.value3);
       this.loading = true;
       this.$store.dispatch("getGoodsList", {
@@ -840,7 +946,6 @@ export default {
         PN: 1
       });
     },
-
     handleEdit(idx, item) {
       this.$store.dispatch("getGoodsItem", item).then(() => {
         this.goodsMode = parseInt(item.GOODSMODE);
@@ -884,7 +989,8 @@ export default {
   components: {
     headerPage: () => import("@/components/header"),
     addNewGoods: () => import("@/components/goods/add"),
-    recordPage: () => import("@/components/goods/record")
+    recordPage: () => import("@/components/goods/record"),
+    exportPage: () => import("@/components/export/common.vue")
   }
 };
 </script>

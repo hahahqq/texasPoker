@@ -11,7 +11,7 @@
       </el-aside>
       <el-container>
           <div class="content-new-fex">
-            <div class="content-eighty">
+            <div class="content-eighty" style="padding-top: 24px">
               <div class="content-center">
                 <el-button size="small" type="primary" @click="handleDeal('add',{})">添加用户</el-button>
               </div>
@@ -81,17 +81,17 @@
             </div>
           </div>
 
-        <el-dialog :title="dealType=='add'?'新增用户':'编辑用户'" :visible.sync="dialogVisible" width="60%" >
+        <el-dialog :title="dealType=='add'?'新增用户':'编辑用户'" :visible.sync="dialogVisible" width="30%" >
           <div>
             <el-form ref="ruleForm" size="small" :model="ruleForm" :rules="rules" label-width="100px">
               <el-form-item label="姓名" prop='username'>
-                <el-input size="small" style="width: 200px" v-model="ruleForm.username" clearable placeholder="请输入用户姓名"></el-input>
+                <el-input size="small" style="width: 80%" v-model="ruleForm.username" clearable placeholder="请输入用户姓名"></el-input>
               </el-form-item>
               <el-form-item label="账号" prop='usercode'>
-                <el-input size="small" style="width: 200px" v-model="ruleForm.usercode" clearable placeholder="请输入用户编码"></el-input>
+                <el-input size="small" style="width: 80%" v-model="ruleForm.usercode" clearable placeholder="请输入用户编码"></el-input>
               </el-form-item>
               <el-form-item label="密码" v-if="dealType=='add'" prop='password'>
-                <el-input size="small" v-model="ruleForm.password" type="password" style="width: 200px" clearable placeholder="请输入用户密码" ></el-input>
+                <el-input size="small" v-model="ruleForm.password" type="password" style="width: 80%" clearable placeholder="请输入用户密码" ></el-input>
               </el-form-item>
 
               <el-form-item label="是否停用" v-if="dealType=='edit'">

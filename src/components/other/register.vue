@@ -1,6 +1,8 @@
 <template>
   <div class="register" style="padding: 20px">
-    <div class="text-center font-20 padding-sm m-bottom-md">商家注册</div>
+    <div class="text-center font-20 padding-sm m-bottom-md relative registerStyle">商家注册
+       <i class="el-icon-arrow-right el-icon-close absolute pointer text-999" @click="closeModal" style="right: 0; top: -4px; font-size:18pt;"></i>
+    </div>
 
     <div v-if="isLogin" style="height: 418px; padding-top: 60px">
       <div class="text-center"><img :src="img" class="inline-block" style="width: 200px" /></div>
@@ -44,16 +46,6 @@
             type="password"
             placeholder="请输入登录密码"
           ></el-input>
-        </el-form-item>
-
-        <el-form-item label="所在行业" prop="tradeid">
-          <el-cascader
-            placeholder="请选择所在行业"
-            style="width: 260px"
-            v-model="tradeID"
-            :options="options"
-            @change="choseTradeFun"
-          ></el-cascader>
         </el-form-item>
 
         <el-form-item label="公司名称">
@@ -123,14 +115,6 @@ export default {
             trigger: "blur"
           }
         ],
-
-        tradeid: [
-          {
-            required: true,
-            message: "请选择所在行业",
-            trigger: "change"
-          }
-        ],
         password: [
           {
             required: true,
@@ -150,24 +134,6 @@ export default {
         UserCode: "",
         Password: ""
       },
-
-      options: [
-        {
-          value: "1",
-          label: "服务行业",
-          children: [{}]
-        },
-        {
-          value: "2",
-          label: "零售行业",
-          children: [{}]
-        }
-      ],
-      tradeID: [],
-
-      // tradeList: [
-      //   {}
-      // ],
       isLogin: false
     };
   },
@@ -175,36 +141,10 @@ export default {
     ...mapGetters({
       verCodeState: "verCodeState",
       registerState: "registerState",
-      loginState: "loginState",
-      getTradeServerListState: "getTradeServerListState",
-      getTradeRetailListState: "getTradeRetailListState"
+      loginState: "loginState"
     })
   },
   watch: {
-    getTradeServerListState(data) {
-      console.log(data.List);
-      let param = data.List,
-        newParam = [];
-      for (var i in param) {
-        newParam.push({
-          value: param[i].ID,
-          label: param[i].NAME
-        });
-      }
-      this.options[0].children = newParam;
-    },
-    getTradeRetailListState(data) {
-      console.log(data);
-      let param = data.List,
-        newParam = [];
-      for (var i in param) {
-        newParam.push({
-          value: param[i].ID,
-          label: param[i].NAME
-        });
-      }
-      this.options[1].children = newParam;
-    },
     verCodeState(data) {
       this.$message({
         showClose: true,
@@ -230,15 +170,8 @@ export default {
       }
     }
   },
-  mounted() {
-    this.$store.dispatch("getTradeServerList", { Type: 1 });
-    this.$store.dispatch("getTradeRetailList", { Type: 2 });
-  },
+  mounted() { },
   methods: {
-    choseTradeFun() {
-      console.log(this.tradeID);
-      this.ruleForm.tradeid = this.tradeID[1];
-    },
     closeModal() {
       Object.assign(this.$data, this.$options.data());
       this.$emit("closeModal");
@@ -266,7 +199,6 @@ export default {
           this.$store.dispatch("toRegister", _this.ruleForm).then(() => {
             _this.loading = true;
           });
-          // console.log(_this.ruleForm);
         } else {
           console.log("error submit!!");
           return false;
@@ -290,5 +222,3 @@ export default {
   }
 };
 </script>
-<style scoped>
-</style>

@@ -32,6 +32,7 @@
                   :height="tableHeight"
                   header-row-class-name="bg-F1F2F3"
                 >
+                <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
                   <el-table-column
                     prop="NAME"
                     label="分类名称"

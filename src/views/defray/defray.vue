@@ -34,6 +34,7 @@
       header-row-class-name="bg-theme text-white"
       style="width: 100%;"
     >
+    <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
       <el-table-column prop="ITEMNAME" label="支出项目"></el-table-column>
       <el-table-column prop="EXPENDMONEY" label="支出金额"></el-table-column>
       <el-table-column prop="DATESTR" label="支出时间"></el-table-column>

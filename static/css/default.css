@@ -531,6 +531,9 @@ textarea{ width: 100%; }
 .text-skin {
   color: #2baab1;
 }
+.text-red {
+   color: red;
+}
 .text-uppercase {
   text-transform: uppercase;
 }

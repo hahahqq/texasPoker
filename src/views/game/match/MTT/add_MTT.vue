@@ -439,7 +439,7 @@ export default {
     addRanking() {
       this.rewardWayList = this.rewardWayList.concat({
         Id: "",
-        Name: "",
+        Name: "第 " + Number(this.rewardWayList.length + 1) + " 名",
         Rate: 0,
         RewardRate: "",
         Integral: 0,
@@ -476,9 +476,8 @@ export default {
       this.defaultRewardWayList();
     },
     defaultRewardWayList() {
-      let arr = [];
-      for (var i = 1; i <= 3; i++) {
-        arr.push({
+      this.rewardWayList = [
+        {
           Id: "",
           Name: "第 1 名",
           Rate: 0,
@@ -487,11 +486,8 @@ export default {
           ContestQty: "",
           Remark: "",
           IsCancel: 0
-        });
-      }
-      arr[1].Name = "第 2 名";
-      arr[2].Name = "第 3 名";
-      this.rewardWayList = arr;
+        }
+      ];
     },
     closeDialog() {
       this.cleanData();
@@ -504,6 +500,13 @@ export default {
         this.DelArr.push(row);
       }
       this.rewardWayList.splice(idx, 1);
+
+      let rewardWayList = this.rewardWayList;
+      for (var i = 1; i <= rewardWayList.length; i++) {
+        rewardWayList[i].Name = "第 " + Number(i + 1) + " 名";
+      }
+      this.rewardWayList = rewardWayList;
+      this.$forceUpdate();
     },
     submitBtn() {
       this.$refs.ruleForm.validate((valid) => {

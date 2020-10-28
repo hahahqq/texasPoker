@@ -130,8 +130,8 @@ let routes = [
             meta: {
                parent: "game",
                title: "赛事中心"
-               // line: true
-            }
+            },
+            hidden: true
          }
       ]
    },
@@ -591,7 +591,7 @@ let routes = [
       name: "",
       iconCls: "icon-desktop", //图标样式class
       leaf: true, //只有一个节点
-      hidden: false,
+      hidden: true,
       children: [
          {
             path: "/bespeak",
@@ -632,7 +632,7 @@ let routes = [
       name: "mall",
       iconCls: "icon-inbox",
       leaf: true,
-      hidden: false,
+      hidden: true,
       children: [
          {
             path: "/malls",

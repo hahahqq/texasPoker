@@ -17,6 +17,7 @@
       height="500"
       header-row-class-name="bg-theme text-white"
     >
+      <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
       <el-table-column prop="PAYTYPENAME" label="名称" width="120" sortable></el-table-column>
       <el-table-column prop="FIRSTMONEY" label="期初金额"></el-table-column>
       <el-table-column prop="CURMONEY" label="余额"></el-table-column>

@@ -1,61 +1,74 @@
 <template>
   <div class="shop-list">
-    <div class="content-eighty">
-        <div class="content-center">
-          <div class="shop-bottom">
-            <el-button size="small" type="primary" @click="handleDeal({})">添加店铺</el-button>
-            <div class="seach-input">
-              <el-input size="small" placeholder="请输入内容" v-model="input2">
-                <template slot="append"><span class="overall-font">搜索</span></template>
-              </el-input>
-            </div>
+    <div class="content-eighty" style="height: auto; padding-top: 0">
+      <div class="content-center">
+        <div class="shop-bottom">
+          <el-button size="small" type="primary" @click="handleDeal({})">添加店铺</el-button>
+          <div class="seach-input">
+            <el-input size="small" placeholder="请输入内容" v-model="input2">
+              <template slot="append"><span class="overall-font">搜索</span></template>
+            </el-input>
+          </div>
         </div>
       </div>
-  </div>
+    </div>
     <!--列表-->
-        <div class="content-table">
-          <div class="content-table-center">
-        <el-table
-          :data="pagelist"
-          v-loading="loading"
-          height="500"
-          size='small'
-          header-row-class-name="bg-theme2 text-white"
-        >
-          <el-table-column prop="SHOPNAME" label="店铺名称" width="120"></el-table-column>
-          <el-table-column prop="MANAGER" label="联系人"></el-table-column>
-          <el-table-column prop="PHONENO" label="联系电话"></el-table-column>
-          <el-table-column prop="ADDRESS" label="地址"></el-table-column>
-          <el-table-column label="到期时间">
-            <template slot-scope="scope">
-                <span>{{new Date(scope.row.INVALIDDATE) | time}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="right">
-            <template slot-scope="scope">
-              <el-button-group>
-                <el-button type="text" size="small" @click="handleDeal(scope.row)" icon="el-icon-edit">编辑</el-button>
-                <!-- <el-button
+    <div class="content-table m-top-sm">
+      <el-table
+        :data="pagelist"
+        v-loading="loading"
+        :height="clientHeight"
+        size="small"
+        header-row-class-name="bg-theme2 text-white"
+      >
+        <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
+        <el-table-column prop="SHOPNAME" label="店铺名称"></el-table-column>
+        <el-table-column prop="MANAGER" label="联系人" align="center"></el-table-column>
+        <el-table-column prop="PHONENO" label="联系电话" align="center"></el-table-column>
+        <el-table-column prop="ADDRESS" label="地址"></el-table-column>
+        <el-table-column label="到期时间" align="center">
+          <template slot-scope="scope">
+            <span>{{ new Date(scope.row.INVALIDDATE) | time }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="right">
+          <template slot-scope="scope">
+            <el-button-group>
+              <el-button
+                type="text"
+                size="small"
+                @click="handleDeal(scope.row)"
+                icon="el-icon-edit"
+              >
+                编辑
+              </el-button>
+              <!-- <el-button
                   size="small"
                   type="text"
                   v-if="!scope.row.ISINIT"
                   @click="handleDel(scope.$index, scope.row)"
                   icon="el-icon-delete"
                 >删除</el-button> -->
-              </el-button-group>
-              <div class="hide">{{scope.row}}</div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+            </el-button-group>
+            <div class="hide">{{ scope.row }}</div>
+          </template>
+        </el-table-column>
+      </el-table>
     </div>
 
     <!-- deal -->
-    <el-dialog :title="dealType=='add'?'新增店铺':'编辑店铺'" :visible.sync="dialogVisible" width="600px">
+    <el-dialog
+      :title="dealType == 'add' ? '添加店铺' : '编辑店铺'"
+      :visible.sync="dialogVisible"
+      width="700px"
+    >
       <editShopPage
-        @closeModal="dialogVisible=false"
-        @resetList="dialogVisible=false;getNewData()"
-        :propsData="{state:dialogVisible}"
+        @closeModal="dialogVisible = false"
+        @resetList="
+          dialogVisible = false;
+          getNewData();
+        "
+        :propsData="{ state: dialogVisible }"
       ></editShopPage>
     </el-dialog>
   </div>
@@ -69,7 +82,8 @@ export default {
       loading: false,
       dialogVisible: false,
       dealType: "add",
-      input2:'',
+      input2: "",
+      clientHeight: document.body.clientHeight - 160
     };
   },
   computed: {
@@ -117,12 +131,10 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.$store
-            .dispatch("delShopItem", { index: index, data: item })
-            .then(() => {
-              this.loading = false;
-              this.dealType = "del";
-            });
+          this.$store.dispatch("delShopItem", { index: index, data: item }).then(() => {
+            this.loading = false;
+            this.dealType = "del";
+          });
         })
         .catch(() => {
           this.$message({
@@ -141,21 +153,21 @@ export default {
 };
 </script>
 <style scoped>
-.shop-list{
+.shop-list {
   width: 100%;
   position: relative;
 }
-.shop-bottom{
+.shop-bottom {
   display: flex;
   align-items: center;
   height: 80px;
   background: #fff;
 }
-.seach-input{
+.seach-input {
   position: absolute;
   right: 30px;
 }
-.shop-table{
+.shop-table {
   margin-top: 20px;
   background: #fff;
 }

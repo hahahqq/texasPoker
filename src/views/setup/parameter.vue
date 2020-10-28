@@ -24,12 +24,15 @@
 
                       <el-time-picker
                         v-model="TimeDifference"
-
-                        size='small'
+                        size="small"
                         format="HH:mm"
                         style="margin-left: 20px; width: 100px"
-                        placeholder="任意时间点">
-                     </el-time-picker>
+                        placeholder="任意时间点"
+                      ></el-time-picker>
+
+                      <span style="color: #999; margin-left: 20px">
+                        报表数据将按营业时间作为起始时间统计
+                      </span>
 
                       <!-- <span style="color: #999; margin-left: 20px">
                         例：9月2日10:00到9月3日10:00的单据都计入9月2日
@@ -143,7 +146,7 @@
                     </li>
 
                     <li>
-                      <span>
+                      <span style='width: 90px; float:left'>
                         <i></i>
                         销售抹零设置
                       </span>
@@ -160,6 +163,34 @@
                           :value="item.ID"
                         ></el-option>
                       </el-select>
+                    </li>
+
+                    <li>
+                       <span style='width: 90px; float:left'>
+                        <i></i>
+                        可作废单据天数
+                      </span>
+
+                      <el-select
+                        size="small"
+                        style="margin-left: 20px; width: 150px"
+                        v-model="ruleForm.CancelDay"
+                        placeholder="请选择抹零方式"
+                      >
+                        <el-option
+                          v-for="item in 31"
+                          :key="item"
+                          :label="item"
+                          :value="item"
+                        ></el-option>
+                      </el-select>
+                      天
+
+                      <span style="color: #999; margin-left: 20px">用于控制可作废多少天内的充值、销售、支出单据</span>
+
+
+
+
                     </li>
                   </ul>
                 </div>
@@ -180,13 +211,13 @@
 import { mapState, mapGetters } from "vuex";
 import { getUserInfo, getHomeData, setUserInfo } from "@/api/index";
 import MIXINS_SETUP from "@/mixins/setup";
-import dayjs from 'dayjs'
+import dayjs from "dayjs";
 export default {
   mixins: [MIXINS_SETUP.SIDERBAR_MENU],
   data() {
     return {
       CompanyCode: "",
-      TimeDifference: '',
+      TimeDifference: "00:00",
       IntegralType: false,
       ruleForm: {
         IsAutoGoodsCode: false,
@@ -195,7 +226,7 @@ export default {
         autosendaddsms: false,
         autosendpaysms: false,
         autosendchanagesms: false,
-
+        CancelDay: 31,
         IntegralRate: "",
         ZeroType: 1,
         autosendprizesms: false,
@@ -235,9 +266,15 @@ export default {
         }
         this.Integralsval = CompanyConfig.INTEGRALRATE;
 
-         let TIMEDIFFERENCE = CompanyConfig.TIMEDIFFERENCE.split(":")
-        this.TimeDifference = new Date(dayjs().year(), dayjs().month() , dayjs().day(), TIMEDIFFERENCE[0], TIMEDIFFERENCE[1]);
-        console.log(this.TimeDifference )
+        let TIMEDIFFERENCE = CompanyConfig.TIMEDIFFERENCE.split(":");
+        this.TimeDifference = new Date(
+          dayjs().year(),
+          dayjs().month(),
+          dayjs().day(),
+          TIMEDIFFERENCE[0],
+          TIMEDIFFERENCE[1]
+        );
+        console.log(this.TimeDifference);
         this.IntegralType = CompanyConfig.INTEGRALTYPE;
         if (
           CompanyConfig.AUTOSENDADDSMS ||
@@ -256,7 +293,7 @@ export default {
       this.loading = false;
       if (data.success) {
         this.$message.success("参数设置成功！");
-        this.defaultData()
+        this.defaultData();
       } else {
         this.$message(data.message);
       }
@@ -276,7 +313,7 @@ export default {
         this.ruleForm.autosendpaysms = true;
         this.ruleForm.autosendchanagesms = true;
         this.ruleForm.autosendprizesms = false;
-        this.ruleForm.autosendenrollsms = false
+        this.ruleForm.autosendenrollsms = false;
       }
     },
     defaultData() {
@@ -289,17 +326,16 @@ export default {
       }
       this.loading = true;
       this.ruleForm.IntegralRate = this.Integralsval;
-      this.ruleForm.IntegralType = this.IntegralType ? 1 : 0
+      this.ruleForm.IntegralType = this.IntegralType ? 1 : 0;
 
-      this.ruleForm.TimeDifference = dayjs(new Date(this.TimeDifference)).format('HH:mm')
+      this.ruleForm.TimeDifference = dayjs(new Date(this.TimeDifference)).format("HH:mm");
 
       if (this.autosendsms == false) {
         this.ruleForm.autosendaddsms = false;
         this.ruleForm.autosendpaysms = false;
         this.ruleForm.autosendchanagesms = false;
         this.ruleForm.autosendprizesms = false;
-        this.ruleForm.autosendenrollsms = false
-
+        this.ruleForm.autosendenrollsms = false;
       }
       this.$store.dispatch("setparameterstate", this.ruleForm);
 

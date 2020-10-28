@@ -1,10 +1,10 @@
 /**
  * 商品类别
- * 
+ *
  * ***/
 import commonSend from '@/api/api'
 import { getUserInfo,setHomeData,getHomeData } from '@/api/index'
-import { 
+import {
   GET_CATEGORY_LIST,GET_CATEGORY_ITEM,DEAL_CATEGORY_ITEM,
   GOODS_LIST2
 } from '@/store/mutation-types'
@@ -29,7 +29,7 @@ const state = {
     "PageSize": 20,
     "PN": 0,
   }},
-  goodsList2:[],  
+  goodsList2:[],
 }
 
 // getters
@@ -69,7 +69,7 @@ const actions = {
       commit(GET_CATEGORY_ITEM, { data })
     }, sendData )
   },
-  
+
   dealCategoryItem ({commit},data) {
     let userInfo = getUserInfo();
     let sendData = {
@@ -113,7 +113,7 @@ const actions = {
     state.selcategory = Object.assign({},data);
   },
   clearCategoryAll({state}){
-    state.categoryListState.paying.PN = 0 
+    state.categoryListState.paying.PN = 0
     state.categoryList= []
     state.selcategory={}
     state.categoryItem={}
@@ -180,7 +180,7 @@ const mutations = {
         state.categoryList.splice(index, 1);
       }
       state.categoryListState.paying.PN = 0;
-    } 
+    }
     state.dealCategoryState = Object.assign({},data);
     selected = {}
   },

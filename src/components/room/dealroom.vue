@@ -8,7 +8,8 @@
         <el-switch v-model="form.Status"></el-switch>
       </el-form-item>
       <el-form-item label="排序">
-        <el-input v-model.number="form.DescNo" type="number"></el-input>
+        <!-- <el-input v-model.number="form.DescNo" type="number"></el-input> -->
+        <el-input-number v-model="ruleForm.DescNo" controls-position="right" clearable placeholder="请输入排序序号" size="small"></el-input-number>
       </el-form-item>
       <el-form-item>
         <el-button @click="closeModal(false)">取 消</el-button>

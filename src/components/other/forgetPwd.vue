@@ -20,14 +20,23 @@
       <el-form-item label="确认密码" prop="checkPass">
         <el-input v-model="ruleForm.checkPass" type="password" placeholder="请确认登录密码"></el-input>
       </el-form-item>
-      <el-form-item class="p-top-sm">
+
+      <div class="p-top-sm text-center" >
+         <el-button type="primary" @click="submitForm()" :loading="loading" class="pull-left-">
+          <span>确 定</span>
+        </el-button>
+        <el-button @click="closeModal" class="pull-right-">
+          <span>取 消</span>
+        </el-button>
+      </div>
+      <!-- <el-form-item class="p-top-sm" style="margin-left: 0px">
         <el-button type="primary" @click="submitForm()" :loading="loading" class="pull-left-">
           <span>确 定</span>
         </el-button>
         <el-button @click="closeModal" class="pull-right-">
           <span>取 消</span>
         </el-button>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
 
   </div>

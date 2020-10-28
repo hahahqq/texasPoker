@@ -1,6 +1,6 @@
 import { getLodop } from "@/assets/js/LodopFuncs"; //导入模块
 import commonSend from "@/api/api";
-import { getHomeData, getUserInfo } from '@/api/index'
+import { getHomeData, getUserInfo } from "@/api/index";
 let LODOP;
 let qrcSrcimg;
 var isGoodsPrice = false;
@@ -29,7 +29,8 @@ const getDayindata = function(printData, printType, qresurl) {
    LODOP.SET_PRINT_STYLEA(0, "FontSize", fontSize);
    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 
-   let gw1 = pageLeft + pageLabel , gw2 = 35;
+   let gw1 = pageLeft + pageLabel,
+      gw2 = 35;
 
    let COMPANYNAME = "德州会员系统";
    console.log(printData.title);
@@ -52,12 +53,12 @@ const getDayindata = function(printData, printType, qresurl) {
       typename = "销售小票";
    } else if (printType == "print3") {
       typename = "消费小票";
-   } else if (printType == 'print4') {
-      typename = '报名小票'
-   } else if (printType == 'print5'){
-      typename = '领奖小票'
-   }else if (printType == 'print6') {
-      typename = '奖励小票'
+   } else if (printType == "print4") {
+      typename = "报名小票";
+   } else if (printType == "print5") {
+      typename = "领奖小票";
+   } else if (printType == "print6") {
+      typename = "奖励小票";
    }
 
    PrintLODOP_Text(hPos, 0, printW, rowHeight, typename, {
@@ -77,15 +78,24 @@ const getDayindata = function(printData, printType, qresurl) {
 
    hPos = dividingLine(hPos, pageWidth);
 
-   if(printType ==  'print2' || printType == 'print5'){   // 销售小票 -- 商品
+   if (printType == "print2" || printType == "print5") {
+      // 销售小票 -- 商品
       let leftw0 = 1,
-        leftw1 = 70,
-        leftw2 = 100,
-        leftw3 = 130;
-      PrintLODOP_Text(hPos, leftw0, pageWidth, rowHeight, printType == 'print2' ? "商品" : '奖品', { Bold: 1 });
-      PrintLODOP_Text(hPos, leftw1, gw2, rowHeight, printType == 'print2' ? "单价" : '积分', { Alignment: 2, Bold: 1 });
-      PrintLODOP_Text(hPos, leftw2+8 , gw2, rowHeight, "数量", { Alignment: 2, Bold: 1 });
-      PrintLODOP_Text(hPos, leftw3+8, gw2, rowHeight, printType == 'print2' ? "金额" : '小计', { Alignment: 2, Bold: 1 });
+         leftw1 = 70,
+         leftw2 = 100,
+         leftw3 = 130;
+      PrintLODOP_Text(hPos, leftw0, pageWidth, rowHeight, printType == "print2" ? "商品" : "奖品", {
+         Bold: 1
+      });
+      PrintLODOP_Text(hPos, leftw1, gw2, rowHeight, printType == "print2" ? "单价" : "积分", {
+         Alignment: 2,
+         Bold: 1
+      });
+      PrintLODOP_Text(hPos, leftw2 + 8, gw2, rowHeight, "数量", { Alignment: 2, Bold: 1 });
+      PrintLODOP_Text(hPos, leftw3 + 8, gw2, rowHeight, printType == "print2" ? "金额" : "小计", {
+         Alignment: 2,
+         Bold: 1
+      });
       hPos += rowHeight;
       for (let i = 0; i < printData.goodsList.length; i++) {
          let goodsName = printData.goodsList[i].name,
@@ -95,9 +105,12 @@ const getDayindata = function(printData, printType, qresurl) {
 
          let height = String(goodsName).length / 5;
          let ROWHEIGHT = rowHeight * Math.ceil(height);
-         PrintLODOP_Text(hPos, leftw0, gw1, ROWHEIGHT, goodsName, { TextNeatRow: true, LineSpacing: 0.3 });
+         PrintLODOP_Text(hPos, leftw0, gw1, ROWHEIGHT, goodsName, {
+            TextNeatRow: true,
+            LineSpacing: 0.3
+         });
          PrintLODOP_Text(hPos, leftw1, gw2, rowHeight, purPrice, { Alignment: 2 });
-         PrintLODOP_Text(hPos, leftw2 + 10 , gw2, rowHeight, qty, { Alignment: 2});
+         PrintLODOP_Text(hPos, leftw2 + 10, gw2, rowHeight, qty, { Alignment: 2 });
          PrintLODOP_Text(hPos, leftw3 + 10, gw2, rowHeight, price, { Alignment: 2 });
          hPos += ROWHEIGHT;
       }
@@ -105,14 +118,22 @@ const getDayindata = function(printData, printType, qresurl) {
    }
 
    for (var i in printData.saleInfo) {
-      if(i<3){
+      if (i < 3) {
          hPos = PrintLODOPcommon(printData.saleInfo[i].label, printData.saleInfo[i].value, hPos);
-      }else{  // 扣减方式
-         PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, printData.saleInfo[i].label, { });
-         PrintLODOP_Text(hPos, pageLabel + pageLeft, printValueW-10, rowHeight, printData.saleInfo[i].value, {
-            TextNeatRow: true,
-            LineSpacing: 0.5
-         });
+      } else {
+         // 扣减方式
+         PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, printData.saleInfo[i].label, {});
+         PrintLODOP_Text(
+            hPos,
+            pageLabel + pageLeft,
+            printValueW - 10,
+            rowHeight,
+            printData.saleInfo[i].value,
+            {
+               TextNeatRow: true,
+               LineSpacing: 0.5
+            }
+         );
          let height = String(printData.address.value).length / 9;
          hPos += rowHeight * Math.ceil(height);
       }
@@ -128,7 +149,7 @@ const getDayindata = function(printData, printType, qresurl) {
             printData.vipInfo[i].label + "：",
             printData.vipInfo[i].value,
             hPos
-         )
+         );
       }
    }
    hPos = dividingLine(hPos, pageWidth);
@@ -143,7 +164,7 @@ const getDayindata = function(printData, printType, qresurl) {
 
    //联系地址
    if (printData.address.isShow) {
-      PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, "联系地址:", {  });
+      PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, "联系地址:", {});
       PrintLODOP_Text(hPos, pageLabel + pageLeft, printValueW, rowHeight, printData.address.value, {
          TextNeatRow: true,
          LineSpacing: 0.5
@@ -173,12 +194,11 @@ const getDayindata = function(printData, printType, qresurl) {
    }
    hPos += rowHeight * pageWidth * 0.01;
 
-   let printNum = printData.setupPrintnum
+   let printNum = printData.setupPrintnum;
 
-   LODOP.SET_PRINT_COPIES(printNum);  // 打印份数
+   LODOP.SET_PRINT_COPIES(printNum); // 打印份数
    // LODOP.PRINT();
    LODOP.PREVIEW();
-
 };
 
 // 增加纯文本打印项
@@ -194,22 +214,16 @@ const PrintLODOP_Text = function(Top, Left, Width, Height, strContent, style) {
 // 匹配不同打印规则
 const showPrintrules = function(rulestatus) {
    if (rulestatus == 11) {
-     fontsizebold(13);
+      fontsizebold(13);
    } else {
-     LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+      LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
    }
- }
+};
 
 const PrintLODOPcommon = function(Printtitle, Printcontent, hPos, leftwidth) {
-   if (false) {
-      var pageWidth = 800;
-      var rowHeight = 21;
-      var leftwidth = leftwidth == undefined ? 80 : leftwidth;
-   } else {
-      var pageWidth = 580;
-      var rowHeight = 17;
-      var leftwidth = leftwidth == undefined ? 60 : leftwidth;
-   }
+   var pageWidth = 580;
+   var rowHeight = 17;
+   var leftwidth = leftwidth == undefined ? 60 : leftwidth;
    var title = String(Printtitle),
       text = String(Printcontent);
    LODOP.ADD_PRINT_TEXT(hPos, 1, pageWidth, rowHeight, title);

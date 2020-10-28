@@ -59,7 +59,7 @@
                         ></el-input>
                     </el-form-item>
                 </el-col>
-                <el-col :xs="24" :sm="12">
+                <!-- <el-col :xs="24" :sm="12">
                     <el-form-item v-if="dataType.value==1" label="库存预警">
                         <el-input
                             v-model.number="ruleForm.MinStockNumber"
@@ -69,9 +69,9 @@
                             placeholder="请输入最低库存数量"
                         ></el-input>
                     </el-form-item>
-                </el-col>
+                </el-col> -->
 
-                <el-col :xs="24" :sm="12">
+                <!-- <el-col :xs="24" :sm="12">
                     <el-form-item v-if="dataType.value==1" label-width="120px">
                         <span slot="label">
                             <span class="span-box">
@@ -89,7 +89,7 @@
                             placeholder="请输入商品排序"
                         ></el-input>
                     </el-form-item>
-                </el-col>
+                </el-col> -->
                 <el-col :xs="24" :sm="24">
                     <el-form-item label="商品描述" class="clearfix">
                         <el-input v-model="ruleForm.Remark" clearable></el-input>
@@ -173,10 +173,9 @@ export default {
             ruleForm: {
                 Code: "",
                 Name: "",
-                Price: 0,
                 Status: 1,
-                Price: 0,
-                Purprice: 0,
+                Price: "",
+                Purprice: "",
                 Remark: "",
                 Unitid: "",
                 Typeid: "",
@@ -186,7 +185,7 @@ export default {
                 GoodsMode: 0, // 0=商品   1=服务项目
                 DescNo: 100,
                 MinStockNumber: 0,
-                VipPrice: 0,
+                VipPrice: "",
                 ServiceMinute: 0,
                 IsReturnVisit: false,
                 ReturnVisitDay: 0,

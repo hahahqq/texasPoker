@@ -30,23 +30,23 @@
                   </li>
                   <li class="myShop-logo">
                     商家名称 :&nbsp;
-                    <span>{{ dataInfo.name }}</span>
+                    <span>{{ dataInfo.name == 'undefined' ? '' : dataInfo.name }}</span>
                   </li>
                   <li class="myShop-logo">
                     所属行业 :&nbsp;
-                    <span>{{ dataInfo.tradename }}</span>
+                    <span>棋牌</span>
                   </li>
                   <li class="myShop-logo">
                     联系人 :&nbsp;
-                    <span>{{ dataInfo.linker }}</span>
+                    <span>{{ dataInfo.linker == 'undefined' ? '' : dataInfo.linker }}</span>
                   </li>
                   <li class="myShop-logo">
                     联系电话 :&nbsp;
-                    <span>{{ dataInfo.phoneno }}</span>
+                    <span>{{ dataInfo.phoneno == 'undefined' ? '' : dataInfo.phoneno }}</span>
                   </li>
                   <li class="myShop-logo">
                     联系地址 :&nbsp;
-                    <span>{{ dataInfo.address }}</span>
+                    <span>{{ dataInfo.address == 'undefined' ? '' : dataInfo.address }}</span>
                   </li>
                 </ul>
               </div>
@@ -67,7 +67,7 @@
                   </li>
                   <li class="myShop-logo">
                     有效时间 :&nbsp;
-                    <span>{{ new Date(getMyShop.INVALIDDATE) | time }}</span>
+                    <span v-if="getMyShop.INVALIDDATE != undefined">{{ new Date(getMyShop.INVALIDDATE) | time }}</span>
                   </li>
                   <li class="myShop-logo">
                     联系人 :&nbsp;
@@ -83,7 +83,7 @@
                   </li>
                   <li class="myShop-logo">
                     注册时间 :&nbsp;
-                    <span>{{ new Date(getMyShop.WRITETIME) | time }}</span>
+                    <span v-if="getMyShop.WRITETIME != undefined">{{ new Date(getMyShop.WRITETIME) | time }}</span>
                   </li>
                 </ul>
               </div>

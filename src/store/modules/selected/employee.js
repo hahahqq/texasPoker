@@ -1,10 +1,10 @@
 /**
  * 员工
- * 
+ *
  * ***/
 import commonSend from '@/api/api'
 import { getUserInfo,setHomeData } from '@/api/index'
-import { 
+import {
   GET_EMPLOYEE_LIST,
   GET_EMPLOYEE_ITEM,
   GET_DELEMPLOYEE_STATE,
@@ -73,20 +73,20 @@ const actions = {
   dealEmployeeItem({commit},data){ // edit
     let userInfo = getUserInfo();
     let sendData = {
-      'InterfaceCode': '60102010403',
+      'InterfaceCode': '21002060703',
       'CompanyId': userInfo.CompanyID
     };
     if (data) {
       sendData = Object.assign({}, sendData, data)
     }
-    commonSend.commonSend('get',data => {
+    commonSend.commonSend('post',data => {
       commit(GET_EMPLOYEE_ITEM, { data })
     }, sendData )
   },
   getdelemployeestate({commit,state},{index,data}){
     let userInfo = getUserInfo();
     let sendData = {
-      'InterfaceCode': '60102010404',
+      'InterfaceCode': '21002060704',
       'CompanyId': userInfo.CompanyID,
       ID: data.ID
     };
@@ -97,7 +97,7 @@ const actions = {
   getEmployeePost({commit}, {}){  // 员工职务列表
     let userInfo = getUserInfo()
     let sendData = {
-      InterfaceCode: '60102010406', 
+      InterfaceCode: '60102010406',
       CompanyId: userInfo.CompanyID
     }
     commonSend.commonSend('get', data =>{

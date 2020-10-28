@@ -22,6 +22,7 @@
                 :height="tableHeight"
                 header-row-class-name="bg-F1F2F3"
                 :data="dataList">
+                <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
                 <el-table-column label="等级名称" prop="NAME"></el-table-column>
                 <el-table-column label="折扣率" prop="RATE"></el-table-column>
                 <el-table-column label="操作" align=right>

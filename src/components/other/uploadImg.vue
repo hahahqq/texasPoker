@@ -19,7 +19,7 @@
             class="el-upload el-upload--picture-card uploadActions"
             style="margin-top:-40px;"
         >
-            <img :src="imageUrl" class="avatar" />
+            <img :src="imageUrl" class="avatar" style="height: 100%" />
             <span class="el-upload-list__item-delete">
                 <a class="el-icon-delete pointer" @click="clearfun"></a>
             </span>

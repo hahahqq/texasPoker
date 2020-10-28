@@ -14,16 +14,16 @@
         <div class="content-table1">
           <div class="content-table-center">
             <el-row :gutter="10" v-for="(item,i) in list" :key='i'>
-              <el-col :xs="24" class='font-600 m-bottom-xs maskeing'>{{item.title}}</el-col>
-              <el-col :xs="24" :sm="5" :xl="6" v-for="(item1,ii) in item.children" :key="ii">
+              <el-col :xs="24" class='font-600 font-14 m-bottom-sm'>{{item.title}}</el-col>
+              <el-col :xs="24" :sm="8" :xl="8" v-for="(item1,ii) in item.children" :key="ii">
                 <a
                   @click="toFollowLink(item1.url,item1.number)"
-                  class="border rounded-xs block padding-sm m-bottom-md pointer"
-                  style="height:70px;"
+                  class="rounded-xs block padding-sm m-bottom-md pointer"
+                  style="height:70px; background:#f7f8fa"
                 >
                   <img :src="item1.img"
                     class="inline-block pull-left m-right-sm"
-                    style="width: 46px; height: 46px;"
+                    style="width: 40px; height: 40px; margin-top: 4px"
                   >
                   <div class="itt">{{item1.title}}</div>
                   <div class="itt1">{{item1.des}}</div>
@@ -61,7 +61,7 @@ export default {
     return {
       list:[
         {
-          title: '卡券中心', 
+          title: '卡券中心',
           children:[
             {
               title: "优惠券",
@@ -149,13 +149,13 @@ export default {
               img: img11,
               number: "210040205"
             },
-            {
-              title: '积分清零',
-              des:'积分清零',
-              url:'/IntegralReset',
-              img: img12,
-              number: "210040311"
-            }
+            // {
+            //   title: '积分清零',
+            //   des:'积分清零',
+            //   url:'/IntegralReset',
+            //   img: img12,
+            //   number: "210040311"
+            // }
           ]
         },
       ]
@@ -220,14 +220,14 @@ export default {
     background-color: #fff;
     color: #333;
   }
-  
+
   .el-aside {
     background-color: #D3DCE6;
     color: #333;
     text-align: center;
     line-height: 200px;
   }
-  
+
   .el-main {
     background-color: #F4F5FA;
     color: #333;
@@ -246,7 +246,7 @@ export default {
     margin-right: 0.5%;
     height: 600px;
     background: #fff;
-  } 
+  }
   .member-main-top-buttom{
     height: 70px;
     width: 100%;
@@ -264,11 +264,9 @@ export default {
   }
   .itt1{
     height: 23px;
-    line-height: 28px;
+    line-height: 23px;
     font-size: 12px;
-  }
-  .maskeing{
-    margin-bottom: 15px;
+    color:#aaa
   }
 </style>
 

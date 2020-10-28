@@ -13,7 +13,7 @@
 
             <el-container>
                 <div class="content-new-fex">
-                    <div class="content-eighty">
+                    <div class="content-eighty" style="height: 80px; padding-top: 24px">
                         <div class="content-center">
                             <el-button size="small" type="primary" @click="handleEdit({}, '')">新增桌台</el-button>
 
@@ -32,7 +32,8 @@
 
                     <div class="content-table4">
                         <div class="content-table-center">
-                            <el-table :data='tableData' size='small' style="width: 100%">
+                            <el-table :data='tableData' :height="clientHeight" size='small' style="width: 100%">
+                               <el-table-column type="index" label="序号" align='center' width="80"></el-table-column>
                                 <el-table-column prop="NAME" label="桌台名称"></el-table-column>
                                 <el-table-column prop="SHOPNAME" label="所属店铺"></el-table-column>
                                 <el-table-column prop="DESCNO" label="排序" align="center"></el-table-column>
@@ -48,7 +49,6 @@
 
                 </div>
             </el-container>
-
 
             <el-dialog :title="isAdd ?'新增桌台':'编辑桌台'" :visible.sync="dialogVisible" width="450px">
                 <div>
@@ -69,7 +69,7 @@
                         </el-form-item>
 
                         <el-form-item label="排 序">
-                            <el-input v-model="ruleForm.DescNo" clearable placeholder="请输入排序序号" size="small"></el-input>
+                            <el-input-number v-model="ruleForm.DescNo" controls-position="right" clearable placeholder="请输入排序序号" size="small"></el-input-number>
                         </el-form-item>
 
                         <el-form-item>
@@ -107,7 +107,8 @@ export default {
                 ShopId: [{ required: true, message: '请选择所属店铺', trigger: 'change' }]
             },
             loading: false,
-            isAdd: false
+            isAdd: false,
+            clientHeight: document.body.clientHeight - 160
         }
     },
     computed: {
