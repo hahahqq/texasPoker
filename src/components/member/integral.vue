@@ -22,14 +22,14 @@
         </div>
     <!--列表-->
     <el-table
-      border
+      size='small'
       :data="pagelist"
       v-loading="loading"
       height="350"
       header-row-class-name="bg-theme2 text-white"
       style="width: 100%;"
     >
-      <el-table-column prop="BILLDATE" label="时间" width="140" sortable :formatter="formatDate"></el-table-column>
+      <el-table-column prop="BILLDATE" label="时间" width="140" :formatter="formatDate"></el-table-column>
       <el-table-column prop="SM" label="说明" width="270"></el-table-column>
       <el-table-column prop="GETINTEGRAL" label="获得积分"></el-table-column>
       <el-table-column prop="CURRINTEGRAL" label="获得后积分"></el-table-column>

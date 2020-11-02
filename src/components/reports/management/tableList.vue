@@ -198,7 +198,7 @@ export default {
       let sendData = Object.assign({}, this.dataType.data);
       if (this.pageData.PN > 0) {
         sendData.data.PN = this.pageData.PN;
-      } 
+      }
       console.log(sendData)
       this.$store.dispatch(this.mothed, sendData).then(() => {
         this.loading = true;
@@ -209,7 +209,7 @@ export default {
         return;
       }
       this.pageData.PN = parseInt(currentPage);
-      this.getNewData();  
+      this.getNewData();
     },
 
     defaultData() {
@@ -281,9 +281,7 @@ export default {
         if (this.dataObj.index == 10) {
           this.componentName = "memberItem";
           this.title = "会员详情";
-          this.$store.dispatch("getMemberItem", item).then(() => {
-            this.$store.dispatch("getMemberItem2", item);
-          });
+          this.$store.dispatch("getMemberItem", item)
         }
         if (this.dataObj.index == 11) {
           this.componentName = "goodsItemIO";

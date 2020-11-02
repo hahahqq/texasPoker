@@ -342,9 +342,7 @@ export default {
                 this.$store.dispatch("clearMember", 5);
                 this.$store.dispatch("clearMember", 6);
             }
-            this.$store.dispatch("getMemberItem", item).then(() => {
-                this.$store.dispatch("getMemberItem2", item);
-            });
+            this.$store.dispatch("getMemberItem", item)
         },
         handlePageChange: function(currentPage) {
             if (this.pageData.PN == currentPage || this.loading) {

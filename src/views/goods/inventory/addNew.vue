@@ -91,9 +91,9 @@
                     :label="item.NAME"
                     :value="item.ID"
                   >
-                    <span style="float: left">{{ item.CODE }}</span>
+                    <span style="float: left">{{ item.NAME }}</span>
                     <span style="float: right; color: #8492a6; font-size: 12px">
-                      {{ item.NAME }}
+                      {{ item.CODE }}
                     </span>
                   </el-option>
                 </el-select>
@@ -197,7 +197,7 @@
     </div>
 
     <el-dialog
-      title="导入库存调拨单"
+      title="导入库存盘点单"
       :visible.sync="showUploadDialog"
       width="80%"
       append-to-body
@@ -265,6 +265,9 @@ export default {
       inventoryAddState: "inventoryAddState",
       OnlyOneGoodsState: "goodsListNew"
     })
+  },
+  components: {
+    uploadBillTable: () => import("../uploadExportBill.vue")
   },
   watch: {
     OnlyOneGoodsState(data) {
@@ -677,7 +680,7 @@ export default {
   },
   mounted() {
     if (this.shopList.length == 0) {
-      this.$store.dispatch("getShopList");
+      this.$store.dispatch("getShopList",{});
     }
     if (this.paywayList.length == 0) {
       this.$store.dispatch("getPaywayList", {});

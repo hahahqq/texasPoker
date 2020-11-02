@@ -79,16 +79,6 @@
                         :label="item.NAME"
                         :value="item.ID"
                       ></el-option>
-                      <el-option
-                        style="
-                          background: #f5f5f5;
-                          border-top: 1px solid #ddd;
-                          border-bottom: 1px solid #ddd;
-                        "
-                        value="10000"
-                      >
-                        + 新增
-                      </el-option>
                     </el-select>
                   </el-col>
                   <el-col :span="7">
@@ -200,8 +190,20 @@
                 </el-table-column>
                 <el-table-column label="操作" width="200" fixed="right" align="right">
                   <template slot-scope="scope">
-                    <!-- <el-button v-if="scope.row.GOODSMODE==0 && deskmode==1" type="text" size="small" @click="retrievalChange(scope.$index, scope.row)">出库</el-button> -->
-                    <!-- <el-button v-if="scope.row.GOODSMODE==0 && deskmode==1" type="text" size="small" @click="UnRetrievalChange(scope.$index, scope.row)">入库</el-button> -->
+                    <el-button
+                      type="text"
+                      size="small"
+                      @click="retrievalChange(scope.$index, scope.row)"
+                    >
+                      出库
+                    </el-button>
+                    <el-button
+                      type="text"
+                      size="small"
+                      @click="UnRetrievalChange(scope.$index, scope.row)"
+                    >
+                      入库
+                    </el-button>
 
                     <el-button
                       type="text"
@@ -292,11 +294,15 @@
                   <el-form-item label="现有库存">
                     <el-button type="text" style="margin-left: 18px">{{ form.qty }}</el-button>
                   </el-form-item>
-                  <el-form-item label="出库数量">
-                    <el-input v-model="form.retQty"></el-input>
+                  <el-form-item label="出库数量" prop="retQty">
+                    <el-input v-model="form.retQty" placeholder="请输入出库数量"></el-input>
                   </el-form-item>
                   <el-form-item label="出库类型" prop="region">
-                    <el-select v-model="form.region" placeholder="请选择" style="width: 100%">
+                    <el-select
+                      v-model="form.region"
+                      placeholder="请选择出库类型"
+                      style="width: 100%"
+                    >
                       <el-option label="采购进货" value="1"></el-option>
                       <el-option label="采购退货" value="2"></el-option>
                       <el-option label="采购丢损" value="3"></el-option>
@@ -305,7 +311,7 @@
                     </el-select>
                   </el-form-item>
                   <el-form-item label="备注说明">
-                    <el-input v-model="form.Remark"></el-input>
+                    <el-input v-model="form.Remark" placeholder="请输入备注说明"></el-input>
                   </el-form-item>
                 </el-form>
               </div>
@@ -329,11 +335,15 @@
                   <el-form-item label="现有库存">
                     <el-button type="text" style="margin-left: 18px">{{ unform.qty }}</el-button>
                   </el-form-item>
-                  <el-form-item label="入库数量">
-                    <el-input v-model="unform.retQty"></el-input>
+                  <el-form-item label="入库数量" prop="retQty">
+                    <el-input placeholder="请输入入库数量" v-model.trim="unform.retQty"></el-input>
                   </el-form-item>
                   <el-form-item label="入库类型" prop="region">
-                    <el-select v-model="unform.region" placeholder="请选择" style="width: 100%">
+                    <el-select
+                      v-model="unform.region"
+                      placeholder="请选择入库类型"
+                      style="width: 100%"
+                    >
                       <el-option label="采购进货" value="1"></el-option>
                       <el-option label="采购退货" value="2"></el-option>
                       <el-option label="采购丢损" value="3"></el-option>
@@ -342,7 +352,7 @@
                     </el-select>
                   </el-form-item>
                   <el-form-item label="备注说明">
-                    <el-input v-model="unform.Remark"></el-input>
+                    <el-input v-model="unform.Remark" placeholder="请输入备注说明"></el-input>
                   </el-form-item>
                 </el-form>
               </div>
@@ -355,10 +365,8 @@
             </div>
           </el-dialog>
 
-          <el-dialog title="记录" :visible.sync="notesShow" width="60%">
-            <div>
-              <recordPage :dataType="dataTypes"></recordPage>
-            </div>
+          <el-dialog title="记录" :visible.sync="notesShow" width="60%" :before-close="handleClose">
+            <recordPage :dataType="dataTypes"></recordPage>
           </el-dialog>
 
           <!-- 数据导出 -->
@@ -378,28 +386,6 @@
             ></exportPage>
           </el-dialog>
 
-          <!-- 新增商品分类 -->
-          <el-dialog title="商品分类" :visible.sync="dialogVisible" width="400px">
-            <el-form
-              ref="formCategory"
-              :model="formCategory"
-              :rules="rulesCategory"
-              label-width="80px"
-            >
-              <el-form-item label="名称" prop="Name">
-                <el-input v-model="formCategory.Name" placeholder="请输入名称"></el-input>
-              </el-form-item>
-              <el-form-item label="备注">
-                <el-input type="textarea" v-model="formCategory.Remark"></el-input>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="dealData" :loading="loadingCategory">
-                  保存
-                </el-button>
-                <el-button @click="dialogVisible = false">取消</el-button>
-              </el-form-item>
-            </el-form>
-          </el-dialog>
         </div>
       </el-container>
     </el-container>
@@ -424,20 +410,6 @@ export default {
       unretrievalShow: false,
       notesShow: false,
       dialogVisible: false,
-      formCategory: {
-        Name: "",
-        Remark: ""
-      },
-      rulesCategory: {
-        Name: [
-          {
-            required: true,
-            message: "请输入名称",
-            trigger: "blur"
-          }
-        ]
-      },
-
       pagelist: [],
       mode: [
         { id: 1, name: "服务" },
@@ -451,7 +423,6 @@ export default {
       value2: "",
       value3: "",
       options1: "",
-      showAddNew: false,
       getgoodsIMGURL: "",
       loading: false,
       pagination: {
@@ -508,6 +479,13 @@ export default {
           {
             required: true,
             message: "请选择入库类型",
+            trigger: "change"
+          }
+        ],
+        retQty: [
+          {
+            required: true,
+            message: "请选择入库数量",
             trigger: "blur"
           }
         ]
@@ -517,12 +495,18 @@ export default {
           {
             required: true,
             message: "请选择出库类型",
+            trigger: "change"
+          }
+        ],
+        retQty: [
+          {
+            required: true,
+            message: "请选择出库数量",
             trigger: "blur"
           }
         ]
       },
-      exportData: { show: false },
-      loadingCategory: false
+      exportData: { show: false }
     };
   },
   computed: {
@@ -534,22 +518,10 @@ export default {
       dgoodsdeleteState: "goodsdeleteState",
       exportGoodsState: "exportGoodsState",
       importState: "importGoodsState",
-      gparameterstate: "gparameterstate",
-      dealCategoryState: "dealCategoryState"
+      gparameterstate: "gparameterstate"
     })
   },
   watch: {
-    dealCategoryState(data) {
-      this.loadingCategory = false;
-      if (data.success) {
-        this.$store.dispatch("getcommoditycflList", {}).then(() => {});
-      }
-      this.$message({
-        message: data.message,
-        type: data.success ? "success" : "error"
-      });
-      this.dialogVisible = false;
-    },
     gparameterstate(data) {
       if (data.success && Object.keys(data.data.CompanyConfig).length > 0) {
         let code = data.data.CompanyConfig.AUTOGENGOODSCODE;
@@ -652,18 +624,8 @@ export default {
     }
   },
   methods: {
-    dealData() {
-      var _this = this;
-      this.$refs.formCategory.validate((valid) => {
-        if (valid) {
-          _this.$store.dispatch("dealCategoryItem", _this.formCategory).then(() => {
-            this.loadingCategory = true;
-          });
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
+    handleClose() {
+      this.notesShow = false;
     },
     ExportGoodsData() {
       this.exportData = {
@@ -927,16 +889,6 @@ export default {
         });
     },
     selectMode(e) {
-      if (this.value2 == "10000") {
-        this.value2 = "";
-        this.formCategory = {
-          Name: "",
-          Remark: ""
-        };
-        this.dialogVisible = true;
-        return;
-      }
-      console.log(this.value3);
       this.loading = true;
       this.$store.dispatch("getGoodsList", {
         Status: this.value3,

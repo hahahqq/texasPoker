@@ -36,7 +36,10 @@ import {
    VIP_BIRTHDAY_REMINDER_LIST,
    VIP_OVERDUE_REMINDER_LIST,
    GET_NEWVIP_LIST,
-   VIPCODE_ADD_DATE
+   VIPCODE_ADD_DATE,
+   CONTEST_LIST,
+   CONSUME_LIST,
+   PARTICIPATE_LIST
 } from "@/store/mutation-types";
 import { getUserInfo, getHomeData } from "@/api/index";
 import { data } from "jquery";
@@ -44,6 +47,9 @@ let selected = {};
 
 // init state
 const state = {
+   consumeState: {},
+   participateState: {},
+   contestState : {},
    memberState: {},
    memberListState: {
       paying: {
@@ -126,11 +132,15 @@ const state = {
    vipBirthdayReminderListState:{},
    vipOverdueReminderListState:{},
    getNewVipListState:{},
-   vipCodeAddDateState: {}
+   vipCodeAddDateState: {},
+   memberItemState: {}
 };
 
 // getters
 const getters = {
+   consumeState: state => state.consumeState,
+   participateState: state => state.participateState,
+   contestState: state =>state.contestState,
    saveVipImgState: state => state.saveVipImgState,
    memberState: state => state.memberState,
    memberListState: state => state.memberListState,
@@ -188,7 +198,8 @@ const getters = {
    vipBirthdayReminderListState: state=> state.vipBirthdayReminderListState,
    vipOverdueReminderListState: state=> state.vipOverdueReminderListState,
    getNewVipListState: state=> state.getNewVipListState,
-   vipCodeAddDateState: state => state.vipCodeAddDateState
+   vipCodeAddDateState: state => state.vipCodeAddDateState,
+   memberItemState: state =>state.memberItemState
 };
 // actions
 const actions = {
@@ -341,8 +352,8 @@ const actions = {
    getMemberItem2({ commit }, item) {
       let homeInfo = getHomeData();
       let sendData = {
-         InterfaceCode: "601020223",
-         VipId: item.ID,
+         InterfaceCode: "9204052",
+         ID: item.ID,
          CompanyId: homeInfo.shop.COMPANYID
       };
       commonSend.commonSend(
@@ -353,6 +364,46 @@ const actions = {
          sendData
       );
    },
+   getConTestList({ commit }, data){  // 会员大师分记录
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: '9204058',
+         VipId: data.VipId,
+         PN:data.PN,
+         CompanyId: homeInfo.shop.COMPANYID,
+         BeginDate: data.BeginDate,
+         EndDate: data.EndDate
+      }
+      commonSend.commonSend("get", data =>{
+         commit(CONTEST_LIST , {data})
+      },sendData)
+   },
+   getParticipateList({ commit }, data){  // 会员参赛记录
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: '9204055',
+         VipId: data.VipId,
+         PN:data.PN,
+         CompanyId: homeInfo.shop.COMPANYID
+      }
+      commonSend.commonSend("get", data =>{
+         commit(PARTICIPATE_LIST , {data})
+      },sendData)
+   },
+   getConsumeList({ commit }, data){  // 会员消费记录
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: '9204056',
+         VipId: data.VipId,
+         PN:data.PN,
+         CompanyId: homeInfo.shop.COMPANYID
+      }
+      commonSend.commonSend("get", data =>{
+         commit(CONSUME_LIST , {data})
+      },sendData)
+   },
+
+
    setReportLoss({ commit, state }, data) {
       let homeInfo = getHomeData();
       let sendData = {
@@ -998,11 +1049,12 @@ const mutations = {
 
    [MEMBER_ITEM2](state, { data }) {
       if (data.success) {
-         state.memberItem.profile = Object.assign({}, state.memberItem.profile, {
-            total: data.data
-         });
+         state.memberItem.profile = Object.assign({}, data.data);
+         state.memberItem.info = Object.assign({}, state.memberItem.info, data.data.obj);
       }
-      state.memberState = Object.assign({}, data);
+
+      state.memberItemState = Object.assign({}, data);
+
    },
    [SET_REPORTLOSS](state, { data }) {
       state.reportLossState = Object.assign({}, data);
@@ -1136,7 +1188,16 @@ const mutations = {
    [VIPCODE_ADD_DATE](state, data){
       console.log(data)
       state.vipCodeAddDateState = data.data
-   }
+   },
+   [CONTEST_LIST](state, data){
+      state.contestState = data.data
+   },
+   [CONSUME_LIST](state, data){
+      state.consumeState = data.data
+   },
+   [PARTICIPATE_LIST](state, data){
+      state.participateState = data.data
+   },
 };
 
 export default {

@@ -1,9 +1,9 @@
 <template>
-  <div class="return">
+  <div class="inventory">
     <div class="content-eighty">
       <div class="content-center">
         <el-row :gutter="10">
-          <el-col :xs="24" :sm="12" :md="6">
+          <el-col :xs="24" :sm="12" :md="8">
             <span>店铺</span>
             <el-select size="small" v-model="shopId" placeholder="请选择店铺">
               <el-option
@@ -14,18 +14,7 @@
               ></el-option>
             </el-select>
           </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <span>供应商</span>
-            <el-select size="small" v-model="pageData.SUPPLIERID" placeholder="请选择供应商">
-              <el-option
-                v-for="item in supplierList"
-                :key="item.ID"
-                :label="item.NAME"
-                :value="item.ID"
-              ></el-option>
-            </el-select>
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
+          <el-col :xs="24" :sm="12" :md="8">
             <el-input
               type="default"
               v-model="searchText"
@@ -41,7 +30,8 @@
             </el-input>
           </el-col>
 
-          <el-col :xs="24" :sm="12" :md="6" style="text-align: right">
+          <el-col :xs="24" :sm="12" :md="8">
+            <span>盘点日期</span>
             <el-date-picker
               size="small"
               v-model="BILLDATE"
@@ -65,11 +55,11 @@
             :highlight-current-row="true"
             header-row-class-name="bg-theme2 text-white"
             empty-text='暂无数据,请点击 "增加行" 或 扫码添加商品'
-            class="full-width"
+            class="full-width m-top-sm"
           >
             <el-table-column
               type="index"
-              width="60"
+              width="50"
               align="center"
               label="序号"
               fixed="left"
@@ -101,79 +91,50 @@
                     :label="item.NAME"
                     :value="item.ID"
                   >
-                    <span style="float: left">{{ item.CODE }}</span>
+                    <span style="float: left">{{ item.NAME }}</span>
                     <span style="float: right; color: #8492a6; font-size: 12px">
-                      {{ item.NAME }}
+                      {{ item.CODE }}
                     </span>
                   </el-option>
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column
-              prop="GOODSCODE"
-              label="条码"
-              align="center"
-              width="120"
-            ></el-table-column>
-            <el-table-column prop="PURPRICE" label="参考进价" width="80" align="center">
+            <el-table-column prop="GOODSCODE" label="条码" align="center"></el-table-column>
+            <el-table-column label="单价" align="center" width="160">
               <template slot-scope="scope">
-                {{ isPurViewFun(210040601) ? scope.row.PURPRICE : "****" }}
-              </template>
-            </el-table-column>
-            <el-table-column label="折扣" align="center" width="120">
-              <template slot-scope="scope">
-                <span v-if="!scope.row.isEdit">{{ scope.row.DISCOUNT }}</span>
+                <span v-if="!scope.row.isEdit">{{ scope.row.PRICE }}</span>
                 <el-input-number
                   v-if="scope.row.isEdit"
                   size="small"
-                  style="width: 100px"
-                  :min="0"
-                  controls-position="right"
-                  v-model.trim="scope.row.DISCOUNT"
-                  placeholder="请输入"
-                  @change="changePr(scope.row)"
-                ></el-input-number>
-              </template>
-            </el-table-column>
-            <el-table-column width="130" label="单价" align="center">
-              <template slot-scope="scope">
-                <span v-if="!scope.row.isEdit">
-                  {{ isPurViewFun(210040601) ? scope.row.PRICE : "****" }}
-                </span>
-                <el-input-number
-                  v-if="scope.row.isEdit"
-                  size="small"
-                  style="width: 110px"
+                  style="width: 140px"
                   controls-position="right"
                   v-model.trim="scope.row.PRICE"
                   placeholder="请输入"
-                  @change="changeDP(scope.row)"
                 ></el-input-number>
               </template>
             </el-table-column>
-            <el-table-column width="120" label="数量" align="center">
+
+            <el-table-column label="数量" align="center" width="160">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.QTY }}</span>
                 <el-input-number
                   v-if="scope.row.isEdit"
                   size="small"
-                  style="width: 100px"
+                  style="width: 140px"
                   controls-position="right"
-                  :min="1"
                   v-model.trim="scope.row.QTY"
                   placeholder="请输入"
-                  @input="totalfun"
                 ></el-input-number>
               </template>
             </el-table-column>
-            <el-table-column width="100" label="金额" align="center">
+
+            <el-table-column label="金额" align="center" width="150">
               <template slot-scope="scope">
-                {{
-                  isPurViewFun(210040601) ? (scope.row.PRICE * scope.row.QTY).toFixed(2) : "****"
-                }}
+                <span>{{ scope.row.PRICE * scope.row.QTY }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80" fixed="right">
+
+            <el-table-column label="操作" width="80" fixed="right" align="right">
               <template slot-scope="scope">
                 <el-button
                   v-if="scope.row.GOODSID != ''"
@@ -187,74 +148,14 @@
             </el-table-column>
           </el-table>
         </div>
+
         <el-row :gutter="10" class="marginTB-sm">
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
-            <span class="leftLabel">优惠金额</span>
-            <el-input
-              size="small"
-              type="number"
-              style="width: 100%"
-              v-model.number="pageData.BREAKSMONEY"
-              @input="totalfun"
-              @keyup.enter.native="totalfun"
-              placeholder="￥ 0.00"
-            ></el-input>
-          </el-col>
-
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
-            <span class="leftLabel">其它费用</span>
-            <el-input
-              size="small"
-              type="number"
-              v-model.number="pageData.OTHERMONEY"
-              @input="totalfun"
-              @keyup.enter.native="totalfun"
-              placeholder="￥ 0.00"
-            ></el-input>
-          </el-col>
-
-          <el-col :xs="24" :sm="12" :md="12" class="row-flex flex-items-center">
-            <span class="inline-block text-center">
-              <i style="color: #868686">总合计</i>
-              <i class="font-600 text-danger m-left-md font-18">
-                {{ isPurViewFun(210040601) ? "&yen; " + totalPrice : "****" }}
-              </i>
-            </span>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
-            <span class="leftLabel">结算账户</span>
-            <el-select
-              size="small"
-              style="width: 100%"
-              v-model="pageData.PAYTYPEID"
-              placeholder="选择账户"
-            >
-              <el-option
-                v-for="pitem in this.paywayList"
-                :key="pitem.ID"
-                :label="pitem.NAME"
-                :value="pitem.ID"
-              ></el-option>
-            </el-select>
-          </el-col>
-
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
-            <span class="leftLabel">实付金额</span>
-            <el-input
-              size="small"
-              type="number"
-              v-model.number="pageData.PAYMONEY"
-              placeholder="￥0.00"
-            ></el-input>
-          </el-col>
-
-          <el-col :xs="24" :sm="12" :md="12" class="row-flex flex-items-center">
+          <el-col :xs="18" :sm="8" :md="10" class="row-flex flex-items-center">
             <span class="leftLabel">备 注</span>
             <el-input size="small" v-model="pageData.REMARK" placeholder="输入单据备注"></el-input>
           </el-col>
         </el-row>
+
         <div class="marginTB-sm">
           <span class="text-999 m-top-sm" style="float: left">
             <span>制单人 :</span>
@@ -263,6 +164,14 @@
             {{ zhiDanData }}
           </span>
           <span class="text-right" style="float: right">
+            <el-button
+              style="margin-right: 40px"
+              plain
+              icon="el-icon-upload"
+              @click="showUploadDialog = true"
+            >
+              导 入
+            </el-button>
             <el-button type="success" plain icon="el-icon-plus" @click="addNewBill">
               新增单据
             </el-button>
@@ -280,12 +189,26 @@
               :disabled="theGoodsList[0].GOODSNAME == ''"
               :loading="loading"
             >
-              保存
+              盘点
             </el-button>
           </span>
         </div>
       </div>
     </div>
+
+    <el-dialog
+      title="导入库存盘点单"
+      :visible.sync="showUploadDialog"
+      width="80%"
+      append-to-body
+      :close-on-click-modal="false"
+    >
+      <uploadBillTable
+        @closeModal="showUploadDialog = false"
+        @GetUploadExportData="getUploadData"
+        :dealUploadData="{ dealState: 'noDiscount' }"
+      ></uploadBillTable>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -297,31 +220,21 @@ export default {
     return {
       loading: false,
       CGloading: false,
+      shopId: getHomeData().shop.SHOPID,
+      titleName: "",
       searchText: "",
       BILLDATE: dayjs(),
-      shopId: getHomeData().shop.SHOPID,
       USERNAME: getUserInfo().UserName,
       pageData: {
         BILLID: "",
-        SUPPLIERID: "",
-        BILLDATE: "",
+        BILLDATE: new Date(),
         ManualNo: "", //手工单号
-        PAYTYPEID: "", // 付款方式ID
-        PAYMONEY: 0,
         REMARK: "",
-        GoodsList: [], // 货号Id,数量,单价,备注
+        WRITER: "",
+        GoodsList: [], // 货号Id,颜色Id,尺码Id,数量,单价,备注
         IsCheck: 1,
-        FromBillId: "", // 引用采购单号
-        BREAKSMONEY: 0,
-        OTHERMONEY: 0
+        FromBillId: "" // 引用采购单号
       },
-      zhiDanData: dayjs(new Date()).format("YYYY-MM-DD"),
-      theGoodsList: [],
-      totalPrice: 0,
-      goodsListData: [],
-      constGOODSLIST: [],
-      titleName: "",
-      goodsObj: {},
       pageDataBill: {
         PN: 1,
         Filter: "",
@@ -331,23 +244,30 @@ export default {
         IsGift: -1,
         Mode: 0
       },
+      zhiDanData: dayjs(new Date()).format("YYYY-MM-DD"),
+      theGoodsList: [],
+      goodsListData: [],
+      constGOODSLIST: [],
       vCheckGoodsTimeOut: undefined,
-      tableHeight: document.body.clientHeight - 330
+      tableHeight: document.body.clientHeight - 300,
+      showUploadDialog: false
     };
   },
   computed: {
     ...mapGetters({
       shopList: "shopList",
-      supplierList: "supplierList",
       goodsList: "goodsList",
       goodsItem: "goodsItem",
       goodsListState: "goodsListState",
       paywayList: "paywayList",
-      dataList: "returnItem",
-      dataObj: "returnObj",
-      returnAddState: "returnAddState",
+      dataList: "inventoryItem",
+      dataObj: "inventoryObj",
+      inventoryAddState: "inventoryAddState",
       OnlyOneGoodsState: "goodsListNew"
     })
+  },
+  components: {
+    uploadBillTable: () => import("../uploadExportBill.vue")
   },
   watch: {
     OnlyOneGoodsState(data) {
@@ -392,7 +312,7 @@ export default {
           GOODSID: "",
           GOODSCODE: "",
           PRICE: 0,
-          PURPRICE: 0,
+          PURPRICE: 1,
           QTY: 1,
           DISCOUNT: 0,
           isEdit: true
@@ -407,7 +327,7 @@ export default {
         this.constGOODSLIST = [...data.data.PageData.DataArr];
       }
     },
-    returnAddState(data) {
+    inventoryAddState(data) {
       this.loading = false;
       this.CGloading = false;
       if (data.success) {
@@ -420,30 +340,59 @@ export default {
             PRICE: 0,
             PURPRICE: 0,
             QTY: 1,
-            DISCOUNT: 0,
             isEdit: true
           }
         ];
         this.pageData.BILLID = "";
-        this.pageData.OTHERMONEY = 0;
-        this.pageData.BREAKSMONEY = 0;
-        this.pageData.PAYMONEY = 0;
         this.pageData.REMARK = "";
-        this.$store.dispatch("getReturnItem", { BillId: data.data.OutBillId });
+        this.pageData.BILLDATE = new Date();
       } else {
         this.$message({ message: data.message, type: "error" });
       }
     }
   },
   methods: {
-    changePr(row) {
-      row.PRICE = parseFloat(row.PURPRICE * row.DISCOUNT).toFixed(2);
-      this.totalfun();
-    },
-    changeDP(row) {
-      row.PURPRICE = row.PURPRICE == 0 ? 1 : row.PURPRICE;
-      row.DISCOUNT = parseFloat(row.PRICE / row.PURPRICE).toFixed(2);
-      this.totalfun();
+     getUploadData(data) {
+      let arr = [],
+        newArr = [];
+      for (var i in data) {
+        arr.push({
+          GOODSNAME: data[i].GOODSNAME,
+          GOODSID: data[i].GOODSID,
+          GOODSCODE: data[i].GOODSCODE,
+          PRICE: data[i].PRICE,
+          PURPRICE: data[i].GOODSPURPRICE,
+          QTY: data[i].QTY,
+          isEdit: false
+        });
+      }
+
+      arr.forEach((el) => {
+        const res = newArr.findIndex((ol) => {
+          return (
+            el.GOODSNAME == ol.GOODSNAME &&
+            el.GOODSID == ol.GOODSID &&
+            el.PRICE == ol.PRICE
+          );
+        });
+        if (res !== -1) {
+          newArr[res].QTY = Number(newArr[res].QTY) + Number(el.QTY);
+        } else {
+          newArr.push(el);
+        }
+      });
+
+      this.theGoodsList = newArr.concat({
+        GOODSNAME: "",
+        GOODSID: "",
+        GOODSCODE: "",
+        PRICE: 0,
+        PURPRICE: 1,
+        QTY: 1,
+        isEdit: true
+      });
+
+      this.showUploadDialog = false;
     },
     handleCurRow(row) {
       let param = this.theGoodsList,
@@ -494,7 +443,7 @@ export default {
           GOODSID: "",
           GOODSCODE: "",
           PRICE: 0,
-          PURPRICE: 0,
+          PURPRICE: 1,
           QTY: 1,
           DISCOUNT: 0,
           isEdit: true
@@ -541,24 +490,16 @@ export default {
           GOODSID: "",
           GOODSCODE: "",
           PRICE: 0,
-          PURPRICE: 0,
+          PURPRICE: 1,
           QTY: 1,
           DISCOUNT: 0,
           isEdit: true
         });
       }
-      this.isAddGoodsGroup = false;
-      this.pageData.OTHERMONEY = "";
-      this.pageData.BREAKSMONEY = "";
-      this.pageData.PAYTYPEID = "";
-      this.pageData.PAYMONEY = "";
-      this.totalfun();
     },
     addNewBill() {
       // 新增单据
-      let haveData = this.theGoodsList.filter(
-        (item) => item.GOODSNAME != "" && item.GOODSCODE != ""
-      );
+      let haveData = this.theGoodsList.filter((item) => item.GOODSNAME != "");
       if (haveData.length != 0) {
         this.$confirm("单据还未保存，确定要新增单据？", "提示", {
           confirmButtonText: "确定",
@@ -574,15 +515,25 @@ export default {
                 PRICE: 0,
                 PURPRICE: 0,
                 QTY: 1,
-                DISCOUNT: 1,
                 isEdit: true
               }
             ];
             this.pageData = {};
             this.searchText = "";
-            this.totalPrice = 0;
           })
           .catch(() => {});
+      } else {
+        this.theGoodsList = [
+          {
+            GOODSNAME: "",
+            GOODSID: "",
+            GOODSCODE: "",
+            PRICE: 0,
+            PURPRICE: 0,
+            QTY: 1,
+            isEdit: true
+          }
+        ];
       }
     },
     scanSearch(searchText) {
@@ -624,7 +575,7 @@ export default {
           GOODSID: "",
           GOODSCODE: "",
           PRICE: 0,
-          PURPRICE: 0,
+          PURPRICE: 1,
           QTY: 1,
           DISCOUNT: 0,
           isEdit: true
@@ -648,17 +599,12 @@ export default {
           GOODSID: "",
           GOODSCODE: "",
           PRICE: 0,
-          PURPRICE: 0,
+          PURPRICE: 1,
           QTY: 1,
           DISCOUNT: 0,
           isEdit: true
         });
       }
-      this.pageData.OTHERMONEY = "";
-      this.pageData.BREAKSMONEY = "";
-      this.pageData.PAYTYPEID = "";
-      this.pageData.PAYMONEY = "";
-      this.totalfun();
     },
     handleGoodsFilter(val) {
       if (val == "") {
@@ -690,24 +636,10 @@ export default {
         PRICE: 0,
         PURPRICE: 0,
         QTY: 1,
-        DISCOUNT: 1,
         isEdit: true
       });
     },
     handleSubmit(value) {
-      let haveEmptyGoods = this.theGoodsList.filter(
-        (item) => item.GOODSNAME == "" && item.GOODSCODE == ""
-      );
-      if (haveEmptyGoods.length > 1) {
-        this.$message.warning("表格中有未保存的商品");
-        return;
-      }
-
-      if (this.pageData.SUPPLIERID == "") {
-        this.$message.warning("请选择供应商");
-        return;
-      }
-
       this.theGoodsList.splice(this.theGoodsList.length - 1, 1);
       let param = this.theGoodsList,
         newArr = [];
@@ -721,22 +653,17 @@ export default {
       }
 
       let sendData = {
-        ShopId: this.shopId,
         BillId: this.pageData.BILLID,
-        SupplierId: this.pageData.SUPPLIERID,
         BillDate: dayjs(this.BILLDATE).valueOf(),
         ManualNo: "", //手工单号
-        PayTypeId: this.pageData.PAYTYPEID, // 付款方式ID
-        PayMoney: this.pageData.PAYMONEY,
         Remark: this.pageData.REMARK,
         GoodsList: JSON.stringify(newArr),
         IsCheck: value, // 0: 草稿  1：确认单
-        FromBillId: "", // 引用采购单号
-        BreaksMoney: this.pageData.BREAKSMONEY,
-        OtherMoney: this.pageData.OTHERMONEY
+        IsAll: 0,
+        ShopId: this.shopId
       };
 
-      this.$store.dispatch("addReturn", sendData).then(() => {
+      this.$store.dispatch("addInventory", sendData).then(() => {
         if (value == 0) {
           this.CGloading = true;
         } else {
@@ -746,95 +673,53 @@ export default {
     },
     handleDel(idx, row) {
       this.theGoodsList.splice(idx, 1);
-      this.pageData.OTHERMONEY = "";
-      this.pageData.BREAKSMONEY = "";
-      this.pageData.PAYTYPEID = "";
-      this.pageData.PAYMONEY = "";
-      this.totalfun();
-    },
-    totalfun() {
-      let tprice = 0,
-        param = this.theGoodsList;
-      for (let i = 0; i < param.length; i++) {
-        tprice += param[i].PRICE * param[i].QTY;
-      }
-      let BreaksMoney = this.pageData.BREAKSMONEY == undefined ? 0 : this.pageData.BREAKSMONEY; //优惠金额
-      let OtherMoney = this.pageData.OTHERMONEY == undefined ? 0 : this.pageData.OTHERMONEY; // 其他金额
-      this.totalPrice = tprice - BreaksMoney + OtherMoney;
     },
     defaultGoodsList() {
       this.$store.dispatch("getGoodsList", { Status: 1, Filter: "", Mode: 0, PN: 1 });
-    },
-    arrConcatFun(data){
-      this.theGoodsList = data.concat({
+    }
+  },
+  mounted() {
+    if (this.shopList.length == 0) {
+      this.$store.dispatch("getShopList",{});
+    }
+    if (this.paywayList.length == 0) {
+      this.$store.dispatch("getPaywayList", {});
+    }
+    this.defaultGoodsList();
+
+    let getItemData = sessionStorage.getItem("theGoodsList_I") || "[]";
+    let theGoodsList = JSON.parse(getItemData);
+
+    if (theGoodsList.length != 0) {
+      this.theGoodsList = theGoodsList.concat({
         GOODSNAME: "",
         GOODSID: "",
         GOODSCODE: "",
         PRICE: 0,
         PURPRICE: 0,
         QTY: 1,
-        DISCOUNT: 0,
         isEdit: true
-      })
-    }
-  },
-  mounted() {
-    if (this.shopList.length == 0) {
-      this.$store.dispatch("getShopList");
-    }
-    this.$store.dispatch("getSupplierList", { IsStop: 0, IsCurr: 0 });
-    if (this.paywayList.length == 0) {
-      this.$store.dispatch("getPaywayList", {});
-    }
-    this.defaultGoodsList();
-
-    let getItemData = sessionStorage.getItem("theGoodsList_R") || "[]";
-    let theGoodsList = JSON.parse(getItemData);
-
-    if (theGoodsList.length != 0) {
-      // this.theGoodsList = theGoodsList.concat({
-      //   GOODSNAME: "",
-      //   GOODSID: "",
-      //   GOODSCODE: "",
-      //   PRICE: 0,
-      //   PURPRICE: 0,
-      //   QTY: 1,
-      //   DISCOUNT: 0,
-      //   isEdit: true
-      // });
-      this.arrConcatFun(theGoodsList)
-
-      let getItemObj = sessionStorage.getItem("theGoodsObj_R");
-      let obj = JSON.parse(getItemObj);
-      let haveCurSupplier = this.supplierList.filter((item) => item.ID == obj.SUPPLIERID);
-      if (haveCurSupplier.length != 0) {
-        this.pageData = JSON.parse(getItemObj);
-      } else {
-        this.pageData = obj;
-        this.pageData.SUPPLIERID = "";
-      }
-      this.totalfun();
+      });
+      let getItemObj = sessionStorage.getItem("theGoodsObj_I");
+      this.pageData = JSON.parse(getItemObj);
     } else {
-      // this.theGoodsList.push({
-      //   GOODSNAME: "",
-      //   GOODSID: "",
-      //   GOODSCODE: "",
-      //   PRICE: 0,
-      //   PURPRICE: 0,
-      //   QTY: 1,
-      //   DISCOUNT: 1,
-      //   isEdit: true
-      // });
-      let data = []
-      this.arrConcatFun(data)
+      this.theGoodsList = [
+        {
+          GOODSNAME: "",
+          GOODSID: "",
+          GOODSCODE: "",
+          PRICE: 0,
+          PURPRICE: 0,
+          QTY: 1,
+          isEdit: true
+        }
+      ];
     }
-  },
-  components: {}
+  }
 };
 </script>
-
 <style lang="scss" scoped >
-.return .el-input-group__prepend {
+.inventory .el-input-group__prepend {
   padding: 0 10px !important;
   background-color: #409eff !important;
   border-color: #409eff !important;
@@ -848,8 +733,7 @@ export default {
 .leftLabel {
   width: 70px;
   min-width: 70px;
-  text-align: right;
-  margin-right: 10px;
 }
 </style>
+
 

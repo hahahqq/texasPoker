@@ -165,13 +165,14 @@
                                         <img :src="scope.row.IMAGEURL" alt="" style='float:left; border-radius:8px; width:40px; height:40px; margin-right:8px'>
                                         <span style='height:40px;width:102px'>
                                             <i class="text-3399ff pull-left inline-block" style="color:#2589FF;width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap;">
-                                                {{scope.row.NAME ? scope.row.NAME : ' '}}
+                                                <span style="cursor:pointer" @click="handleEdit(scope.$index, scope.row)">{{scope.row.NAME ? scope.row.NAME : ' '}}</span>
                                                 &nbsp;&nbsp;<img :src="scope.row.SEX == 0 ? 'static/images/icon_man.png' : 'static/images/icon_woman.png'" style="width:13px;height:13px; vertical-align: middle">
                                                 </i>
-                                            <i class="text-3399ff pull-left inline-block" style="width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap ">{{scope.row.CODE}}</i>
+                                            <i class="text-3399ff pull-left inline-block" style="width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap ">{{scope.row.MOBILENO}}</i>
                                         </span>
                                     </template>
                                 </el-table-column>
+                                <el-table-column prop="CODE" label="卡号" align="center"></el-table-column>
                                 <el-table-column prop="SHOPNAME" label="归属店铺" align="center"></el-table-column>
                                 <el-table-column prop="LEVELNAME" label="会员等级" align="center"></el-table-column>
                                 <el-table-column prop="VIPFLAG" label="标签" width="100" align="center"></el-table-column>
@@ -314,7 +315,7 @@ export default {
             memberLevelList: "memberLevelList",
             flagList: "memberFlagList",
             importState: "importMemberState",
-            memberItemInfo: "memberItemInfo",
+            memberItemInfo: "memberItemState",
             shopList: "shopList",
             employeeList:"employeeList",
             memberShop: "memberShop",
@@ -740,21 +741,9 @@ export default {
             this.$refs.Table.toggleRowSelection(currentRow)
         },
         handleEdit(idx, item) {
-            // if (
-            //     Object.keys(this.memberItemInfo).length > 0 &&
-            //     this.memberItemInfo.ID != item.ID
-            // ) {
-            //     this.$store.dispatch("clearMember", 3);
-            //     this.$store.dispatch("clearMember", 4);
-            //     this.$store.dispatch("clearMember", 5);
-            //     this.$store.dispatch("clearMember", 6);
-            // }
-            // this.$store.dispatch("getMemberItem", item).then(() => {
-            //     this.$store.dispatch("getMemberItem2", item);
-            // });
             this.vipID = item.ID
 
-            this.$store.dispatch('getMemberItem', { ID: item.ID })
+            this.$store.dispatch('getMemberItem2', { ID: item.ID })
         },
         handlePageChange: function(currentPage) {
             if (this.pageData.PN == currentPage || this.loading) {

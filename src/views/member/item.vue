@@ -494,9 +494,7 @@ export default {
       }
     },
     getNewData() {
-      this.$store.dispatch("getMemberItem", this.dataInfo).then(() => {
-        this.$store.dispatch("getMemberItem2", this.dataInfo);
-      });
+      this.$store.dispatch("getMemberItem", this.dataInfo)
     },
     adjustFun(name,number) {
       if(number &&!this.isPurViewFun(number)){

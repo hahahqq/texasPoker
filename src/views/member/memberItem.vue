@@ -65,17 +65,17 @@
 
                      <li>
                         <div>大师分</div>
-                        <div>100</div>
+                        <div>{{memberItem.CONTESTQTY}}</div>
                      </li>
 
                      <li>
                         <div>参赛次数</div>
-                        <div>100</div>
+                        <div>{{memberItem.MATCHCOUNT}}</div>
                      </li>
 
                      <li>
                         <div>累计参赛积分</div>
-                        <div>100</div>
+                        <div>{{memberItem.MATCHMONEY}}</div>
                      </li>
                   </ul>
                </div>
@@ -142,22 +142,34 @@
                         </el-row>
                      </el-tab-pane>
 
-                     <el-tab-pane name='second' label='积分记录'>
-                        积分记录
+                     <el-tab-pane name='second' label='消费积分记录'>
+
+                        <balancePage v-if="activeName == 'second'"></balancePage>
+
                      </el-tab-pane>
 
-                     <el-tab-pane name='third' label='参赛记录'>参赛记录</el-tab-pane>
-
-                     <el-tab-pane name='fourth' label='消费记录'>消费记录</el-tab-pane>
-
-                     <el-tab-pane name='fifth' label='欠款记录'>
-                        <arrearsPage v-if="activeName == 'fifth'"></arrearsPage>
+                     <el-tab-pane name='third' label='奖励积分记录'>
+                        <integralPage v-if="activeName == 'third'"></integralPage>
                      </el-tab-pane>
 
-                     <el-tab-pane name='sixth' label='大师分'>大师分</el-tab-pane>
+                     <el-tab-pane name='fouth' label='参赛记录'>
+                        <participatePage v-if="activeName == 'fouth'"></participatePage>
+                     </el-tab-pane>
 
-                     <el-tab-pane name='seventh' label='优惠券'>
-                        <couponPage v-if="activeName == 'seventh'"></couponPage>
+                     <el-tab-pane name='fifth' label='消费记录'>
+                        <consumePage v-if="activeName == 'fifth'"></consumePage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='sixth' label='欠款记录'>
+                        <arrearsPage v-if="activeName == 'sixth'"></arrearsPage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='seventh' label='大师分'>
+                        <contestPage v-if="activeName == 'seventh'"></contestPage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='eighth' label='优惠券'>
+                        <couponPage v-if="activeName == 'eighth'"></couponPage>
                      </el-tab-pane>
                   </el-tabs>
                </div>
@@ -201,22 +213,22 @@ export default {
    },
    computed: {
       ...mapGetters({
-         memberState:"memberState",
-         // memberItem: 'memberItemInfo',
          delMemberState: 'delMember',
-         modifyVipPasswdState: 'modifyVipPasswdState'
+         modifyVipPasswdState: 'modifyVipPasswdState',
+         memberItemState: 'memberItemState'
       })
    },
    watch:{
+      memberItemState(data){
+         this.loading = false
+         if(data.success){
+            this.memberItem = data.data.obj
+         }else{
+            this.$message({ message: data.message, type: "error" })
+         }
+      },
       modifyVipPasswdState(data){
          this.$message({ message: data.message, type: data.success ? "success" : "error" })
-      },
-      memberState(data){
-         console.log(data)
-         if(data.success){
-            this.loading = false
-            this.memberItem = data.data.obj
-         }
       },
       delMemberState(data){
          if(data.success){
@@ -247,7 +259,7 @@ export default {
          console.log(this.activeName)
       },
       toEditVipFun(){
-         this.$store.dispatch('getMemberItem', { ID: this.memberItem.ID }).then(()=>{
+         this.$store.dispatch('getMemberItem2', { ID: this.memberItem.ID }).then(()=>{
             this.toEdit = true
          })
       },
@@ -261,7 +273,7 @@ export default {
          }).catch(() => { })
       },
       getMemberItemFun(){
-         this.$store.dispatch('getMemberItem', { ID: this.queryUrl.ID })
+         this.$store.dispatch('getMemberItem2', { ID: this.queryUrl.ID })
       }
    },
    components: {
@@ -269,12 +281,16 @@ export default {
       editMember: () => import("@/components/member/add"),
       arrearsPage: () => import("@/components/member/arrears"),
       couponPage: () => import("@/components/member/couponList"),
+      contestPage: () => import("@/components/member/contest"),
+      participatePage: () => import("@/components/member/participate"),
+      consumePage: () => import("@/components/member/consume"),
+      integralPage: () => import("@/components/member/integral"),
+      balancePage: () => import("@/components/member/balance"),
    },
    mounted(){
       let queryUrl = this.getSearchString()
       this.queryUrl = queryUrl
-      this.$store.dispatch('getMemberItem', { ID: queryUrl.ID })
-      // this.loading = true
+      this.$store.dispatch('getMemberItem2', { ID: queryUrl.ID })
    }
 }
 </script>
