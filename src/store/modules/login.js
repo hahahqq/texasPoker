@@ -70,7 +70,7 @@ const actions = {
   },
   toRegister({ commit }, data = {}) {
     let sendData = Object.assign({}, data, {
-      'InterfaceCode': '2100101_1',
+      'InterfaceCode': '9201000',
       shareauthcode: '',
       regversion: 3,
       platform: '',

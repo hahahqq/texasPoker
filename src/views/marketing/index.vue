@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-header style="height: 50px">
-      <headerPage></headerPage>
+      <headerPage :hiddenTitle='hiddenTitle'></headerPage>
     </el-header>
     <el-container>
       <el-aside width="100px">
@@ -26,7 +26,7 @@
                   <img
                     :src="item1.img"
                     class="inline-block pull-left m-right-sm"
-                    style="width: 40px; height: 40px; margin-top: 4px"
+                    style="width: 50px; height: 50px;"
                   />
                   <div class="itt">{{ item1.title }}</div>
                   <div class="itt1">{{ item1.des }}</div>
@@ -61,6 +61,7 @@ export default {
   mixins: [MIXINS_MARKETING.MARKETING_MENU],
   data() {
     return {
+       hiddenTitle: true,
       clientHeight: document.body.clientHeight - 70,
       list: [
         {
@@ -177,6 +178,7 @@ export default {
       if (arr.length > 0 && !this.isPurViewFun(number)) {
         this.$message.warning("您还没有获得相关权限!");
       } else {
+         this.$store.dispatch('selectingMember',{isArr:false,data:{} })
         this.$router.push({ path: path });
         // console.log('')
       }
@@ -273,6 +275,7 @@ export default {
   font-size: 14px;
 }
 .itt1 {
+   margin-top: 4px;
   height: 23px;
   line-height: 23px;
   font-size: 12px;

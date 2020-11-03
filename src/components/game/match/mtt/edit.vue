@@ -473,18 +473,22 @@ export default {
 
       let param = this.dataType.RewardList,
         newParam = [];
-      for (var i = 0; i < param.length; i++) {
-        newParam.push({
-          Id: param[i].ID,
-          Name: param[i].NAME,
-          ContestQty: param[i].CONTESTQTY,
-          RewardRate: Number(param[i].REWARDRATE) * 100,
-          Integral: 0,
-          Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
-          IsCancel: 0
-        });
+      if (param.length != 0) {
+        for (var i = 0; i < param.length; i++) {
+          newParam.push({
+            Id: param[i].ID,
+            Name: param[i].NAME,
+            ContestQty: param[i].CONTESTQTY,
+            RewardRate: Number(param[i].REWARDRATE) * 100,
+            Integral: 0,
+            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
+            IsCancel: 0
+          });
+        }
+        this.rewardWayList = newParam;
+      }else{
+         this.rewardWayList = []
       }
-      this.rewardWayList = newParam;
     },
     addRanking() {
       this.rewardWayList = this.rewardWayList.concat({
@@ -497,6 +501,7 @@ export default {
         Remark: "",
         IsCancel: 0
       });
+      console.log(this.rewardWayList);
     },
     selectEventFun(ID) {
       this.$store.dispatch("getEventsDetails", { Id: ID }).then(() => {
@@ -605,8 +610,6 @@ export default {
       levelList.push({ name: "第 " + i + " 名", disabled: false });
     }
     this.levelList = levelList;
-
-    this.defaultRewardWayList();
   }
 };
 </script>

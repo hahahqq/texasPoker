@@ -81,10 +81,12 @@
           赛事详情
         </div>
 
-        <div class="center-cont" v-else-if="$route.name != '首页' && $route.name != 'sngDetails' && $route.name != 'mttDetails' && $route.name != 'integralDetails' && $route.name != 'memberItem' && $route.name != 'acceptanceItem' && $route.name != 'verityBill' ">{{ $route.name }}</div>
+        <div class="center-cont" v-if="$route.name == '拓客工具' && $route.meta.title == '营销中心'">{{ $route.name }}</div>
+
+        <div class="center-cont" v-else-if="$route.name != '首页' && $route.name != '拓客工具' && $route.meta.title != '营销中心' && $route.name != 'sngDetails' && $route.name != 'mttDetails' && $route.name != 'integralDetails' && $route.name != 'memberItem' && $route.name != 'acceptanceItem' && $route.name != 'verityBill' ">{{ $route.name }}</div>
       </el-col>
       <el-col :span="8" class="shop">
-        <span class="name">{{ shopInfo.SHOPNAME }}</span>
+        <span class="name">{{ shopInfo.SHOPNAME }} </span>
         <span class>
           <el-popover placement="bottom" width="140" trigger="hover" popper-class="no-padding">
             <el-button

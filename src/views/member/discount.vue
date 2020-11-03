@@ -13,7 +13,7 @@
         <div class="content-new-fex">
           <div class="content-eighty">
             <div class="content-center">
-              <el-button type="primary" size="small" @click="addDiscount">添加会员等级</el-button>
+              <el-button type="primary" size="small" @click="addDiscount">新增会员等级</el-button>
             </div>
           </div>
           <div class="content-table4">
@@ -116,7 +116,7 @@ export default {
       Remark: "",
       dialogVisible: false,
       tableData: [],
-      tableHeight: document.body.clientHeight - 400
+      tableHeight: document.body.clientHeight - 200
     };
   },
   computed: {

@@ -53,12 +53,7 @@
     <!-- 会员选择 -->
     <div class="vue-dropdown default-theme m-top-sm">
       <div class="search-module clearfix" v-if="inputShow == true">
-        <input
-          class="search-text"
-          v-model="searchText"
-          @keyup="search_mb"
-          placeholder="输入会员手机号/姓名/卡号"
-        />
+        <input class="search-text" v-model="searchText" placeholder="输入会员手机号/姓名/卡号" />
       </div>
       <div
         class="ssmemberul"
@@ -170,7 +165,7 @@
         <el-col :xs="24" :sm="11">
           <el-form-item label="获得积分">
             <el-input
-              v-model="ruleForm.RewardIntegral"
+              v-model.trim="ruleForm.RewardIntegral"
               @input="getRateFun(ruleForm.RewardIntegral)"
               placeholder="请输入获得积分"
               class="coupons"
@@ -213,7 +208,7 @@
 
     <div style="text-align: right; width: 100%; margin-top: 10px; display: table">
       <el-button @click="closeDialog()">取消</el-button>
-      <el-button type="success" :lading="loadingReward" @click="submitReward(1)">
+      <el-button type="primary" plain style='background:#fff' :lading="loadingReward" @click="submitReward(1)">
         确定并继续领奖
       </el-button>
       <el-button type="primary" :lading="loadingReward" @click="submitReward(0)">
@@ -270,6 +265,9 @@ export default {
     })
   },
   watch: {
+    searchText() {
+      this.search_mb();
+    },
     getGameDetailsState(data) {
       if (data.success) {
         this.BillObj = data.data.BillObj;
@@ -316,10 +314,10 @@ export default {
     }
   },
   methods: {
-     handleClose(){
-        this.searchText = ''
-        this.datalist = []
-     },
+    handleClose() {
+      this.searchText = "";
+      this.datalist = [];
+    },
     testPrint(billid) {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print6");
       let jsonPrintData = JSON.parse(printRules);
@@ -379,11 +377,28 @@ export default {
         this.$message({ message: "请先选择要领奖的会员 ！", type: "warning" });
         return;
       }
-      if (this.ruleForm.RewardIntegral > this.BillObj.NOTEXCHANGEINTEGRAL) {
-        this.$message({ message: "获得积分不能大于未兑换积分 ！", type: "warning" });
+      if(this.ruleForm.RewardName == ''){
+         this.$message({ message: "请选择获得名次 ！", type: "warning" });
         return;
       }
-      let sendData = {
+      if(this.ruleForm.RewardIntegral == 0){
+         this.$message({ message: "请输入获得积分 ！", type: "warning" });
+         return
+      }
+      if (this.ruleForm.RewardIntegral > this.BillObj.NOTEXCHANGEINTEGRAL) {
+          this.$confirm('获得积分大于未兑换积分，是否继续？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+         }).then(() => {
+            this.submitSecond()
+         }).catch(() => { });
+      }else{
+         this.submitSecond()
+      }
+    },
+    submitSecond(){
+       let sendData = {
         VipId: this.memberdetails.ID,
         BillId: this.BillObj.BILLID,
         Remark: this.ruleForm.Remark,
@@ -459,10 +474,10 @@ export default {
 
       console.log(this.levelList);
     },
-    search_mb() {
+    search_mb: _.debounce(function () {
       this.isshowtatus = true;
-      this.searchfun2();
-    },
+      this.searchfun2(0);
+    }, 1000),
     getMemberData() {
       this.$store.dispatch("getSsmemberdList", this.pageData);
     },

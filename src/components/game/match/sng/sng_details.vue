@@ -22,7 +22,7 @@
                 <span
                   style="
                     padding: 2px 6px;
-                    font-size: 16px;
+                    font-size: 14px;
                     border-radius: 6px;
                     background: #f00;
                     color: #fff;
@@ -54,11 +54,19 @@
                 </el-button>
               </span>
             </div>
-            <div style="font-size: 14px; width: 100%; display: table">
+            <div style="font-size: 12px; width: 100%; display: table">
               <el-row :gutter="10" style="line-height: 32px">
-                <el-col :span="8">开赛时间：{{ new Date(BillObj.PLAYTIME) | timehf }}</el-col>
-                <el-col :span="7">比赛桌号：{{ BillObj.DESKNAME }}</el-col>
-                <el-col :span="7">
+                <el-col :span="6">开赛时间：{{ new Date(BillObj.PLAYTIME) | timehf }}</el-col>
+                <el-col :span="6">比赛桌号：{{ BillObj.DESKNAME }}</el-col>
+
+                <el-col :span="6">参赛积分：{{ BillObj.BUYINPRICE }}</el-col>
+                <el-col :span="6">参赛人数：{{ BillObj.VIPCOUNT }}</el-col>
+              </el-row>
+
+              <el-row :gutter="10">
+                <el-col :span="6">总买入积分：{{ BillObj.TOTALMONEY }}</el-col>
+
+                <el-col :span="6">
                   {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
                   {{
                     BillObj.CHARGESTYPE == 0
@@ -69,12 +77,18 @@
                       : BillObj.CHARGESMONEY + " 元"
                   }}
                 </el-col>
-              </el-row>
 
-              <el-row :gutter="10">
-                <el-col :span="8">参赛积分：{{ BillObj.BUYINPRICE }}</el-col>
-                <el-col :span="7">参赛人数：{{ BillObj.VIPCOUNT }}</el-col>
-                <el-col :span="7">总买入积分：{{ BillObj.TOTALMONEY }}</el-col>
+                <el-col :span="6">
+                  奖池总积分：
+                  <i style="color: red">
+                    {{ BillObj.EXCHANGEINTEGRAL + BillObj.NOTEXCHANGEINTEGRAL }}
+                  </i>
+                </el-col>
+
+                <el-col :span="6">
+                  已兑换积分：
+                  <i style="color: red">{{ BillObj.EXCHANGEINTEGRAL }}</i>
+                </el-col>
               </el-row>
             </div>
           </div>
@@ -107,12 +121,11 @@
                 <input
                   class="search-text"
                   v-model="searchText"
-                  @keyup="search_mb"
                   placeholder="输入会员手机号/姓名/卡号"
                 />
                 <span style="position: absolute; right: 20px; line-height: 80px; color: #aaa">
                   该客人还未办卡,
-                  <el-button type="text" @click="showAddNew = true">新建会员</el-button>
+                  <el-button type="text" @click="showAddNew = true">新建会员 - F7</el-button>
                 </span>
               </div>
 
@@ -142,11 +155,11 @@
                     <div class="ssmemberul-cont-text">
                       <span style="width: 120px; float: left">
                         储值积分 :
-                        <i style="color: #f00">{{ memberdetails.MONEY }}</i>
+                        <i style="color: #409eff">{{ memberdetails.MONEY }}</i>
                       </span>
                       <span style="margin-left: 20px" v-if="splitIntegral">
                         竞技积分 :
-                        <i style="color: #f00">{{ memberdetails.INTEGRAL }}</i>
+                        <i style="color: #409eff">{{ memberdetails.INTEGRAL }}</i>
                       </span>
                     </div>
                   </div>
@@ -155,10 +168,10 @@
 
                   <span
                     class="rechargeMoney"
-                    style="position: absolute; right: 15px"
+                    style="position: absolute; right: 15px; color: #409eff"
                     @click="rechargeFun()"
                   >
-                    充值
+                    充值 - F8
                     <i class="el-icon-arrow-right"></i>
                   </span>
                 </div>
@@ -196,8 +209,9 @@
                   <el-input
                     v-model="BillObj.BUYINNEEDPRICE"
                     disabled
+                    class="redColor"
                     size="small"
-                    style="width: 100%"
+                    style="width: 100%; color: #f00"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -212,66 +226,85 @@
                     @input="modifyCouponMoney(couponIntegral)"
                     style="width: 100%"
                   >
-                    <el-button slot="append" type="primary" @click="clickCouponNo">
-                      优惠券
-                    </el-button>
+                    <el-button slot="append" type="info" @click="clickCouponNo">优惠券</el-button>
                   </el-input>
                 </el-form-item>
               </el-col>
             </el-row>
 
-            <el-row :gutter="10">
+            <el-row :gutter="10"  style='margin-top: 10px'>
               <el-col :xs="24" :sm="11">
-                <el-form-item :label="splitIntegral ? '扣减储值积分' : '扣减积分'">
+                <el-form-item :label="splitIntegral ? '消费储值积分' : '消费积分'">
                   <el-input
+                    :placeholder="splitIntegral ? '消费储值积分' : '消费积分'"
                     v-model="formIntegral.money_1"
                     disabled
+                    class="redColor"
                     size="small"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
               </el-col>
-               <el-col :xs="24" :sm="2">&nbsp; </el-col>
+              <el-col :xs="24" :sm="2">&nbsp;</el-col>
               <el-col :xs="24" :sm="11">
-                <el-form-item :label="splitIntegral ? '扣减后储值积分' : '扣减后积分'">
+                <el-form-item :label="splitIntegral ? '消费后储值积分' : '消费后积分'">
                   <el-input
+                    :placeholder="splitIntegral ? '消费后储值积分' : '消费后积分'"
                     v-model="formIntegral.money_2"
                     disabled
                     size="small"
+                    class="blackColor"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
 
-            <el-row :gutter="10" v-if="splitIntegral">
+            <el-row :gutter="10" v-if="splitIntegral"  style='margin-top: 10px'>
               <el-col :xs="24" :sm="11">
-                <el-form-item label="扣减竞技积分">
+                <el-form-item label="消费竞技积分">
                   <el-input
                     v-model="formIntegral.integral_1"
                     disabled
                     size="small"
+                    class="redColor"
+                    placeholder="消费竞技积分"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
               </el-col>
-         <el-col :xs="24" :sm="2">&nbsp; </el-col>
+              <el-col :xs="24" :sm="2">&nbsp;</el-col>
               <el-col :xs="24" :sm="11">
-                <el-form-item label="扣减后竞技积分">
+                <el-form-item label="消费后竞技积分">
                   <el-input
                     v-model="formIntegral.integral_2"
                     disabled
+                    placeholder="消费后竞技积分"
                     size="small"
+                    class="blackColor"
                     style="width: 100%"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
+            <el-row :gutter="10" style="margin-top: 10px">
+              <el-col :xs="24" :sm="24">
+                <el-form-item label="备注说明">
+                  <el-input
+                    type="textarea"
+                    v-model="Remark"
+                    placeholder="请输入备注说明"
+                    style="width: 100$"
                   ></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
 
             <div style="text-align: right; width: 100%; margin-top: 16px; display: table">
-              <el-button @click="$router.push({ path: '/game/match/index' })">取消</el-button>
+              <el-button @click="$router.push({ path: '/game/match/index' })">取消 - ESC</el-button>
               <el-button type="primary" @click="startSignUp" :loading="singUpLoading">
-                确定报名
+                确定报名 - F2
               </el-button>
             </div>
           </el-form>
@@ -300,9 +333,8 @@
                   />
                   <span style="height: 40px; width: 112px">
                     <i
-                      class="text-3399ff pull-left inline-block"
+                      class="pull-left inline-block"
                       style="
-                        color: #2589ff;
                         width: 102px;
                         overflow: hidden;
                         text-overflow: ellipsis;
@@ -312,7 +344,7 @@
                       {{ scope.row.VIPNAME ? scope.row.VIPNAME : " " }}
                     </i>
                     <i
-                      class="text-3399ff pull-left inline-block"
+                      class="pull-left inline-block"
                       style="
                         width: 92px;
                         overflow: hidden;
@@ -326,11 +358,7 @@
                 </template>
               </el-table-column>
 
-              <el-table-column
-                prop="VIPCODE"
-                label="卡号"
-                align="center"
-              ></el-table-column>
+              <el-table-column prop="VIPCODE" label="卡号" align="center"></el-table-column>
 
               <el-table-column
                 prop="BUYMODE"
@@ -429,7 +457,6 @@
           >
             <gameOver
               @closeModalOver="showGameOverDialog = false"
-              @resetCloseModalOver="closeAllDialog"
               :dataType="{ BillObj: BillObj, RewardObj: RewardObj }"
             ></gameOver>
           </el-dialog>
@@ -450,6 +477,7 @@
                 BillObj: BillObj,
                 RewardObj: RewardObj,
                 EventRewardObj: EventRewardObj,
+                buyVipList: buyVipList,
                 vipInfo: vipInfo
               }"
               ref="clearRewardMemberData"
@@ -545,6 +573,7 @@ export default {
         money_1: "",
         money_2: ""
       },
+      Remark: "",
       searchText: "",
       inputShow: true,
       datalist: [],
@@ -564,6 +593,26 @@ export default {
       loadingTemplate: false
     };
   },
+  created() {
+    let that = this;
+    document.onkeydown = function (e) {
+      var key = window.event.keyCode;
+      console.log(key);
+      if (key == 27) {
+        // esc
+        that.$router.push({ path: "/game/match/index" });
+      } else if (key == 113) {
+        // F2 确认报名
+        that.startSignUp();
+      } else if (key == 118) {
+        // F7 : 新增会员
+        that.showAddNew = true;
+      } else if (key == 119) {
+        // F8 : 充值
+        that.rechargeFun();
+      }
+    };
+  },
   computed: {
     ...mapGetters({
       getGameDetailsState: "getGameDetailsState",
@@ -578,6 +627,9 @@ export default {
     })
   },
   watch: {
+    searchText() {
+      this.search_mb();
+    },
     memberItemState(data) {
       console.log(data);
       if (data.success) {
@@ -638,7 +690,13 @@ export default {
     sngCancelGameState(data) {
       this.loadingDialog = false;
       if (data.success) {
-        this.$emit("resetList");
+        if (this.showGameOverDialog == false) {
+          this.$message({
+            message: "取消【" + this.BillObj.MATCHNAME + "】赛事成功",
+            type: "success"
+          });
+          this.$router.push({ path: "/game/match/index" });
+        }
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -654,10 +712,10 @@ export default {
     }
   },
   methods: {
-     handleClose(){
-        this.searchText = ''
-        this.datalist = []
-     },
+    handleClose() {
+      this.searchText = "";
+      this.datalist = [];
+    },
     testPrint() {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print4");
       let jsonPrintData = JSON.parse(printRules);
@@ -768,10 +826,6 @@ export default {
       this.showRewardVipDialog = false;
       this.$store.dispatch("getGameDetails", { BillId: this.BillObj.BILLID });
     },
-    closeAllDialog() {
-      this.showGameOverDialog = false;
-      this.$emit("resetList");
-    },
     receivePrize() {
       this.showRewardVipDialog = true;
       this.vipInfo = {};
@@ -817,7 +871,8 @@ export default {
         BillId: this.BillObj.BILLID,
         DiscountMoney: this.couponIntegral == "" ? 0 : this.couponIntegral,
         BuyinMoney: this.formIntegral.money_1,
-        Payintegral: this.formIntegral.integral_1
+        Payintegral: this.formIntegral.integral_1,
+        Remark: this.Remark
       };
       this.$store.dispatch("sngStartSignUp", sendData).then(() => {
         this.singUpLoading = true;
@@ -827,6 +882,7 @@ export default {
       this.memberdetails = {};
       this.couponIntegral = "";
       this.searchText = "";
+      this.Remark = "";
       this.formIntegral = {
         integral_1: "",
         integral_2: "",
@@ -836,10 +892,10 @@ export default {
       this.tabs = 0;
       this.inputShow = true;
     },
-    search_mb() {
+    search_mb: _.debounce(function () {
       this.isshowtatus = true;
-      this.searchfun2();
-    },
+      this.searchfun2(0);
+    }, 1000),
     getMemberData() {
       this.$store.dispatch("getSsmemberdList", this.pageData);
     },
@@ -938,6 +994,7 @@ export default {
             this.$message({
               message: "会员余额不足"
             });
+            return
           }
         }
       } else {
@@ -950,6 +1007,7 @@ export default {
           this.$message({
             message: "会员余额不足"
           });
+          return
         }
       }
 
@@ -995,7 +1053,6 @@ export default {
     headerPage: () => import("@/components/header")
   },
   mounted() {
-    console.log(window.location.href.includes("?"));
     let queryUrl = this.getSearchString();
     this.$store.dispatch("getGameDetails", { BillId: queryUrl.BILLID }).then(() => {
       this.loadingTemplate = true;
@@ -1005,6 +1062,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.redColor >>> .el-input__inner{
+   color:red !important
+}
+.blackColor >>> .el-input__inner{
+   color:black !important
+}
 .ruleFormStyle >>> .el-form-item {
   margin-bottom: 0;
 }

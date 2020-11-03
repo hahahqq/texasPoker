@@ -17,7 +17,7 @@
                 <div class="btn">
                   <div class="btm-list">
                     <el-button type="primary" size="small" @click="showAddNewChange()">
-                      添加商品
+                      新增商品
                     </el-button>
                   </div>
                   <div class="btm-list">
@@ -68,7 +68,7 @@
                     商品分类&nbsp;&nbsp;&nbsp;
                     <el-select
                       v-model="value2"
-                      placeholder="请选择"
+                      placeholder="请选择商品分类"
                       size="small"
                       @change="selectMode"
                       clearable
@@ -85,7 +85,7 @@
                     状态&nbsp;&nbsp;&nbsp;
                     <el-select
                       v-model="value3"
-                      placeholder="请选择"
+                      placeholder="请选择状态"
                       size="small"
                       @change="selectMode"
                       clearable
@@ -157,15 +157,16 @@
 
                     <span style="height: 40px; width: 102px">
                       <i
-                        class="text-3399ff pull-left inline-block"
+                        class="pull-left inline-block"
                         style="
+                        color:#2589FF;
                           width: 92px;
                           overflow: hidden;
                           text-overflow: ellipsis;
                           white-space: nowrap;
                         "
                       >
-                        {{ scope.row.NAME ? scope.row.NAME : " " }}
+                      <span style="cursor:pointer" @click="handleEdit(scope.$index, scope.row)">{{scope.row.NAME ? scope.row.NAME : ' '}}</span>
                       </i>
                       <i class="" style="width: 92px">{{ scope.row.MOBILENO }}</i>
                       {{ scope.row.CODE }}

@@ -1,0 +1,312 @@
+<template>
+   <el-container>
+      <el-header style="height:50px; padding: 0">
+         <headerPage></headerPage>
+      </el-header>
+      <el-container>
+         <el-aside width="100px">
+               <section style="min-width:100px;">
+                  <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
+               </section>
+         </el-aside>
+         <el-container>
+            <el-main :style="`height:${height}px`" v-loading='loading' element-loading-text="会员详情数据加载中..." element-loading-background="rgba(242,242,242, 0.8)">
+               <div class='full-width pull-left' style="padding: 10px 10px 0; background:#fff; box-shadow: 10px 10px 10px -10px #aaa; ">
+                  <div style="width: 100%; float:left; padding: 10px 20px; border-radius: 4px; background:#f2f2f2">
+                        <span style="float:left; vertical-align: middle; ">
+                           <img
+                              :src="memberItem.IMAGEURL ? memberItem.IMAGEURL : 'static/images/header.png'"
+                              style="width: 60px; height:60px; border-radius: 100%; margin-top:5px;"
+                           >
+                        </span>
+
+                        <span style="float:left; padding-left: 10px;">
+                           <div style="line-height: 34px;">
+                              <i style="font-size:14px; font-weight:bold">{{memberItem.NAME}}</i>
+                              <i style="color:#409eff; font-size: 14px; font-weight:bold; margin-left: 8px" :class="`${memberItem.SEX == 0 ? 'el-icon-male' : 'el-icon-female' }`"></i>
+                              <i style="padding: 4px 8px; border-radius: 2px; color:#fff; background:#ff8800; margin-left: 10px;">{{memberItem.DISCOUNTNAME}}</i>
+                           </div>
+                           <div style="line-height: 34px">
+                              <i>{{memberItem.MOBILENO}}</i>
+                              <i v-if="memberItem.LASTTIME != undefined" style="margin-left: 20px">最近一次消费：
+                                  {{ new Date(memberItem.LASTTIME) | timehf }}
+                              </i>
+                              <i style="margin-left: 20px">无消费记录</i>
+                              <i v-if="memberItem.LASTTIME != undefined" style="margin-left: 20px;">【 距今 <a style="color:#f00; font-size: 14px;"> {{ new Date(memberItem.LASTTIME) | dateBetweenDay }} </a> 天 】</i>
+                           </div>
+                        </span>
+
+                        <span style="float:right; line-height: 70px">
+                           <el-button type='primary' plain size='small' @click="modifyPasswd()">修改密码</el-button>
+                           <el-button type='danger' plain size='small' @click="delVip">删除</el-button>
+                        </span>
+                  </div>
+
+                  <ul class="integralMoney">
+                     <li>
+                        <div>储值积分</div>
+                        <div>{{memberItem.MONEY}}</div>
+                     </li>
+
+                     <li>
+                        <div>竞技积分</div>
+                        <div>{{memberItem.INTEGRAL}}</div>
+                     </li>
+
+                     <li>
+                        <div>欠款金额</div>
+                        <div>{{memberItem.OWEMONEY}}</div>
+                     </li>
+
+                     <li>
+                        <div>优惠券</div>
+                        <div>{{memberItem.COUPONNUM}}</div>
+                     </li>
+
+                     <li>
+                        <div>大师分</div>
+                        <div>{{memberItem.CONTESTQTY}}</div>
+                     </li>
+
+                     <li>
+                        <div>参赛次数</div>
+                        <div>{{memberItem.MATCHCOUNT}}</div>
+                     </li>
+
+                     <li>
+                        <div>累计参赛积分</div>
+                        <div>{{memberItem.MATCHMONEY}}</div>
+                     </li>
+                  </ul>
+               </div>
+
+               <div class='full-width pull-left' :style="`padding: 10px 20px; min-height:${tableHeight}px; margin-top:10px; background:#fff`">
+                  <el-tabs v-model="activeName" @tab-click="handleClick">
+                     <el-tab-pane name='first' label='会员信息'>
+                        <div style="font-size:14px; font-weight:bold">基本信息   <el-button type="text" icon="el-icon-edit" @click="toEditVipFun()" style='margin-left: 16px'>编辑</el-button> </div>
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span="4">
+                              <i style='width:66px; float:left'>卡 &nbsp;&nbsp;号:</i> {{memberItem.CODE}}
+                           </el-col>
+                           <el-col :span="6">
+                              <i style='width:66px; float:left'>等 &nbsp;&nbsp;级：</i> {{memberItem.DISCOUNTNAME}}
+                           </el-col>
+                        </el-row>
+
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span="4">
+                              <i style='width:66px; float:left'>顾 &nbsp;&nbsp;问：</i> {{memberItem.SALEEMPNAME ? memberItem.SALEEMPNAME : '--'}}
+                           </el-col>
+                           <el-col :span="6">
+                              <i style='width:66px; float:left'>身份证：</i> {{memberItem.IDCARDNO ? memberItem.IDCARDNO : '--'}}
+                           </el-col>
+                        </el-row>
+
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span="4">
+                              <i style='width:66px; float:left'>性 &nbsp;&nbsp;别：</i> {{memberItem.SEX == 0 ? '男' : '女'}}
+                           </el-col>
+                           <el-col :span="6">
+                              <i style='width:66px; float:left'>标 &nbsp;&nbsp;签</i>{{memberItem.VIPFLAG != undefined ? memberItem.VIPFLAG : '--'}}
+                           </el-col>
+                        </el-row>
+
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span="4">
+                              <i style='width:66px; float:left'>生 &nbsp;&nbsp;日：</i>
+                              <span v-if="memberItem.BIRTHDATE != undefined">
+                                 {{new Date(memberItem.BIRTHDATE) | time }}
+                              </span>
+                              <span v-else> -- </span>
+                           </el-col>
+
+                           <el-col :span="6">
+                              <i style='width:66px; float:left'>注册日期：</i> {{new Date(memberItem.CREATEDATE) | time }}
+                           </el-col>
+                        </el-row>
+
+                        <el-row style="line-height: 40px">
+                           <el-col>
+                              <i style='width:66px; float:left'>有效期：</i> {{new Date(memberItem.INVALIDDATE) | time }}
+                           </el-col>
+                        </el-row>
+
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span='24'>
+                              <i style='width:66px; float:left'> 地 &nbsp;&nbsp;址：</i> {{memberItem.ADDRESS != undefined ? memberItem.ADDRESS : '--' }}
+                           </el-col>
+                        </el-row>
+
+                        <el-row :gutter="10" style=' line-height:40px '>
+                           <el-col :span='24'><i style='width:66px; float:left'> 备 &nbsp;&nbsp;注：</i> {{memberItem.REMARK ? memberItem.REMARK : '--'}}</el-col>
+                        </el-row>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='second' label='消费积分记录'>
+
+                        <balancePage v-if="activeName == 'second'"></balancePage>
+
+                     </el-tab-pane>
+
+                     <el-tab-pane name='third' label='奖励积分记录'>
+                        <integralPage v-if="activeName == 'third'"></integralPage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='fouth' label='参赛记录'>
+                        <participatePage v-if="activeName == 'fouth'"></participatePage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='fifth' label='消费记录'>
+                        <consumePage v-if="activeName == 'fifth'"></consumePage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='sixth' label='欠款记录'>
+                        <arrearsPage v-if="activeName == 'sixth'"></arrearsPage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='seventh' label='大师分'>
+                        <contestPage v-if="activeName == 'seventh'"></contestPage>
+                     </el-tab-pane>
+
+                     <el-tab-pane name='eighth' label='优惠券'>
+                        <couponPage v-if="activeName == 'eighth'"></couponPage>
+                     </el-tab-pane>
+                  </el-tabs>
+               </div>
+
+               <el-dialog
+                  width="60%"
+                  title="编辑会员"
+                  :visible.sync="toEdit"
+                  append-to-body>
+                  <edit-member
+                     @closeModal="toEdit=false"
+                     @resetList="toEdit=false; getMemberItemFun()"
+                     :dealType="{ type : 'edit', state : toEdit }"
+                  ></edit-member>
+               </el-dialog>
+
+            </el-main>
+         </el-container>
+      </el-container>
+   </el-container>
+</template>
+
+<script>
+import { mapState, mapGetters } from "vuex";
+import MIXINS_MEMBER from "@/mixins/member";
+import CRYPTO from "crypto-js";
+export default {
+   mixins: [MIXINS_MEMBER.MEMBER_MENU],
+   data() {
+      return {
+         activeName: "first",
+         height:window.innerHeight,
+         tableHeight: document.body.clientHeight - 268,
+         loading: false,
+         toEdit: false,
+         queryUrl: {},
+         memberItem: {},
+         vipPassword: '',
+         IsUsePasswd: false
+      }
+   },
+   computed: {
+      ...mapGetters({
+         delMemberState: 'delMember',
+         modifyVipPasswdState: 'modifyVipPasswdState',
+         memberItemState: 'memberItemState'
+      })
+   },
+   watch:{
+      memberItemState(data){
+         this.loading = false
+         if(data.success){
+            this.memberItem = data.data.obj
+         }else{
+            this.$message({ message: data.message, type: "error" })
+         }
+      },
+      modifyVipPasswdState(data){
+         this.$message({ message: data.message, type: data.success ? "success" : "error" })
+      },
+      delMemberState(data){
+         if(data.success){
+            this.$router.push({
+               path: '/member/MemberList'
+            })
+         }
+         this.$message({ message: data.message, type: data.success ? "success" : "error" })
+      },
+   },
+   methods:{
+      modifyPasswd(){
+         this.$prompt("", "请输入密码", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            inputType: "password",
+            inputPattern: /^\d{6}$/,
+            inputPlaceholder: "请输入六位数字组成的密码",
+            inputErrorMessage: "密码格式不正确 ！"
+         }).then(({ value }) => {
+            this.$store.dispatch("modifyVipPasswd", {
+               VipId: this.memberItem.ID,
+               Md5Pass: CRYPTO.MD5(value).toString()
+            })
+         }).catch(() => {});
+      },
+      handleClick(){
+         console.log(this.activeName)
+      },
+      toEditVipFun(){
+         this.$store.dispatch('getMemberItem2', { ID: this.memberItem.ID }).then(()=>{
+            this.toEdit = true
+         })
+      },
+      delVip(){
+         this.$confirm('确认删除该会员 ?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+         }).then(() => {
+               this.$store.dispatch("getMemberDel", this.memberItem.ID )
+         }).catch(() => { })
+      },
+      getMemberItemFun(){
+         this.$store.dispatch('getMemberItem2', { ID: this.queryUrl.ID })
+      }
+   },
+   components: {
+      headerPage: () => import("@/components/header"),
+      editMember: () => import("@/components/member/add"),
+      arrearsPage: () => import("@/components/member/arrears"),
+      couponPage: () => import("@/components/member/couponList"),
+      contestPage: () => import("@/components/member/contest"),
+      participatePage: () => import("@/components/member/participate"),
+      consumePage: () => import("@/components/member/consume"),
+      integralPage: () => import("@/components/member/integral"),
+      balancePage: () => import("@/components/member/balance"),
+   },
+   mounted(){
+      let queryUrl = this.getSearchString()
+      this.queryUrl = queryUrl
+      this.$store.dispatch('getMemberItem2', { ID: queryUrl.ID })
+   }
+}
+</script>
+
+
+<style scoped>
+.integralMoney{
+   padding: 16px 20px; width:100%; float:left;
+}
+.integralMoney li{
+   text-align:center; float:left; width: 14%
+}
+.integralMoney li div:last-child{
+   margin-top: 16px;
+   color:#409eff;
+   font-size: 18px;
+   font-weight: bold;
+}
+</style>

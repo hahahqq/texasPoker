@@ -9,12 +9,12 @@
                 </el-col>-->
                 <el-col :xs="24" :sm="12">
                     <el-form-item label="优惠金额">
-                        <el-input v-model.number="ruleForm.Money" type="number" min="0" placeholder="请输入金额"></el-input>
+                        <el-input v-model.number="ruleForm.Money" type="number" min="0" placeholder="请输入优惠金额"></el-input>
                     </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12">
                     <el-form-item label="发行数量" class>
-                        <el-input v-model.number="ruleForm.Qty" type="number" min="0" placeholder="请输入数量"></el-input>
+                        <el-input v-model.number="ruleForm.Qty" type="number" min="0" placeholder="请输入发行数量"></el-input>
                     </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="24">
@@ -51,7 +51,7 @@
               placeholder="请输入内容"
               v-model="ruleForm.Remark"
                         ></el-input>-->
-                        <el-input v-model="ruleForm.Remark" placeholder="请输入内容"></el-input>
+                        <el-input v-model="ruleForm.Remark" placeholder="请输入使用内容"></el-input>
                     </el-form-item>
                 </el-col>
 
@@ -128,14 +128,14 @@ export default {
         return {
             ruleForm: {
                 ImgName: "",
-                Money: 0,
-                Qty: 0,
+                Money: '',
+                Qty: '',
                 Remark: "",
                 BeginDate: "",
                 EndDate: "",
                 Tel: null,
                 Address: "",
-                LimitMoney: 1000
+                LimitMoney: ''
             },
             rules: {
                 Caption: [
@@ -208,14 +208,13 @@ export default {
                 sendData.BeginDate = this.dateBE[0];
                 sendData.EndDate = this.dateBE[1];
             }
+            console.log(this.dealType.type, this.ShopList )
             if (this.dealType.type == "add" && this.ShopList.length > 0) {
                 sendData.ShopList = this.ShopList.join(",");
             } else {
                 delete sendData.ShopList;
             }
-            // if (this.dealType.type == "edit") {
-            //   sendData.BillId = this.dataItem.BILLID;
-            // }
+
             this.$refs.ruleForm.validate(valid => {
                 if (valid) {
                     this.$store

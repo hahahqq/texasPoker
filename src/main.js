@@ -57,7 +57,6 @@ Vue.directive('clickOutSide', {
        if (el.contains(e.target)) {
          return false
        }
-       // vnode.context[binding.expression] = false
        binding.value()
      }
      el.stopProp = function(event) {

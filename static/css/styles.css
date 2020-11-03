@@ -511,3 +511,11 @@ body {
 .textCenter > .el-input__inner {
    text-align: center !important;
 }
+.el-dialog__body{
+   padding: 12px 40px 30px 20px !important;
+}
+
+.el-select-dropdown.el-popper.selectWidth{
+   width: 600px !important;
+   min-width: auto !important;
+}

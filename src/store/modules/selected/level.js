@@ -82,7 +82,7 @@ const actions = {
     console.log(data)
     let userInfo = getUserInfo();
     let sendData = {
-      'InterfaceCode': 21002060204,
+      'InterfaceCode': 9201021,
       ID:data.ID
     };
     selected.type="del";
