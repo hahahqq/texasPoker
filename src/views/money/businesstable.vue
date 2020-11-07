@@ -58,7 +58,7 @@
               <div class="content-center-btb">
                 <div class="xdtime">
                   <span>下单时间</span>
-                  <el-date-picker
+                  <!-- <el-date-picker
                     size="small"
                     v-model="dateBE"
                     @change="chooseDate2"
@@ -68,7 +68,29 @@
                     start-placeholder="开始日期"
                     end-placeholder="结束日期"
                     class="m-left-sm"
+                  ></el-date-picker> -->
+
+                  <el-date-picker
+                    v-model="beginTime"
+                    type="datetime"
+                    size="small"
+                    @change="chooseBegin(beginTime)"
+                    style="width: 200px"
+                    class="m-left-sm"
+                    format="yyyy-MM-dd HH:mm"
+                    placeholder="选择开始时间"
                   ></el-date-picker>
+                  -
+                  <el-date-picker
+                    v-model="endTime"
+                    type="datetime"
+                    size="small"
+                    @change="chooseEnd(endTime)"
+                    style="width: 200px"
+                    format="yyyy-MM-dd HH:mm"
+                    placeholder="选择结束时间"
+                  ></el-date-picker>
+
                   <el-radio-group
                     v-model="radio1"
                     size="small"
@@ -87,6 +109,7 @@
                     <span>单据类型&nbsp;&nbsp;&nbsp;</span>
                     <el-select
                       v-model="value1"
+                      clearable
                       placeholder="请选择单据类型"
                       size="small"
                       style="width: 200px"
@@ -103,6 +126,7 @@
                     <span>单据状态&nbsp;&nbsp;&nbsp;</span>
                     <el-select
                       v-model="value"
+                      clearable
                       placeholder="请选择单据状态"
                       size="small"
                       style="width: 200px"
@@ -144,7 +168,7 @@
               </div>
             </div>
           </div>
-          <div class="content-table3">
+          <div class="content-table3" style="overflow: auto">
             <div class="content-table-center">
               <div
                 :style="{ height: tableHeight + 'px' }"
@@ -182,25 +206,21 @@
                       </td>
                     </tr>
                     <tr v-for="(item, index) in items.List" :key="index">
-                      <td style="padding: 0 4px; width: 500px">
+                      <td style="padding: 10px 4px; width: 500px">
                         <el-row>
                           <el-col :span="8" class="imggood">
                             <img
                               :src="`${GOODS_IMGURL}${item.GOODSID}.png`"
-                              width="55"
-                              height="55"
+                              width="50"
+                              height="50"
                               onerror="this.src='static/images/shopmore.png'"
+                              style="border-radius: 6px"
                             />
                           </el-col>
-                          <el-col
-                            :span="14"
-                            v-if="items.BILLTYPE != '储值充值'"
-                            class="imggood1"
-                            style="line-height: 22px"
-                          >
+                          <el-col :span="14" v-if="items.BILLTYPE != '储值充值'" class="imggood1">
                             {{ item.GOODSNAME }}
                           </el-col>
-                          <el-col :span="14" v-else class="imggood1" style="line-height: 22px">
+                          <el-col :span="14" v-else class="imggood1">
                             {{ item.GOODSNAME.replace(/;,/g, " ;  赠送") }}
                           </el-col>
                         </el-row>
@@ -289,7 +309,7 @@
               dialogVisible = false;
               getNewData();
             "
-            :billGoods="{ data: billGoods }"
+            :billGoods="{ data: billGoods, setDate: setDate }"
           ></detailedPage>
         </el-dialog>
 
@@ -328,6 +348,9 @@ export default {
   ],
   data() {
     return {
+      bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE,
+      beginTime: new Date(this.getCustomDay(-30)).getTime(),
+      endTime: new Date().getTime(),
       dialogVisible: false,
       billGoods: {},
       GOODS_IMGURL: GOODS_IMGURL,
@@ -353,10 +376,6 @@ export default {
       loading: false,
       options: [
         {
-          value: "-1",
-          label: "全部"
-        },
-        {
           value: "0",
           label: "已完成"
         },
@@ -368,10 +387,6 @@ export default {
       value: "",
       options1: [
         {
-          value: "-1",
-          label: "全部"
-        },
-        {
           value: "0",
           label: "快速消费"
         },
@@ -379,10 +394,6 @@ export default {
           value: "1",
           label: "商品消费"
         },
-        //   {
-        //     value: "3",
-        //     label: "次卡"
-        //   },
         {
           value: "5",
           label: "会员领奖"
@@ -391,10 +402,6 @@ export default {
           value: "6",
           label: "会员充值"
         }
-        //   {
-        //     value: "7",
-        //     label: "计次充值"
-        //   }
       ],
       value1: "",
       shopInfo: getHomeData().shop,
@@ -403,19 +410,28 @@ export default {
       activePath: "",
       shopName: getUserInfo().CompanyName,
       tableHeight: document.body.clientHeight - 300,
-      loadingst: false
+      loadingst: false,
+      setDate: {}
     };
   },
   computed: {
     ...mapGetters({
       businesstable: "businesstable",
       businesstableState: "businesstableState",
+      businesstabledetailed: "businesstabledetailed",
       shopList: "shopList",
       shopListState: "shopListState",
-      exportBusinessDerive: "exportBusinessDerive"
+      exportBusinessDerive: "exportBusinessDerive",
+      businessTableDetailsState: "businessTableDetailsState"
     })
   },
   watch: {
+    businessTableDetailsState(data) {
+      this.dialogVisible = data.success ? true : false;
+      if (!data.success) {
+        this.$message({ message: data.message, type: "error" });
+      }
+    },
     businesstable(data) {
       let newArr = [];
       for (var i in data) {
@@ -462,8 +478,8 @@ export default {
       this.ruleFrom.EndDate = this.dateBE[1];
       this.$store
         .dispatch("getExportBusinessTableData", {
-          BillType: this.value1,
-          Status: this.value,
+          BillType: this.value1 ? this.value1 : -1,
+          Status: this.value ? this.value : -1,
           Filter: this.Filter,
           BeginDate: this.ruleFrom.BeginDate,
           EndDate: this.ruleFrom.EndDate
@@ -538,7 +554,6 @@ export default {
         this.isShowShop = false;
         this.clearAllData();
         this.defaultData();
-        console.log("11111111111111111111111");
         this.$router.push({
           path: "/home"
         });
@@ -574,7 +589,9 @@ export default {
     detailedPage(e) {
       console.log("详细数据", e);
       this.billGoods = e;
-      (this.title = e.BILLTYPE), (this.dialogVisible = true);
+
+      this.title = e.BILLTYPE;
+      //  (this.dialogVisible = true);
       let setDate;
       if (e.BILLTYPE == "商品消费") {
         setDate = {
@@ -586,53 +603,93 @@ export default {
           i: 2,
           BILLID: e.BILLID
         };
-      } else if (e.BILLTYPE == "计次消费") {
-        setDate = {
-          i: 3,
-          BILLID: e.BILLID
-        };
       } else if (e.BILLTYPE == "储值充值") {
         setDate = {
           i: 4,
           BILLID: e.BILLID
         };
-      } else if (e.BILLTYPE == "计次充值") {
+      } else if (e.BILLTYPE == "会员领奖") {
         setDate = {
-          i: 5,
+          i: 6,
           BILLID: e.BILLID
         };
       }
+      this.setDate = setDate;
       this.$store.dispatch("getBusinesstableDetailed", setDate).then(() => {});
     },
-
     handlePageChange: function (currentPage) {
       this.pagination.PN = parseInt(currentPage);
       this.getNewData();
     },
     changeTime(data) {
       console.log(data);
+
+      let bussinessTimeToNumber = Number(this.bussinessTime.replace(":", ""));
+      let curMonth = Number(dayjs().month()) + 1;
+      let todayDate = dayjs(new Date().getTime());
+      let nowHourMius = todayDate.format("HH:mm:ss");
+      let yesterdayDate = dayjs().subtract(1, "day").format("YYYY-MM-DD");
+      let nowHourMiusToNumber = Number(nowHourMius.replace(":", ""));
+
+      let beginFormat = "",
+        endFormat = "",
+        beginTime = "",
+        endTime = "";
+
       if (data == 1) {
-        this.dateBE = [new Date().getTime(), new Date().getTime()];
+        beginFormat =
+          nowHourMiusToNumber >= bussinessTimeToNumber
+            ? todayDate.format("YYYY-MM-DD")
+            : yesterdayDate;
+        endTime = todayDate.format("YYYY-MM-DD HH:mm:ss");
       } else if (data == 2) {
-        this.dateBE = [new Date(this.getCustomDay(-3)).getTime(), new Date().getTime()];
+        beginFormat =
+          nowHourMiusToNumber >= bussinessTimeToNumber
+            ? dayjs().subtract(2, "day").format("YYYY-MM-DD")
+            : dayjs().subtract(3, "day").format("YYYY-MM-DD");
+        endTime = todayDate.format("YYYY-MM-DD HH:mm:ss");
       } else if (data == 3) {
-        this.dateBE = [new Date(this.getCustomDay(-7)).getTime(), new Date().getTime()];
+        beginFormat =
+          nowHourMiusToNumber >= bussinessTimeToNumber
+            ? dayjs().subtract(6, "day").format("YYYY-MM-DD")
+            : dayjs().subtract(7, "day").format("YYYY-MM-DD");
+        endTime = todayDate.format("YYYY-MM-DD HH:mm:ss");
       }
+      beginTime = beginFormat + " " + this.bussinessTime + ":00";
+
+      console.log(beginTime, endTime)
+
+      let firstDate = new Date(beginTime).getTime();
+      let lastDate = new Date(endTime).getTime();
+      this.beginTime = firstDate;
+      this.endTime = lastDate;
+      this.oldTimeBE = [firstDate, lastDate]
+
+      this.dateBE = [firstDate, lastDate];
+      console.log(this.dateBE);
+
       this.getNewData();
     },
-    chooseDate2(v) {
-      this.ruleFrom.BeginDate = v[0];
-      this.ruleFrom.EndDate = v[1];
-      this.getNewData();
+    chooseBegin(v) {
+       this.ruleFrom.BeginDate = dayjs(v).valueOf()
+       this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate]
+       console.log(this.dateBE)
     },
+    chooseEnd(v){
+       this.ruleFrom.EndDate = dayjs(v).valueOf()
+       this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate]
+       console.log(this.dateBE)
+    },
+
     getNewData(data) {
+       console.log(this.dateBE)
       // 当前数据
       let setDate = Object.assign(
         {},
         {
           date: this.dateBE,
-          BillType: this.value1,
-          Status: this.value,
+          BillType: this.value1 ? this.value1 : -1,
+          Status: this.value ? this.value : -1,
           Filter: this.Filter,
           pagination: this.pagination
         }
@@ -642,10 +699,31 @@ export default {
       });
     },
     searchChange() {
+       this.pagination.PN = 1
       this.getNewData();
     }
   },
   mounted() {
+    let bussinessTimeToNumber = Number(this.bussinessTime.replace(":", ""));
+    let curMonth = Number(dayjs().month()) + 1;
+
+    let beginFormat = "",
+      endFormat = "",
+      beginTime = "",
+      endTime = "";
+
+    beginFormat = dayjs().year() + "-" + curMonth + "-" + 1;
+    endTime = dayjs().endOf("month").format("YYYY-MM-DD HH:mm");
+
+    beginTime = beginFormat + " " + this.bussinessTime + ":59";
+    let firstDate = new Date(beginTime).getTime();
+    let lastDate = new Date(endTime).getTime();
+    this.beginTime = firstDate;
+    this.endTime = lastDate;
+    this.ruleFrom.BeginDate = firstDate
+    this.ruleFrom.EndDate = lastDate
+    this.dateBE = [firstDate, lastDate];
+
     this.getNewData();
   },
   components: {
@@ -716,13 +794,12 @@ export default {
   margin-right: 1%;
 }
 .imggood {
-  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .imggood1 {
-  height: 90px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: left;

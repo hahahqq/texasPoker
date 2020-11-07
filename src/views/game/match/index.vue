@@ -39,7 +39,7 @@
                 </el-col>
 
                 <el-col :span="6" style="text-align: center">
-                  <span style="font-size: 14px" @click="showAddNew = true">
+                  <span style="font-size: 14px" @click="addVipFun">
                     <img
                       src="static/images/icon_addVip.png"
                       alt=""
@@ -51,7 +51,7 @@
                 </el-col>
 
                 <el-col :span="6" style="text-align: center">
-                  <span style="font-size: 14px" @click="showRechargeDialog = true">
+                  <span style="font-size: 14px" @click="rechargeFun">
                     <img
                       src="static/images/icon_vipRecharge.png"
                       alt=""
@@ -80,9 +80,14 @@
             </div>
           </div>
 
-          <div class="content-table4" style="position: initial">
+          <div class="content-table4" style="position: initial; padding-bottom: 10px">
             <div class="content-table-center">
-              <el-tabs type="card" class="tabsStyle" v-model="activeName" @tab-click="selectEventsFun(activeName)">
+              <el-tabs
+                type="card"
+                class="tabsStyle"
+                v-model="activeName"
+                @tab-click="selectEventsFun(activeName)"
+              >
                 <el-tab-pane name="-1" label="全部赛事"></el-tab-pane>
                 <el-tab-pane name="0" label="SNG比赛"></el-tab-pane>
                 <el-tab-pane name="1" label="MTT比赛"></el-tab-pane>
@@ -123,8 +128,18 @@
                     {{ new Date(scope.row.PLAYTIME) | timehf }}
                   </template>
                 </el-table-column>
-                <el-table-column prop="TYPENAME" label="赛事类型" align="center" width="100"></el-table-column>
-                <el-table-column prop="DESKNAME" label="桌号" align="center" width="90"></el-table-column>
+                <el-table-column
+                  prop="TYPENAME"
+                  label="赛事类型"
+                  align="center"
+                  width="100"
+                ></el-table-column>
+                <el-table-column
+                  prop="DESKNAME"
+                  label="桌号"
+                  align="center"
+                  width="90"
+                ></el-table-column>
                 <el-table-column
                   prop="BUYINPRICE"
                   label="Buyin积分"
@@ -133,13 +148,13 @@
                 ></el-table-column>
                 <el-table-column
                   prop="REBUYPRICE"
-                  label="rebuy积分"
+                  label="Rebuy积分"
                   align="center"
                   width="100"
                 ></el-table-column>
                 <el-table-column
                   prop="ADDONPRICE"
-                  label="addon积分"
+                  label="AddOn积分"
                   align="center"
                   width="100"
                 ></el-table-column>
@@ -225,7 +240,7 @@
     </el-dialog>
 
     <!-- 会员充值  -->
-    <el-dialog title="会员充值" :visible.sync="showRechargeDialog" append-to-body width="600px">
+    <el-dialog title="会员充值" :visible.sync="showRechargeDialog" append-to-body width="700px">
       <vipRecharge
         @closeVipRecharge="showRechargeDialog = false"
         @referData="referData"
@@ -253,12 +268,13 @@
 import { mapState, mapGetters } from "vuex";
 import MIXINS_GAME from "@/mixins/game.js";
 import { getHomeData, getUserInfo } from "@/api/index";
+import { isPurViewFun } from "@/util/com/common.js";
 
 export default {
   mixins: [MIXINS_GAME.GAME_MENU],
   data() {
     return {
-      tableHeight: document.body.clientHeight - 300,
+      tableHeight: document.body.clientHeight - 310,
       projectType: -1,
       activeName: "-1",
       loading: false,
@@ -317,6 +333,25 @@ export default {
     }
   },
   methods: {
+    rechargeFun() {
+      if (this.isPurViewFun(92100105)) {
+        this.showRechargeDialog = true;
+      } else {
+        this.$message({
+          message: "暂无会员充值权限！",
+          type: "warning"
+        });
+      }
+    },
+    addVipFun() {
+      // if (this.isPurViewFun(92100310)) {
+        this.showAddNew = true;
+      // }
+      // this.$message({
+      //   message: "暂无新增会员权限！",
+      //   type: "warning"
+      // });
+    },
     referData() {},
     signUpHandle(row, event) {
       this.BILLID = row.BILLID;
@@ -417,20 +452,19 @@ export default {
 
 
 <style scoped>
-
-.tabsStyle>>>.el-tabs__header .el-tabs__item{
-   color:#aaa !important;
-   background: #f2f2f2 !important;
-   border-left: 1px solid #dddddd !important;
+.tabsStyle >>> .el-tabs__header .el-tabs__item {
+  color: #aaa !important;
+  background: #f2f2f2 !important;
+  border-left: 1px solid #dddddd !important;
 }
 
-.tabsStyle>>>.el-tabs__header .el-tabs__item:first-child{
-   border-left: none !important;
+.tabsStyle >>> .el-tabs__header .el-tabs__item:first-child {
+  border-left: none !important;
 }
 
-.tabsStyle>>>.el-tabs__header .el-tabs__item.is-active{
-   background: #fff !important;
-   color: #333 !important;
+.tabsStyle >>> .el-tabs__header .el-tabs__item.is-active {
+  background: #fff !important;
+  color: #409eff !important;
 }
 
 .addMatch {

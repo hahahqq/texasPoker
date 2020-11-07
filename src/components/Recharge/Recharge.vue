@@ -12,7 +12,7 @@
           </div>
           <div v-if="disabled">
             <span class="font-16" style="cursor: no-drop">{{ payprice | money }}</span>
-            <span v-if="!isAllowClick" class="p-left-xs text-theme2">(余额不足)</span>
+            <span v-if="!isAllowClick" class="p-left-xs text-theme2">(积分不足)</span>
           </div>
           <div v-else>
             <input
@@ -64,24 +64,47 @@
       >
         <div class="rleft-li">选择支付方式</div>
         <div class="rright">
-          <a
-            class="rright-li"
-            v-for="(item, index) in rechargeListList"
-            v-if="isClickRL(item)"
-            :key="index"
-            @click="toggletab(index, item)"
-          >
-            <img :src="item.payerIMG" alt />
-            <div>{{ item.NAME }}</div>
-            <i
-              v-if="curtab == index"
-              :class="{ selected: curtab == index }"
-              class="el-icon-circle-check"
-            ></i>
-          </a>
+          <div class="showpayList overflowscroll" style="min-height: 200px; max-height: 235px">
+            <ul>
+              <li
+                class="list-group-item"
+                v-for="(item, index) in rechargeListList"
+                :key="index"
+                v-if="isClickRL(item)"
+                @click="toggletab(index, item)"
+              >
+                <div
+                  class="paylistsock"
+                  :style="`background: ${
+                    curtab == index ? '#ecf5ff' : '#ffffff'
+                  }; border: 1px solid ${curtab == index ? '#b3d8ff' : '#ddd'} `"
+                >
+                  <img
+                    :src="item.payerIMG"
+                    alt=""
+                    style="width: 28px; height: 28px; margin-top: 5px"
+                  />
+                  <p>{{ item.NAME }}</p>
+
+                  <div
+                    v-if="curtab == index"
+                    :class="{ selected: curtab == index }"
+                    style="
+                      border-top: 30px solid #137deb;
+                      width: 0;
+                      height: 0;
+                      border-left: 30px solid transparent;
+                    "
+                  >
+                    <i class="el-icon-check"></i>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="Rechargeright_f">
-          <!-- <el-checkbox v-model="checkedreceipt">打印小票</el-checkbox> -->
+          <el-checkbox v-model="checkedreceipt">打印小票</el-checkbox>
           <el-checkbox v-model="IsSms" class="pull-right">短信通知</el-checkbox>
         </div>
       </el-col>
@@ -105,7 +128,7 @@
       style="width: 100%; display: table; font-size: 10px"
       v-if="((totalprice - ZEROTYPE) * 1000000000) / 1000000000 != 0"
     >
-      已抹零 ￥{{parseFloat(ZEROTYPE).toFixed(2) }}
+      已抹零 ￥{{ parseFloat(ZEROTYPE).toFixed(2) }}
     </div>
 
     <!-- 扫描支付 -->
@@ -174,7 +197,8 @@ export default {
       allowsaledate: "",
       ZEROTYPE: 0,
       rechargeListList: [],
-      IsUseVipPassword: getUserInfo().CompanyConfig.ISUSEVIPPASSWORD
+      IsUseVipPassword: getUserInfo().CompanyConfig.ISUSEVIPPASSWORD,
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE
     };
   },
   computed: {
@@ -193,16 +217,15 @@ export default {
     },
     rechargeListList1(data) {
       console.log(data);
-      console.log(this.isselectvip, "this.isselectvip");
+      console.log(this.isselectvip.ID, "this.isselectvip");
       let newData = [];
-      if (this.rechargestatus == 9) {
-        newData = data.filter((item) => item.NAME != "欠款");
-      } else if (
+      if (
         this.rechargestatus == 5 ||
         this.rechargestatus == 4 ||
+        this.rechargestatus == 9 ||
         this.isselectvip.ID == undefined
       ) {
-        newData = data.filter((item) => item.NAME != "余额支付" || item.NAME != "欠款");
+        newData = data.filter((item) => item.NAME != "积分支付" && item.NAME != "欠款");
       } else {
         newData = data;
       }
@@ -258,7 +281,7 @@ export default {
           this.payprice = parseFloat(this.totalprice.price).toFixed(1);
           this.ZEROTYPE = this.totalprice.price - parseFloat(this.totalprice.price).toFixed(1);
         }
-        console.log("抹零的值是多少的", this.ZEROTYPE);
+        console.log("抹零的值是多少的", this.ZEROTYPE, this.payprice);
       }
     }
   },
@@ -277,18 +300,20 @@ export default {
     toggletab(index, item) {
       this.curtab = index;
       this.PaytypeId = item.ID;
+      console.log(this.payprice, this.receivableprice)
       this.payName = item.NAME;
       if (item.NAME == "现金") {
         this.disabled = false;
-        this.payprice = parseFloat(this.payprice).toFixed(2);
+        this.payprice = this.payprice
         this.$nextTick(() => {
           this.$refs["cash"].focus();
         });
       } else {
-        this.payprice = parseFloat(this.receivableprice).toFixed(2);
+        this.payprice = this.receivableprice;
         this.disabled = true;
         this.pocketmoney = "0.00";
       }
+      console.log(this.payprice)
       this.isAllowClickFun();
     },
     handleInput2(e) {
@@ -307,30 +332,29 @@ export default {
         this.$message.error("请选择支付方式");
         return;
       }
-      if (this.IsUseVipPassword == true) {
-         let pwd = this.isselectvip.PASSWORD != undefined ? this.isselectvip.PASSWORD : "888888";
+      if (this.IsUseVipPassword == true && this.rechargestatus != 9) {
+        let pwd = this.isselectvip.PASSWORD != undefined ? this.isselectvip.PASSWORD : "888888";
 
-         this.$prompt("请输入会员密码", "提示", {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            inputType: "password",
-            inputPattern: /^\d{6}$/,
-            inputPlaceholder: "请输入六位数的密码",
-            inputErrorMessage: "请输入六位数的密码"
-         }).then(({ value }) => {
-            let cvalue = value != "888888" ? CRYPTO.MD5(value).toString() : "888888";
-
-            if(pwd == cvalue){
-               this.CashPayok();
-            }else {
-               this.$message.error("密码错误")
+        this.$prompt("请输入会员密码", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          inputType: "password",
+          inputPattern: /^\d{6}$/,
+          inputPlaceholder: "请输入六位数的密码",
+          inputErrorMessage: "请输入六位数的密码"
+        })
+          .then(({ value }) => {
+            let cvalue = pwd != "888888" ? CRYPTO.MD5(value).toString() : "888888";
+            if (pwd == cvalue) {
+              this.CashPayok();
+            } else {
+              this.$message.error("密码错误");
             }
-
-         }).catch(() => {});
-      }else{
-         this.CashPayok();
+          })
+          .catch(() => {});
+      } else {
+        this.CashPayok();
       }
-
     },
     CashPayok() {
       let date = new Date();
@@ -356,13 +380,43 @@ export default {
       this.barcodepaystatus = "";
       let IsSms = this.IsSms == true ? 1 : 0;
 
+      let a = this.receivableprice, b = this.isselectvip.INTEGRAL, c = this.isselectvip.MONEY, d = 0 , e = 0
+      if(this.payName == '积分支付'){
+         if(this.isselectvip.ID != undefined){
+            if (this.splitIntegral) {
+               if (b >= a) {
+                  d = a;
+                  e = 0;
+               } else if (b + c >= a) {
+                  d = b;
+                  e = a - b;
+               } else if (c >= a) {
+                  d = 0;
+                  e = a;
+               }
+            } else {
+               if (c >= a) {
+                  e = a;
+                  d = 0;
+               }
+            }
+         }else if(this.isselectvip.ID == undefined){   // 不选择会员  直接本单金额
+            e = a;
+            d = 0
+         }
+      }else{
+         e = a;
+         d = 0
+      }
+      console.log('竞技积分：'+ d, '储值积分：'+ e)
+      let payMoney = e, payIntegral = d
+
       let comdata = {
         PaytypeId: this.PaytypeId,
         payName: this.payName,
-      //   GetIntegral: "",
         IsSms: IsSms,
-        PayIntegral: 0,
-      //   IntegralMoney: 0
+        PayIntegral: payIntegral,
+        checkedreceipt: this.checkedreceipt
       };
 
       switch (this.rechargestatus) {
@@ -372,7 +426,7 @@ export default {
           break;
         case 3:
           comdata = Object.assign({}, comdata, {
-            Money: Number(this.receivableprice),
+            Money: payMoney,
             DiscountMoney: 0,
             BillDate: this.value2
           });
@@ -381,15 +435,15 @@ export default {
           comdata = {
             PayTypeId: this.PaytypeId,
             IsSms: IsSms,
-            AddMoney: Number(this.receivableprice),
+            AddMoney: payMoney,
             BillDate: this.value2
           };
           break;
         case 5:
           comdata = Object.assign({}, comdata, {
-            PayMoney: Number(this.receivableprice),
+            PayMoney: payMoney,
             IsCheck: 1,
-            AddMoney: Number(this.receivableprice),
+            AddMoney: payMoney,
             PayTypeID: this.PaytypeId,
             BillDate: this.value2
           });
@@ -398,7 +452,7 @@ export default {
           comdata = {
             PayTypeID: this.PaytypeId,
             IsSmd: IsSms,
-            AddMoney: Number(this.receivableprice),
+            AddMoney: payMoney,
             GiftMoney: 0,
             GetIntegral: 0,
             BillDate: this.value2
@@ -406,13 +460,14 @@ export default {
           break;
         default:
           comdata = Object.assign({}, comdata, {
-            PayMoney: Number(this.receivableprice),
+            PayMoney: payMoney,
             IsCheck: 1,
             BillDate: this.value2
           });
       }
 
       this.$emit("CashRecharge", comdata);
+
     },
     barcodePaycomback(data) {
       this.barcodepaystatus = 1;
@@ -425,10 +480,17 @@ export default {
     isAllowClickFun() {
       this.isAllowClick = true;
       if (this.rechargeListList.length == 0) this.isAllowClick = false;
-      let dd = this.isselectvip.ID == undefined ? 0 : this.selmember.MONEY;
+      let dd = 0
+      console.log(this.splitIntegral)
+      if(this.splitIntegral){
+         dd = this.isselectvip.ID == undefined ? 0 : Number(this.isselectvip.MONEY) + Number(this.isselectvip.INTEGRAL);
+      }else{
+         dd = this.isselectvip.ID == undefined ? 0 : Number(this.isselectvip.MONEY)
+      }
 
-      if (this.rechargeListList[this.curtab].NAME == "余额支付" && this.payprice > dd)
-        this.isAllowClick = false;
+      if (this.rechargeListList[this.curtab].NAME == "积分支付" && this.payprice > dd){
+         this.isAllowClick = false;
+      }
     }
   },
   components: { barCodePay },
@@ -485,13 +547,6 @@ export default {
   height: 35px;
   margin-top: 5px;
 }
-.rright-li .selected {
-  position: absolute;
-  color: #ff5722;
-  top: 0px;
-  right: 1px;
-  font-size: 18px;
-}
 
 .spaceBorder-left {
   border-left: 6px solid rgb(224, 220, 220);
@@ -509,4 +564,54 @@ export default {
     position: absolute;
     right: 0px;
 } */
+
+.showpayList ul li {
+  display: inline-block;
+  color: #666;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: center;
+  float: left;
+  cursor: pointer;
+  padding: 5px 5px;
+  font-size: 12px;
+  position: relative;
+}
+
+.showpayList ul li .paylistsock {
+  padding: 6px 6px;
+  overflow: hidden;
+  background: #fffff1;
+  border-radius: 5px;
+  height: 76px;
+  width: 76px;
+  position: relative;
+}
+
+.showpayList ul li .paylistsock p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.list-group-item .selected {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.list-group-item .selected i {
+  position: absolute;
+  left: -18px;
+  top: -32px;
+  /* top: 10px; */
+  color: #fff;
+  font-size: 18px;
+}
+
+.isselectPay {
+  position: absolute;
+  color: #ff5722;
+  top: 2px;
+  right: 1px;
+  font-size: 18px;
+}
 </style>

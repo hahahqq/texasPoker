@@ -16,10 +16,21 @@
             <div class="content-eighty">
               <div class="content-center">
                 <el-row>
-                  <el-col :span="2" style="text-align: left">
-                    <el-button size="small" type="primary" @click="handleNew">添加支出</el-button>
+                  <el-col :span="6" style="text-align: left">
+                    <el-button size="small" type="primary" @click="handleNew">新增支出</el-button>
+
+                    <el-button
+                      size="small"
+                      class="m-left-sm"
+                      plain
+                      @click="exportChange"
+                    >
+                      导出表格
+                    </el-button>
+
+
                   </el-col>
-                  <el-col :span="11">
+                  <el-col :span="18" style="text-align:right">
                     <el-select
                       v-model="pageData.ItemId"
                       placeholder="请选择支出项目"
@@ -48,19 +59,7 @@
                         :value="item.ID"
                       ></el-option>
                     </el-select>
-                    <el-button
-                      type="primary"
-                      size="small"
-                      class="m-left-sm"
-                      plain
-                      @click="exportChange"
-                    >
-                      <i class="el-icon-upload el-icon--right"></i>
-                      导出表格
-                    </el-button>
-                    <!-- <el-button size="small" type="info" >导出</el-button> -->
-                  </el-col>
-                  <el-col :span="11" style="text-align: right">
+
                     <el-date-picker
                       size="small"
                       v-model="dateBE"
@@ -232,7 +231,7 @@ export default {
     },
     paywayListState(data) {
       for (var i in data.data.List) {
-        if (data.data.List[i].NAME == "余额支付") {
+        if (data.data.List[i].NAME == "积分支付") {
           data.data.List.splice(i, 1);
         }
       }

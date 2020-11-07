@@ -87,19 +87,21 @@ const actions = {
     let userInfo = getUserInfo(); // userInfo.CompanyID
     let homeInfo = getHomeData(); // homeInfo.shop.ID
     let sendData = {
-      // 'InterfaceCode': '601020301',
-      'InterfaceCode': '601020301A',
-      'CompanyId': userInfo.CompanyID,
-      'ShopId': data.ShopId,
-      VipId: data.VipId,
+      'InterfaceCode': '210020111A',
+      // 'CompanyId': userInfo.CompanyID,
+      'shopid': data.ShopId,
+      ID: data.VipId,
       AddMoney: data.AddMoney ? data.AddMoney : 0, // 充值金额
       GiftMoney: data.GiftMoney ? data.GiftMoney : 0, // 赠送金额
       Remark: data.Remark ? data.Remark : '',
       IsSmd: data.IsSms ? 1 : 0,
       PayTypeId: data.PayTypeId, // 充值方式
-      SaleEmpMoney: data.SaleEmpMoney // 员工提成信息
+      Remark: data.Remark,
+      SaleEmpList: '',
+      GetIntegral: 0,
+     BillDate: new Date().getTime()
     };
-    commonSend.commonSend('get', data => {
+    commonSend.commonSend('post', data => {
       commit(MEMBER_RECHARGE, { data })
     }, sendData)
   },

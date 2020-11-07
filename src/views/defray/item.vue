@@ -8,7 +8,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="支出金额">
-        <el-input v-model.number="ruleForm.Money" type="number" min=0></el-input>
+        <el-input v-model.number.trim="ruleForm.Money" type="number" min="0" placeholder="请输入支出金额" style="width:220px;"></el-input>
       </el-form-item>
       <el-form-item label="付款方式" prop="PayTypeId">
         <el-select v-model="ruleForm.PayTypeId" placeholder="请选择付款方式" style="width:220px;">
@@ -64,10 +64,10 @@ export default {
   data() {
     return {
       ruleForm: {
-        ShopId: "",
+        ShopId: getHomeData().shop.ID,
         BillDate: "",
         ItemId: "",
-        Money: 0,
+        Money: "",
         PayTypeId: "",
         EmpId: "",
         Remark: ""
@@ -122,7 +122,7 @@ export default {
     },
     paywayListState(data){
       for(var i in data.data.List){
-        if(data.data.List[i].NAME == '余额支付'){
+        if(data.data.List[i].NAME == '积分支付'){
           data.data.List.splice(i, 1)
         }
       }

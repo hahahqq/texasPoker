@@ -294,7 +294,8 @@ export default {
       eventsList: [],
       tableList: [],
       pageLoading: false,
-      levelList: []
+      levelList: [],
+      loadingDefault: true
     };
   },
   computed: {
@@ -307,7 +308,9 @@ export default {
   },
   watch: {
     dataType(data) {
-      this.defaultItem();
+      if (this.loadingDefault) {
+        this.defaultItem();
+      }
     },
     getTableListState(data) {
       console.log(data);
@@ -399,11 +402,13 @@ export default {
       } else {
         this.rewardWayList = [];
       }
+      console.log(this.rewardWayList)
     },
     addRanking() {
+       this.loadingDefault = false
       this.rewardWayList = this.rewardWayList.concat({
         Id: "",
-        Name: "第 " + Number(this.rewardWayList.length + 1) + " 名",
+        Name: "第" + Number(this.rewardWayList.length + 1) + "名",
         Rate: 0,
         RewardRate: "",
         Integral: 0,
@@ -433,6 +438,7 @@ export default {
         Remark: "",
         RewardType: 0
       };
+      this.loadingDefault = true
       this.defaultRewardWayList();
     },
     defaultRewardWayList() {
@@ -504,11 +510,12 @@ export default {
     }
   },
   mounted() {
+     this.loadingDefault = true
     this.defaultItem();
 
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名", disabled: false });
+      levelList.push({ name: "第" + i + "名", disabled: false });
     }
     this.levelList = levelList;
   }

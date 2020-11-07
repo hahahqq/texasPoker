@@ -19,7 +19,7 @@
       </el-aside>
 
       <el-container>
-        <el-main>
+        <el-main style="height: auto !important">
           <div class="member-main-top">
             <div class="content-center">
               <div class="member-main-top-buttom">
@@ -273,7 +273,7 @@
           </div>
 
           <div class="content-table" style="height: auto; padding-bottom: 10px">
-            <div class="content-table-center">
+            <div class="content-table-center" :style="`height:${tableHeight + 60}px`">
               <el-table
                 size="small"
                 :data="pagelist"
@@ -296,6 +296,7 @@
                         width: 40px;
                         height: 40px;
                         margin-right: 8px;
+                        margin-top: 4px;
                       "
                     />
                     <span style="height: 40px; width: 102px">
@@ -376,8 +377,6 @@
                   <el-row>
                     <el-col :span="8">
                       <el-button size="small" @click="delMember">删除会员</el-button>
-                      <el-button size="small" @click="reportLossfun">挂失</el-button>
-                      <!-- <el-button size="small">换卡</el-button> -->
                     </el-col>
                     <el-col :span="16">
                       <el-pagination
@@ -385,10 +384,8 @@
                         @size-change="handlePageChange"
                         @current-change="handlePageChange"
                         :current-page.sync="pagination.PN"
-                        :pager-count="5"
                         :page-size="pagination.PageSize"
-                        :page-sizes="[20]"
-                        layout="total, sizes, prev, pager, next, jumper"
+                        layout="total, prev, pager, next, jumper"
                         :total="pagination.TotalNumber"
                         class="text-right"
                       ></el-pagination>
@@ -397,6 +394,7 @@
                 </div>
               </div>
             </div>
+
             <!-- item -->
             <div class="member-detailed">
               <el-dialog
@@ -497,7 +495,7 @@ export default {
       showAddNew: false,
       showItem: false,
       exportLoading: false,
-      tableHeight: document.body.clientHeight - 276,
+      tableHeight: document.body.clientHeight - 270,
       codeImg: "",
       Membercode: "",
       vipID: ""
@@ -1158,9 +1156,6 @@ export default {
 };
 </script>
 <style scoped>
-.el-container {
-  background: #fff;
-}
 .member-header {
   display: flex;
   align-items: center;
@@ -1209,7 +1204,6 @@ export default {
   color: #333;
   text-align: center;
   line-height: 200px;
-  border-right: solid 1px #f366d7 !important;
 }
 .member-main-top {
   background: #fff;

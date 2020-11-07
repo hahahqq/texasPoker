@@ -46,7 +46,7 @@ const actions = {
   getguadancdlistState({ commit }, data) {
     let homeInfo = getHomeData();
     let sendData = {
-      InterfaceCode: '210020516A',
+      InterfaceCode: '920302',
       CompanyId: homeInfo.shop.COMPANYID,
       ShopId: homeInfo.shop.ID,
       BillId:data.BillId

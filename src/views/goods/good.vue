@@ -117,8 +117,8 @@
               </div>
             </div>
           </div>
-          <div class="content-table3">
-            <div class="content-table-center">
+          <div class="content-table3" style="overflow: auto; padding-bottom: 10px; height: auto">
+            <div class="content-table-center" :style="`height:${tableHeight + 60}px`">
               <el-table
                 size="small"
                 highlight-current-row
@@ -151,22 +151,25 @@
                           width: 40px;
                           height: 40px;
                           margin-right: 8px;
+                          margin-top: 3px;
                         "
                       />
                     </el-tooltip>
 
-                    <span style="height: 40px; width: 102px">
+                    <span style="height: 40px; width: 112px">
                       <i
                         class="pull-left inline-block"
                         style="
-                        color:#2589FF;
+                          color: #2589ff;
                           width: 92px;
                           overflow: hidden;
                           text-overflow: ellipsis;
                           white-space: nowrap;
                         "
                       >
-                      <span style="cursor:pointer" @click="handleEdit(scope.$index, scope.row)">{{scope.row.NAME ? scope.row.NAME : ' '}}</span>
+                        <span style="cursor: pointer" @click="handleEdit(scope.$index, scope.row)">
+                          {{ scope.row.NAME ? scope.row.NAME : " " }}
+                        </span>
                       </i>
                       <i class="" style="width: 92px">{{ scope.row.MOBILENO }}</i>
                       {{ scope.row.CODE }}
@@ -174,11 +177,10 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="TYPENAME" label="分类" align="center"></el-table-column>
-                <!-- <el-table-column prop="SPECS" label="规格" align="center"></el-table-column> -->
                 <el-table-column prop="PRICE" label="价格" align="center"></el-table-column>
                 <el-table-column prop="PURPRICE" label="成本" width="90" align="center">
                   <template slot-scope="scope">
-                    {{ isPurViewFun(210040601) ? scope.row.PURPRICE : "****" }}
+                    {{ isPurViewFun(92100310) ? scope.row.PURPRICE : "****" }}
                   </template>
                 </el-table-column>
                 <el-table-column prop="STOCKQTY" label="库存" align="center"></el-table-column>
@@ -191,21 +193,6 @@
                 </el-table-column>
                 <el-table-column label="操作" width="200" fixed="right" align="right">
                   <template slot-scope="scope">
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="retrievalChange(scope.$index, scope.row)"
-                    >
-                      出库
-                    </el-button>
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="UnRetrievalChange(scope.$index, scope.row)"
-                    >
-                      入库
-                    </el-button>
-
                     <el-button
                       type="text"
                       size="small"
@@ -224,7 +211,7 @@
                 </el-table-column>
               </el-table>
               <!-- 分页 -->
-              <div v-show="dataList.length > 0" class="m-top-smts clearfix elpagination">
+              <div v-show="dataList.length > 0" class="m-top-sm clearfix elpagination">
                 <div>
                   <el-row>
                     <el-col :span="12">
@@ -386,7 +373,6 @@
               @closeModal="exportData.show = false"
             ></exportPage>
           </el-dialog>
-
         </div>
       </el-container>
     </el-container>
@@ -471,9 +457,8 @@ export default {
         Remark: "",
         ID: ""
       },
-      deskmode: "",
       goodsMode: "",
-      tableHeight: document.body.clientHeight - 300,
+      tableHeight: document.body.clientHeight - 270,
       Goodscode: "",
       rules: {
         region: [
@@ -918,6 +903,7 @@ export default {
   },
   mounted() {
     this.$store.dispatch("getparameterstate");
+
     this.$store.dispatch("getGoodsList", {
       Status: 1,
       Mode: -1,
@@ -927,11 +913,6 @@ export default {
   },
   created() {
     this.activePath = this.$route.path;
-    let getUser = getUserInfo();
-    console.log("getUser");
-    console.log(getUser.TradeType);
-    console.log("getUser");
-    this.deskmode = getUser.TradeType;
   },
   beforeCreate() {
     let list = this.$store.state.commodityc.commoditycflList;

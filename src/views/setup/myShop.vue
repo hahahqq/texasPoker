@@ -33,10 +33,6 @@
                     <span>{{ dataInfo.name == "undefined" ? "" : dataInfo.name }}</span>
                   </li>
                   <li class="myShop-logo">
-                    所属行业 :&nbsp;
-                    <span>棋牌</span>
-                  </li>
-                  <li class="myShop-logo">
                     联系人 :&nbsp;
                     <span>{{ dataInfo.linker == "undefined" ? "" : dataInfo.linker }}</span>
                   </li>

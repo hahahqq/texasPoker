@@ -1,0 +1,937 @@
+<template>
+	<div class="home">
+		<el-row>
+			<headerPage @changeShop="changeShop"></headerPage>
+		</el-row>
+		<div
+			:style="{
+				height: height + 'px',
+				'padding-left': '4px',
+				'overflow-y': 'scroll',
+				'background-color': '#F4F5FA'
+			}"
+		>
+			<el-row style="margin-top: 8px">
+				<el-col :span="19">
+					<div class="bgwhitecolor home-border-r">
+						<div class="Management_sock">
+							<div class="fontsizeclass">
+								<span class="pull-left text-666">今日数据</span>
+							</div>
+							<div class="Management_sock_con">
+								<div class="triggerAreport"></div>
+								<el-row>
+									<el-col :span="6">
+										<p>充值金额</p>
+										<p class="monthReport4">
+											{{
+												headerDateAddInfo.SUMMONEY1
+													? headerDateAddInfo.SUMMONEY1
+													: "--"
+											}}
+										</p>
+										<p>
+											昨日：
+											<i class="Report4">
+												{{
+													headerDateAddInfo.SUMMONEY2
+														? headerDateAddInfo.SUMMONEY2
+														: "--"
+												}}
+											</i>
+										</p>
+									</el-col>
+
+									<el-col :span="6">
+										<p>赛事盈利</p>
+										<p class="monthReport2">
+											{{
+												headerDateGainMoneyInfo.SUMGAINMONEY1
+													? headerDateGainMoneyInfo.SUMGAINMONEY1
+													: "--"
+											}}
+										</p>
+										<p>
+											昨日：
+											<i class="Report2">
+												{{
+													headerDateGainMoneyInfo.SUMGAINMONEY2
+														? headerDateGainMoneyInfo.SUMGAINMONEY2
+														: "--"
+												}}
+											</i>
+										</p>
+									</el-col>
+
+									<el-col :span="6">
+										<p>商品销售</p>
+										<p class="monthReport2">
+											{{
+												headerDateSaleInfo.SUMMONEY1
+													? headerDateSaleInfo.SUMMONEY1
+													: "--"
+											}}
+										</p>
+										<p>
+											昨日：
+											<i class="Report2">
+												{{
+													headerDateSaleInfo.SUMMONEY2
+														? headerDateSaleInfo.SUMMONEY2
+														: "--"
+												}}
+											</i>
+										</p>
+									</el-col>
+
+									<el-col :span="6">
+										<p>新增会员</p>
+										<p class="systemRemind2">
+											{{
+												headerDateRegVipInfo.SUMREGQTY1
+													? headerDateRegVipInfo.SUMREGQTY1
+													: "--"
+											}}
+										</p>
+										<p>
+											昨日：
+											<i class="systemRemind3">
+												{{
+													headerDateRegVipInfo.SUMREGQTY2
+														? headerDateRegVipInfo.SUMREGQTY2
+														: "--"
+												}}
+											</i>
+										</p>
+									</el-col>
+								</el-row>
+							</div>
+						</div>
+					</div>
+				</el-col>
+				<el-col :span="5" class="pull-right">
+					<div
+						v-if="showmessageTime"
+						class="bgwhitecolor home-border-r"
+						style="padding: 0; height: 170px; position: relative"
+					>
+						<div
+							style="
+								padding-top: 20px;
+								margin-left: 15px;
+								font-size: 13px;
+								font-weight: bold;
+							"
+						>
+							<span>您的店铺即将到期</span>
+						</div>
+						<div style="padding-top: 18px; margin-left: 15px; font-size: 13px">
+							剩余
+							<span>{{ messageDay }}</span>
+							天 ( 过期 )
+						</div>
+						<div style="position: absolute; bottom: 20px; width: 100%">
+							<el-popover
+								placement="bottom"
+								width="350"
+								v-model="visibleMsagess"
+								trigger="click"
+							>
+								<div>
+									<div class="renew-top">
+										<div>
+											<img
+												src="static/images/renew.png"
+												style="width: 50px; height: 40px"
+											/>
+										</div>
+										<div>
+											<p>
+												您好！您登陆的
+												<span>【{{ messageShopName }}】</span>
+												快到期
+											</p>
+											<p>请联系客服续费后继续使用</p>
+										</div>
+									</div>
+									<div>
+										<img :src="messageImg" />
+									</div>
+									<div>
+										<el-button
+											type="primary"
+											size="medium"
+											round
+											@click="visibleMsagess = false"
+											style="width: 90%; margin-left: 5%; margin-right: 5%"
+										>
+											关闭
+										</el-button>
+									</div>
+								</div>
+								<el-button
+									type="danger"
+									slot="reference"
+									size="medium"
+									style="width: 90%; margin-left: 5%; margin-right: 5%"
+								>
+									立即续费
+								</el-button>
+							</el-popover>
+						</div>
+					</div>
+					<div
+						v-else
+						class="bgwhitecolor home-border-r"
+						style="padding: 0; height: 170px"
+					>
+						<img :src="banner" style="width: 100%; height: 170px; border-radius: 2px" />
+					</div>
+				</el-col>
+			</el-row>
+
+			<el-row style="margin-top: 8px">
+				<el-col :span="19">
+					<!-- 最近七天销售情况 -->
+					<el-row>
+						<el-col :span="24">
+							<div class="bgwhitecolor home-border-r">
+								<div
+									class="Management_sock fontsizeclass"
+									style="padding-bottom: 0px"
+								>
+									<el-dropdown trigger="click" @command="handleCommand">
+										<span class="el-dropdown-link">
+											{{ curDateType == 0 ? "近七天" : "本月" }}赛事盈利情况
+											<i class="el-icon-arrow-down el-icon--right"></i>
+										</span>
+										<el-dropdown-menu slot="dropdown">
+											<el-dropdown-item command="0">七天</el-dropdown-item>
+											<el-dropdown-item command="1">本月</el-dropdown-item>
+											<el-dropdown-item command="2" style="color: #137deb">
+												查看详细分析
+											</el-dropdown-item>
+										</el-dropdown-menu>
+									</el-dropdown>
+								</div>
+								<div
+									id="main"
+									style="height: 280px; position: relative"
+									:loading="mainloading"
+									element-loading-text="图表数据加载中..."
+									v-loading="mainloading"
+								></div>
+							</div>
+						</el-col>
+					</el-row>
+
+					<!-- 提醒事项 -->
+					<el-row style="margin-top: 8px">
+						<el-col :span="24">
+							<div class="bgwhitecolor home-border-r">
+								<div class="Management_sock">
+									<div class="fontsizeclass">
+										<span class="pull-left text-666">提醒事项</span>
+									</div>
+									<div class="Management_sock_con">
+										<div class="triggerAreport"></div>
+										<el-row>
+											<el-col :span="6">
+												<p>报名待核销</p>
+												<p class="monthReport1" @click="routerLink('0')">
+													{{ homedaycombackobj.NoCheckQty }}
+												</p>
+											</el-col>
+											<el-col :span="6">
+												<p>本月生日</p>
+												<p class="monthReport2" @click="routerLink('1')">
+													{{ homedaycombackobj.VipBirthdayCount }}
+												</p>
+											</el-col>
+											<el-col :span="6">
+												<p>会员过期提醒</p>
+												<p class="monthReport4" @click="routerLink('2')">
+													{{ homedaycombackobj.InvallVip }}
+												</p>
+											</el-col>
+											<el-col :span="6">
+												<p>本月新增会员</p>
+												<p class="monthReport4" @click="routerLink('3')">
+													{{ homedaycombackobj.AddVip }}
+												</p>
+											</el-col>
+										</el-row>
+									</div>
+								</div>
+							</div>
+						</el-col>
+					</el-row>
+				</el-col>
+
+				<el-col :span="5">
+					<div class="wxInfoList padding-sm bg-white relative">
+						<!-- 商城 -->
+						<div class="p-bottom-sm">积分商城通知</div>
+						<el-row :gutter="10">
+							<el-col :span="12" v-for="(item, i) in wxInfoList" :key="i">
+								<div class="padding-sm bg-F1F2F3 m-bottom-sm">
+									<div class="font-12">{{ item.label }}</div>
+									<div class="text-theme">{{ item.value }}</div>
+								</div>
+							</el-col>
+						</el-row>
+					</div>
+					<el-row
+						class="rightSmallTitle"
+						v-for="(item, index) in rigthList"
+						:key="index"
+						:style="{ 'margin-top': '8px' }"
+					>
+						<div v-if="index == 0" class="bgwhitecolor home-border-r toolItem">
+							<el-popover placement="left" width="200" trigger="click">
+								<div slot="reference">
+									<el-col :span="5" style="float: left">
+										<img
+											:src="item.img"
+											alt
+											class="vertical-middle"
+											width="44px"
+											height="44px"
+										/>
+									</el-col>
+									<el-col :span="19" style="float: left">
+										<span style="margin-top: 0" class="text-666">客服经理</span>
+										<!-- <span class="h6" style="color: #868686; cursor: pointer">
+                      手机/微信：{{ item.des2 }}
+                    </span> -->
+										<span style="color: #868686; cursor: pointer">
+											<div>服务热线：4006 337 277</div>
+											<div>手机/微信：{{ item.des2 }}</div>
+										</span>
+									</el-col>
+								</div>
+								<div
+									style="
+										margin: 0 auto;
+										width: 100%;
+										text-align: center;
+										border-radius: 10px;
+									"
+								>
+									<img
+										id="codeImgID"
+										:src="item.codeImg"
+										width="120px"
+										height="120px"
+									/>
+								</div>
+							</el-popover>
+						</div>
+						<div v-if="index == 1" class="bgwhitecolor home-border-r toolItem">
+							<el-popover placement="left" width="250" trigger="click">
+								<div slot="reference">
+									<el-col :span="5" style="float: left">
+										<img
+											:src="item.img"
+											alt
+											class="vertical-middle"
+											width="44px"
+											height="44px"
+										/>
+									</el-col>
+									<el-col :span="19" style="float: left">
+										<span style="margin-top: 0" class="text-666">
+											{{ item.title }}
+										</span>
+										<span class="h6" style="color: #868686">
+											{{ item.des }}
+										</span>
+									</el-col>
+								</div>
+								<div
+									style="
+										margin: 0 auto;
+										width: 100%;
+										text-align: center;
+										border-radius: 10px;
+									"
+								>
+									<img :src="downImg" alt width="160px" height="160px" />
+									<span class="full-width text-center pull-left">扫码下载</span>
+								</div>
+							</el-popover>
+						</div>
+
+						<div v-if="index == 3" class="bgwhitecolor home-border-r toolItem">
+							<el-popover placement="left" width="250" trigger="click">
+								<div slot="reference">
+									<el-col :span="5" style="float: left">
+										<img
+											:src="item.img"
+											alt
+											class="vertical-middle"
+											width="44px"
+											height="44px"
+										/>
+										<!-- 智讯软件公众号 -->
+									</el-col>
+									<el-col :span="19" style="float: left">
+										<span style="margin-top: 0" class="text-666">
+											{{ item.title }}
+										</span>
+										<span class="h6" style="color: #868686">
+											{{ item.des }}
+										</span>
+									</el-col>
+								</div>
+								<div
+									style="
+										margin: 0 auto;
+										width: 100%;
+										text-align: center;
+										border-radius: 10px;
+									"
+								>
+									<img :src="gzhImg" alt width="160px" height="160px" />
+									<span class="full-width text-center pull-left">扫码关注</span>
+								</div>
+							</el-popover>
+						</div>
+
+						<div v-if="index == 2" class="bgwhitecolor home-border-r toolItem">
+							<el-popover
+								placement="left"
+								width="300"
+								title="意见反馈"
+								@hide="hidePopover()"
+								trigger="click"
+							>
+								<div slot="reference">
+									<el-col :span="5" style="float: left">
+										<img
+											:src="item.img"
+											alt
+											class="vertical-middle"
+											width="44px"
+											height="44px"
+										/>
+									</el-col>
+									<el-col :span="19" style="float: left">
+										<span style="margin-top: 0" class="text-666">
+											{{ item.title }}
+										</span>
+										<span class="m-top-sm h6" style="color: #868686">
+											{{ item.des }}
+										</span>
+									</el-col>
+								</div>
+
+								<el-form
+									:model="ruleForm2"
+									status-icon
+									:rules="rules2"
+									ref="ruleForm2"
+									label-width="0"
+								>
+									<el-form-item label prop="PhoneNo">
+										<el-input
+											type="number"
+											v-model.number="ruleForm2.PhoneNo"
+											placeholder="请留下您的手机号码"
+										></el-input>
+									</el-form-item>
+									<el-form-item label prop="Remark">
+										<el-input
+											type="textarea"
+											v-model="ruleForm2.Remark"
+											placeholder="请留下您的宝贵意见"
+										></el-input>
+									</el-form-item>
+									<el-form-item class="no-m-bottom">
+										<el-button-group class="full-width">
+											<el-button
+												type="primary"
+												@click="submitForm2"
+												:loading="loading2"
+												style="width: 100%"
+											>
+												提 交
+											</el-button>
+										</el-button-group>
+									</el-form-item>
+								</el-form>
+							</el-popover>
+						</div>
+					</el-row>
+				</el-col>
+			</el-row>
+		</div>
+		<div class="replace-dialog">
+			<el-dialog
+				title="更新公告"
+				:visible.sync="dialogVisibleReplace"
+				width="50%"
+				:show-close="false"
+			>
+				<span style="color: #2589ff">V2.1.7更新内容</span>
+				<div v-for="itemname in replaceList" :key="itemname.id">
+					<div style="margin-top: 20px">{{ itemname.name }}</div>
+				</div>
+				<span slot="footer" class="dialog-footer" @click="dialogVisibleReplace = false">
+					我知道了
+				</span>
+			</el-dialog>
+		</div>
+	</div>
+</template>
+<script>
+import echarts from "echarts";
+import { mapState, mapGetters } from "vuex";
+import { ROOT_STATE, SYSTEM_INFO } from "@/util/define.js";
+import { getUserInfo, getHomeData } from "@/api/index";
+import img8 from "@/assets/icon_home1.png";
+import img9 from "@/assets/icon_home2.png";
+import img10 from "@/assets/icon_home3.png";
+import img11 from "@/assets/icon_home4.png";
+import dayjs from "dayjs";
+var QRCode = require("qrcode");
+export default {
+	data() {
+		let checkTel = (rule, value, callback) => {
+			if (!value) {
+				return callback(new Error("手机号码不能为空"));
+			}
+			setTimeout(() => {
+				if (!Number.isInteger(value)) {
+					callback(new Error("请输入数字值"));
+				} else {
+					let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+					if (!myreg.test(value)) {
+						callback(new Error("请输入正确的手机号码"));
+					} else {
+						callback();
+					}
+				}
+			}, 800);
+		};
+		return {
+			banner: "static/images/" + ROOT_STATE + "/banner1.png",
+			downImg: "static/images/" + ROOT_STATE + "/down.png",
+			gzhImg: "static/images/" + ROOT_STATE + "/gzh.jpg",
+			curDateType: 0,
+			loading2: false,
+
+			mainloading: false,
+			dialogVisibleReplace: false,
+			visibleMsagess: false,
+			myChart: null,
+			ruleForm2: {
+				Remark: "",
+				PhoneNo: ""
+			},
+			rules2: {
+				Remark: [
+					{
+						required: true,
+						message: "请输内容",
+						trigger: "blur"
+					}
+				],
+				PhoneNo: [
+					{
+						required: true,
+						validator: checkTel,
+						trigger: "blur"
+					}
+				]
+			},
+			invaliddateshow: 0,
+			height: document.body.clientHeight - 60,
+			rigthList: [
+				{
+					title: "在线客服",
+					img: img8,
+					des2: "18924134733",
+					codeImg: "",
+					des3: "18924136607",
+					codeImg2: ""
+				},
+				{
+					title: "多种终端高效管理",
+					img: img9,
+					des: "手机端、平板下载"
+				},
+				{ title: "意见反馈", img: img10, des: "请留下您的宝贵意见" },
+				{
+					title: ROOT_STATE == 1 ? "智讯软件公众号" : "店来客软件公众号",
+					img: img11,
+					des: "优秀案例、产品更新、营销方案"
+				}
+			],
+			showErWeiMaDialog: false,
+
+			headerDateSaleInfo: {},
+			headerDateAddInfo: {},
+			headerDateRegVipInfo: {},
+			headerDateGainMoneyInfo: {},
+			messageImg: "",
+			messageShopName: "",
+			IsPay: "",
+			messageDay: "",
+			showmessageTime: false,
+			replaceList: [
+				{ id: "001", name: "1、营业查询数据表导出" },
+				{ id: "002", name: "2、支出分析表导出功能" },
+				{ id: "003", name: "3、增加了打印小票80mm打印" }
+			],
+			wxInfoList: [
+				{ label: "待发货订单", value: 0 },
+				{ label: "待核销订单", value: 0 },
+				{ label: "待售后处理", value: 0 },
+				{ label: "已售罄商品", value: 0 }
+			],
+			wxloading: false
+		};
+	},
+	computed: {
+		...mapGetters({
+			homedaycombackobj: "homedaycombackobj",
+			dealState: "dealUserState",
+			getSaleTableState: "getSaleTableState",
+			memberQRcodeurlstate: "memberQRcodeurlstate",
+			mallHomeData: "mallHomeData"
+		})
+	},
+	watch: {
+		memberQRcodeurlstate(data) {
+			QRCode.toDataURL(data.data.BarCode)
+				.then((url) => {
+					this.$store.state.commodityc.saveQRcodeIMG = url;
+				})
+				.catch((err) => {});
+		},
+		homedaycombackobj(data) {
+			this.headerDateSaleInfo = data.SaleInfo;
+			this.headerDateAddInfo = data.AddInfo;
+			this.headerDateRegVipInfo = data.RegVipInfo;
+			this.headerDateGainMoneyInfo = data.GainMoneyInfo;
+		},
+		dealState(data) {
+			this.loading = false;
+			if (this.loading2) {
+				this.$message({
+					message: data.message,
+					type: data.success ? "success" : "error"
+				});
+			}
+			this.loading2 = false;
+		},
+
+		getSaleTableState(data) {
+			this.mainloading = false;
+			if (data.success) {
+				let saletime = data.data.List.map((item) => item.DATENAME);
+
+				let saledate = data.data.List.map((item) => item.SHOPGAINMONEY);
+				this.getweeksaleDate(saledate, saletime);
+			}
+		},
+		mallHomeData(data) {
+			console.log("wxInfoList", data);
+			if (this.wxloading) {
+				if (data.success) {
+					this.wxInfoList[0].value = data.data.NoPayQty; //  待付款订单
+					this.wxInfoList[1].value = data.data.NoSendQty; //  待发货订单
+					this.wxInfoList[2].value = data.data.NoReturnQty; //  待售后处理
+					this.wxInfoList[3].value = data.data.NoStockQty; //  已售罄商品
+				} else {
+					this.$message.error(data.memssage);
+				}
+			}
+			this.wxloading = false;
+		}
+	},
+	methods: {
+		replaceChange() {
+			let replace;
+			let n = 18;
+			let b = localStorage.getItem(replace + "replaceDate") || "";
+			if (b.length > 0) {
+				console.log("目前的版本号", b, "更新的版本号", n);
+			} else {
+				localStorage.setItem(replace + "replaceDate", JSON.stringify(n));
+			}
+			if (b == undefined || b == null) {
+				localStorage.setItem(replace + "replaceDate", JSON.stringify(n));
+			}
+
+			let t = localStorage.getItem(replace + "replaceDate") || "";
+
+			if (n > t) {
+				this.dialogVisibleReplace = true;
+				t = n;
+				localStorage.setItem(replace + "replaceDate", JSON.stringify(t));
+			} else {
+				this.dialogVisibleReplace = false;
+			}
+		},
+		changeShop(data) {
+			this.$store.dispatch("getweeksdayssaleList", {});
+			let getHomeDataval = getHomeData();
+			this.invaliddateshow = getHomeDataval.shop.INVALIDDATE; //显示店铺有效期
+			this.handleCommand(0);
+		},
+		hidePopover() {
+			this.ruleForm2 = {
+				Remark: "",
+				PhoneNo: ""
+			};
+		},
+		handleCommand(val) {
+			// 销售情况时间选择
+			this.mainloading = true;
+			if (val == 0) {
+				this.curDateType = 0;
+				let sendData = {
+					BeginDate: new Date(this.getCustomDay(-6)).getTime(),
+					EndDate: new Date().getTime()
+				};
+				this.$store.dispatch("getsaleTableData", sendData);
+			} else if (val == 1) {
+				this.curDateType = 1;
+				let curMonth = Number(dayjs().month()) + 1;
+
+				let beginTime = dayjs().year() + "-" + curMonth + "-" + 1;
+				let endTime = dayjs().endOf("month").format("YYYY-MM-DD HH:mm");
+
+				let sendData = {
+					BeginDate: new Date(beginTime).getTime(),
+					EndDate: new Date(endTime).getTime()
+				};
+
+				this.$store.dispatch("getsaleTableData", sendData);
+			} else {
+				this.$router.push({ path: "/report/match" });
+			}
+		},
+		routerLink(type) {
+			this.$router.push({ path: "/member/vipReminder", query: { current: type } });
+		},
+		submitForm2() {
+			var _this = this;
+			_this.$refs.ruleForm2[0].validate((valid) => {
+				if (valid) {
+					this.$store.dispatch("sendUserMessage", this.ruleForm2).then(() => {
+						this.loading2 = true;
+					});
+				} else {
+					console.log("error submit !!");
+					return false;
+				}
+			});
+		},
+		getweeksaleDate(saledate, saletime) {
+			this.myChart = echarts.init(document.getElementById("main"));
+			this.myChart.setOption({
+				tooltip: {
+					trigger: "axis",
+					axisPointer: {
+						type: "cross",
+						label: {
+							backgroundColor: "#2589ff"
+						}
+					}
+				},
+				grid: {
+					left: "3%",
+					right: "8%",
+					bottom: "3%",
+					containLabel: true
+				},
+				calculable: true,
+				toolbox: {
+					feature: {
+						magicType: { show: true, type: ["line", "bar"] },
+						saveAsImage: {
+							show: false
+						}
+					},
+					top: "top",
+               left: "right",
+               showTitle: false
+				},
+				xAxis: {
+					type: "category",
+					boundaryGap: false,
+					data: saletime
+				},
+				yAxis: {
+					type: "value"
+				},
+				series: [
+					{
+						name: "消费情况",
+						type: "bar",
+						barCategoryGap: "96%",
+						markPoint: {
+							data: [
+								{ type: "max", name: "最大值" },
+								{ type: "min", name: "最小值" }
+							]
+						},
+						markLine: {
+							data: [{ type: "average", name: "平均值" }]
+						},
+						data: saledate,
+						itemStyle: {
+							normal: {
+								color: "#2589ff",
+								lineStyle: { color: "#ddd" }
+							}
+						}
+					}
+				]
+			});
+		},
+		getWxInfoFun() {
+			this.$store.dispatch("getHomeMall").then(() => {
+				this.wxloading = true;
+			});
+		}
+	},
+	created: function () {
+		this.replaceChange();
+		this.$store.dispatch("getweeksdayssaleList", {});
+
+		let setDate = getUserInfo();
+		this.rigthList[0].des2 = setDate.WechatMobileNo;
+		this.rigthList[0].des3 = setDate.WechatSaleMobileNo;
+		this.rigthList[0].codeImg = setDate.WechatImage;
+		this.rigthList[0].codeImg2 = setDate.WechatSaleImage;
+		this.messageImg = setDate.WechatImage2;
+		this.getWxInfoFun();
+	},
+	mounted: function () {
+		let getHomeDataval = getHomeData();
+		let setDates = getUserInfo();
+		//店铺过期续费功能
+		this.IsPay = setDates.setDates;
+		this.messageShopName = getHomeDataval.shop.NAME;
+		this.invaliddateshow = getHomeDataval.shop.INVALIDDATE; //显示店铺有效期
+		let messageDate = new Date().getTime();
+		let a = new Date(this.invaliddateshow);
+		let b = new Date(messageDate);
+		let dayst = a - b;
+		this.messageDay = Math.floor(dayst / (24 * 3600 * 1000));
+		if (this.IsPay == true) {
+			this.showmessageTime = this.messageDay <= 5 ? true : false;
+		} else {
+			this.showmessageTime = this.messageDay <= 3 ? true : false;
+		}
+		this.handleCommand(0);
+
+		this.$store.dispatch("getmemberQRcodeurlstate", {}).then(() => {});
+	},
+	components: {
+		headerPage: () => import("@/components/header")
+	}
+};
+</script>
+<style scoped>
+.fontsizeclass {
+	font-size: 14px;
+	font-weight: bold;
+	margin-left: 20px;
+}
+
+.home-border-r {
+	border-radius: 2px;
+}
+.indexsock {
+	padding: 0 0 15px 0;
+}
+
+.el-col-16 {
+	width: 65.666667%;
+}
+
+.bgwhitecolor {
+	background: #fff;
+	box-shadow: 0px 0px 50px 4px rgba(0, 0, 0, 0.1);
+	padding: 0 8px;
+	margin: 0 4px 0 4px;
+}
+
+.Management_sock {
+	overflow: hidden;
+	padding: 21px 0;
+	/* cursor: pointer; */
+}
+
+.triggerAreport {
+	margin-bottom: 13px;
+	height: 16px;
+}
+
+.Management_sock_con {
+	text-align: center;
+}
+
+.Management_sock_con p:nth-child(1) {
+	font-weight: bold;
+	font-size: 14px;
+	color: #7d7d7d;
+}
+
+.Management_sock_con p:nth-child(2) {
+	font-weight: bold;
+	font-size: 16px;
+	color: #3976f1;
+	height: 38px;
+	cursor: pointer;
+}
+
+.Management_sock_con p:nth-child(3) {
+	font-weight: bold;
+	font-size: 12px;
+	color: #6a6a6a;
+}
+
+.Management_sock_con p {
+	line-height: 2.4;
+	margin: 0;
+}
+
+.toolItem {
+	padding: 12px;
+	float: left;
+	width: 100%;
+	margin: 0;
+}
+.toolItem span {
+	width: 100%;
+	float: left;
+	margin-top: 10px;
+}
+
+.home {
+	background-color: #f4f5fa !important;
+	height: 729px;
+	border-top: solid 1px #ebedf0;
+	position: absolute;
+}
+.renew-top {
+	display: flex;
+}
+.replace-dialog >>> .el-dialog__header {
+	background: #2589ff;
+	padding: 10px 10px 10px;
+}
+.replace-dialog >>> .el-dialog__title {
+	color: #fff;
+	font-size: 15px;
+}
+.dialog-footer {
+	color: #2589ff;
+}
+</style>

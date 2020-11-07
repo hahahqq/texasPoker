@@ -631,12 +631,12 @@ const actions = {
       //  余额对帐明细
       let userInfo = getUserInfo();
       let homeInfo = getHomeData();
-      let pn = parseInt(state.memberBalanceState.paying.PN) + 1;
       let sendData = {
-         InterfaceCode: "210020131",
-         ShopId: homeInfo.shop.ID,
+         InterfaceCode: "9204053",
+         // ShopId: homeInfo.shop.ID,
+         CompanyId: userInfo.CompanyID,
          VipId: data.ID,
-         PN: data.PN ? data.PN : pn
+         PN: data.PN ? data.PN : 1
       };
       commonSend.commonSend(
          "get",
@@ -649,12 +649,11 @@ const actions = {
    getMemberIntegral({ commit }, data) {
       //  积分对帐明细
       let userInfo = getUserInfo();
-      let pn = parseInt(state.memberIntegralState.paying.PN) + 1;
       let sendData = {
-         InterfaceCode: "210020132",
-         ShopId: getHomeData().shop.ID,
+         InterfaceCode: "9204054",
+         CompanyId: userInfo.CompanyID,
          VipId: data.ID,
-         PN: data.PN ? data.PN : pn
+         PN: data.PN ? data.PN : 1
       };
       commonSend.commonSend(
          "get",

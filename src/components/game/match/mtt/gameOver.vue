@@ -31,7 +31,7 @@
             {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
             {{
               BillObj.CHARGESTYPE == 0
-                ? BillObj.TOTALMONEY * BillObj.CHARGESRATE +
+                ? BillObj.CHARGESMONEY +
                   " ( 比例 " +
                   BillObj.CHARGESRATE * 100 +
                   "% ) "

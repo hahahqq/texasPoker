@@ -54,7 +54,7 @@
                     :page-size="pagination.PageSize"
                     layout="total, prev, pager, next, jumper"
                     :total="pagination.TotalNumber"
-                    class="text-center"
+                    class="text-right"
                   ></el-pagination>
                 </div>
 
@@ -78,7 +78,7 @@ export default {
             BeginDate: "1",
             EndDate: "9999999999999"
          },
-         tableHeight:document.body.clientHeight-240,
+         tableHeight:document.body.clientHeight-230,
          tableData: [],
          bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE,
          pagination: {
@@ -114,9 +114,6 @@ export default {
       }
    },
    methods: {
-      handleItem(item, idx){
-
-      },
       getNewData(data) {
          this.ruleFrom = data
          this.ruleFrom.PN = 1

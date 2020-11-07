@@ -78,7 +78,7 @@
         </el-dialog>
 
         <!-- 充值界面 -->
-        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="800px">
             <recharge
                 @closeModalrecharge="showRecharge=false"
                 :totalprice="{ price:form.Money,discount:0 }"

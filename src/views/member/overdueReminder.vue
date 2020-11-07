@@ -64,7 +64,7 @@
                     :page-size="pagination.PageSize"
                     layout="total, prev, pager, next, jumper"
                     :total="pagination.TotalNumber"
-                    class="text-center"
+                    class="text-right"
                   ></el-pagination>
                 </div>
 
@@ -131,7 +131,7 @@ export default {
          },
          overdueTime:'',
          showRechargeDialog: false,
-         tableHeight:document.body.clientHeight-240,
+         tableHeight:document.body.clientHeight-230,
          tableData: [],
          vipInfo: {},
          bussinessTime: getUserInfo().CompanyConfig.TIMEDIFFERENCE,

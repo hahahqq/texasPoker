@@ -23,7 +23,7 @@
       <el-form-item label="是否发短信" class="no-m-right" style="width:49%">
         <el-switch v-model="ruleForm.IsSms"></el-switch>
       </el-form-item>
-      <el-form-item label="员工提成" class="no-m-right" style="width:49%">
+      <!-- <el-form-item label="员工提成" class="no-m-right" style="width:49%">
         <el-button type="primary" plain size="mini" @click="isShowDeal=true">设置</el-button>
         <span class="font-12">最多三人</span>
         <ul
@@ -40,14 +40,14 @@
             <span class="inline-block text-danger">&yen;{{item.money}}</span>
           </li>
         </ul>
-      </el-form-item>
-      <el-form-item label="备注说明" class="no-m-right" style="width:49%">
+      </el-form-item> -->
+      <el-form-item label="备注说明" class="no-m-right" style="width:100%">
         <el-input
           v-model="ruleForm.Remark"
           type="textarea"
-          rows="3"
+          rows="2"
           placeholder="请输入备注说明"
-          style="width:200px"
+          style="width:580px"
         ></el-input>
         <div class="p-top-lg">
           <el-button type="primary" @click="onSubmit" :loading="loading">保 存</el-button>
@@ -117,8 +117,8 @@ export default {
         VipId: "",
         Remark: "",
         IsSms: false,
-        AddMoney: 0, // 充值金额
-        GiftMoney: 0, // 赠送金额
+        AddMoney: '', // 充值金额
+        GiftMoney: '', // 赠送金额
         PayTypeId: "", // 充值方式
         SaleEmpMoney: {} // 员工提成信息
       },
@@ -183,6 +183,7 @@ export default {
     dataState(data) {
       this.loading = false;
       if (data.success) {
+         this.$store.dispatch("getMemberItem2", { ID: this.dataInfo.ID });
         this.$store.dispatch("clearMember", 4);
         this.$emit("resetData");
       }else{
@@ -198,9 +199,7 @@ export default {
       this.ruleForm.VipId = this.theData.ID;
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {
-          let data = Object.assign({}, this.ruleForm, {
-            SaleEmpMoney: JSON.stringify(this.ruleForm.SaleEmpMoney)
-          });
+          let data = Object.assign({}, this.ruleForm);
           console.log(data);
 
           this.$store

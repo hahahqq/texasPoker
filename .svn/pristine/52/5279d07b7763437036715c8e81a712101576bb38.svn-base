@@ -1,0 +1,246 @@
+<template>
+	<!-- 赛事盈利分析 -->
+	<section v-loading="loading">
+		<div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 73px">
+			<div class="marginLR-md">
+				<filtePage
+					:isAll="true"
+					:isExport="true"
+					@getNewData="getNewData_fun"
+					@exportState="exportState_fun"
+				></filtePage>
+			</div>
+		</div>
+		<div class="bg-white paddingTB-md">
+			<div class="marginLR-md">
+				<!-- table-->
+				<el-table
+					border
+					:data="tableList"
+					header-row-class-name="bg-F1F2F3"
+					class="full-width"
+					:style="{ maxWidth: maxWidth + 'px' }"
+					ref="contentTable"
+					:height="tableHeight"
+				>
+					<el-table-column
+						prop="BILLID"
+						label="赛事单号"
+						fixed="left"
+						width="130px"
+					></el-table-column>
+					<el-table-column prop="" label="比赛日期" width="140px">
+						<template slot-scope="props">
+							<span>{{ new Date(props.row.PLAYTIME) | formatTime }}</span>
+						</template>
+					</el-table-column>
+					<el-table-column prop="SHOPNAME" label="店铺名称"></el-table-column>
+					<el-table-column
+						prop="MATCHNAME"
+						label="赛事名称"
+						width="130px"
+					></el-table-column>
+					<el-table-column
+						prop="TYPENAME"
+						label="比赛类型"
+						width="100px"
+					></el-table-column>
+					<el-table-column
+						prop="TOTALQTY"
+						label="买入手数"
+						align="right"
+					></el-table-column>
+					<el-table-column
+						prop="BUYPRICE"
+						label="买入积分"
+						align="right"
+						width="90px"
+					></el-table-column>
+					<el-table-column
+						prop="CHARGESMONEY"
+						label="服务费积分"
+						align="right"
+						width="90px"
+					></el-table-column>
+					<el-table-column
+						prop="EXCHANGEMONEY"
+						label="已兑换积分"
+						align="right"
+						width="90px"
+					></el-table-column>
+					<el-table-column
+						prop="NOTEXCHANGEMONEY"
+						label="未兑换积分"
+						align="right"
+						width="90px"
+					></el-table-column>
+					<el-table-column prop="REWARDMONEY" align="right">
+						<template slot="header">
+							<div class="relative">
+								<span>盈利</span>
+								<el-popover
+									placement="top"
+									title=""
+									width="250"
+									trigger="click"
+									content="盈利=服务费积分+未兑换积分"
+								>
+									<i slot="reference" class="el-icon-warning font-14 pointer"></i>
+								</el-popover>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column prop="DESKNAME" label="桌号"></el-table-column>
+					<el-table-column prop="" label="结束时间" width="140px">
+						<template slot-scope="props">
+							<span>{{ new Date(props.row.ENDTIME) | formatTime }}</span>
+						</template>
+					</el-table-column>
+					<el-table-column label="更多" fixed="right" width="80">
+						<template slot-scope="props">
+							<el-button
+								type="text"
+								@click="showItemFun(props.row)"
+								class="no-padding"
+							>
+								详情
+							</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+				<!-- 分页 -->
+				<div v-if="tableList.length > 0" class="m-top-sm clearfix">
+					<el-pagination
+						@size-change="handlePageChange"
+						@current-change="handlePageChange"
+						:current-page.sync="pagination.PN"
+						:page-size="pagination.PageSize"
+						layout="total,prev, pager, next, jumper"
+						:total="pagination.TotalNumber"
+						class="text-right"
+					></el-pagination>
+				</div>
+				<div v-else style="height: 42px"></div>
+			</div>
+		</div>
+		<!-- 详情 -->
+		<el-dialog title="赛事盈利分析详情" :visible.sync="itemData.show" width="980px">
+			<itemPage @closeModal="closeModalFun" :typeData="itemData"></itemPage>
+		</el-dialog>
+	</section>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			tableList: [],
+			pagination: {
+				TotalNumber: 0,
+				PageNumber: 0,
+				PageSize: 20,
+				PN: 0
+			},
+			maxWidth: window.innerWidth - 210,
+			itemData: {
+				show: false,
+				data: {}
+			},
+			tableHeight: 300
+		};
+	},
+	computed: {
+		dataListState() {
+			return this.$store.getters.cReportDataState.match;
+		}
+	},
+	watch: {
+		dataListState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.pagination = Object.assign({}, data.paying);
+					this.tableList = [...data.List];
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		exportState_fun(data) {
+			this.exportData = {
+				show: true,
+				data: {},
+				index: 1
+			};
+		},
+		getNewData_fun(data) {
+			this.formData = Object.assign({}, data);
+			this.getNewData();
+		},
+		getNewData() {
+			this.loading = true;
+			indexQuery.match(this, "match", this.formData);
+		},
+		handlePageChange: function (currentPage) {
+			if (this.formData.PN == currentPage || this.loading) {
+				return;
+			}
+			this.formData.PN = parseInt(currentPage);
+			this.getNewData();
+		},
+		showItemFun(item) {
+			this.itemData = {
+				show: true,
+				data: {
+					ShopId: this.formData.ShopId,
+					BillId: item.BILLID
+				}
+			};
+		},
+		closeModalFun(v) {
+			if (v) {
+				this.getNewData();
+			}
+			this.itemData.show = false;
+		},
+		defaultData() {},
+		setHeight() {
+			if (this.$refs.contentTable) {
+				let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
+				let marginSpace = 10 * 3,
+					pager = 42;
+				this.$nextTick(() => {
+					this.tableHeight = window.innerHeight - top - marginSpace - pager;
+				});
+			}
+		}
+	},
+
+	mounted() {
+		let homeInfo = getHomeData();
+		this.formData = {
+			ShopId: homeInfo.shop.ID,
+			BeginDate: this.getTimeStamp(),
+			EndDate: new Date().getTime()
+		};
+		this.getNewData();
+		this.setHeight();
+	},
+	beforeDestroy() {
+		this.tableList = [];
+		this.loading = false;
+	},
+	components: {
+		filtePage: () => import("@/views/reports/filtePage.vue"),
+		itemPage: () => import("./item1.vue")
+	}
+};
+</script>
+<style scoped>
+</style>

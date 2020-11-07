@@ -32,10 +32,9 @@
                         </div>
                     </div>
 
-                    <div class="content-table4">
+                    <div class="content-table4" style="padding-bottom: 10px">
                         <div class="content-table-center">
-
-                            <el-tabs type="card" v-model="activeName" @tab-click='selectEventsFun(activeName)'>
+                            <el-tabs type="card" v-model="activeName" class="tabsStyle" @tab-click='selectEventsFun(activeName)'>
                                 <el-tab-pane name="-1" label="全部赛事"></el-tab-pane>
                                 <el-tab-pane name="0" label="SNG比赛"></el-tab-pane>
                                 <el-tab-pane name="1" label="MTT比赛"></el-tab-pane>
@@ -138,7 +137,7 @@ export default {
     mixins: [ MIXINS_GAME.GAME_MENU ],
     data() {
         return {
-            tableHeight:document.body.clientHeight-300,
+            tableHeight:document.body.clientHeight-285,
             projectType: -1,
             activeName: '-1',
             loading: false,
@@ -271,6 +270,20 @@ export default {
 
 
 <style scoped>
+.tabsStyle >>> .el-tabs__header .el-tabs__item {
+  color: #aaa !important;
+  background: #f2f2f2 !important;
+  border-left: 1px solid #dddddd !important;
+}
+
+.tabsStyle >>> .el-tabs__header .el-tabs__item:first-child {
+  border-left: none !important;
+}
+
+.tabsStyle >>> .el-tabs__header .el-tabs__item.is-active {
+  background: #fff !important;
+  color: #409eff !important;
+}
 .member-header{
     display: flex;
     align-items: center;

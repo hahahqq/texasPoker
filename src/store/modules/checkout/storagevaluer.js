@@ -49,6 +49,10 @@ const actions = {
       commit(GET_SRORAGEVALUERRECHARGE, { data })
     }, sendData )
   },
+  clearStorageValueAll({ state }) {
+     state.storagevaluerroyaltyState = {}
+     state.storagevaluerrechargeState = {}
+  }
 }
 
 // mutations

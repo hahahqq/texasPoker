@@ -39,6 +39,7 @@ export default {
         this.$store.dispatch('clearMarketingAll')
         this.$store.dispatch('clearMemberAll')
         this.$store.dispatch('clearServiceRevisitAll')
+        this.$store.dispatch('clearStorageValueAll')
       },
     },
   }

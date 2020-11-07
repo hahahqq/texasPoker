@@ -100,6 +100,7 @@
               </el-form-item>
             </el-form>
           </el-dialog>
+
           <el-dialog
             width="70%"
             title="账户流水"
@@ -292,6 +293,7 @@ export default {
       formLoading: false,
       showForm2: false,
       showForm3: false,
+      tableHeight: document.body.clientHeight - 250,
       dateBE: [new Date(this.getCustomDay(-7)).getTime(), new Date().getTime()],
       pageData: {
         ShopId: getHomeData().shop.SHOPID,

@@ -14,7 +14,7 @@
           <div class="content-eighty">
             <div class="content-center">
               <el-button size="small" type="primary" @click="handleDeal({})">
-                添加支出项目
+                新增支出项目
               </el-button>
             </div>
           </div>

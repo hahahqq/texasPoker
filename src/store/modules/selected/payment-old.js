@@ -3,7 +3,7 @@
  * ***/
 import commonSend from '@/api/api'
 import { getUserInfo,getHomeData } from '@/api/index'
-import { 
+import {
   GET_PAYMENT_LIST,
   GET_PAYWAY_LIST,
   DEAL_PAYMENT,
@@ -88,7 +88,8 @@ const actions = {
     let sendData = {
       'InterfaceCode': '21002060306',
       'CompanyId': userInfo.CompanyID,
-      Fliter:''
+      Fliter:'',
+      IsHide: -1
     };
     commonSend.commonSend('get',data => {
       commit(GET_PAYWAY_LIST, { data })
@@ -133,7 +134,7 @@ const actions = {
     state.selpayment={}
     state.paywayList= []
   }
-  
+
 }
 
 // mutations

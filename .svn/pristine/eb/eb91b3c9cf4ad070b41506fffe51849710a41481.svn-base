@@ -1,0 +1,357 @@
+<template>
+  <div>
+    <div style="display: none">{{ dataType }}</div>
+    <el-form
+      :inline="false"
+      :model="ruleForm"
+      :rules="rules"
+      ref="ruleForm"
+      label-width="100px"
+      v-loading="pageLoading"
+      element-loading-spinner="el-icon-loading"
+      element-loading-text="数据加载中..."
+    >
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="24">
+          <el-form-item label="赛事名称" prop="Name">
+            <el-input
+              placeholder="请输入SNG赛事名称"
+              v-model.trim="ruleForm.Name"
+              clearable
+              size="small"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="比赛项目" prop="EventId">
+            <el-select
+              size="small"
+              v-model="ruleForm.EventId"
+              @change="selectEventFun(ruleForm.EventId)"
+              placeholder="请选择比赛项目"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in eventsList"
+                :key="item.ID"
+                :value="item.ID"
+                :label="item.NAME"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="开赛时间" prop="PlayTime">
+            <el-date-picker
+              v-model="ruleForm.PlayTime"
+              size="small"
+              type="datetime"
+              format="yyyy-MM-dd HH:mm"
+              placeholder="选择日期时间"
+              style="width: 100%"
+            ></el-date-picker>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="比赛桌号" prop="DeskId">
+            <el-select
+              size="small"
+              v-model="ruleForm.DeskId"
+              placeholder="请选择比赛桌号"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="(item, index) in tableList"
+                :key="index"
+                :value="item.ID"
+                :label="item.NAME"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="启动线上报名">
+            <el-switch
+              v-model="ruleForm.IsOnLine"
+              active-color="#409eff"
+              inactive-color="#ccc"
+            ></el-switch>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="Buyin积分" prop="BuyinMoney">
+            <el-input
+              placeholder="请输入参赛报名积分"
+              :disabled="dataType.buyVipNum != 0"
+              size="small"
+              v-model.trim="ruleForm.BuyinMoney"
+            >
+              <template slot="append">积分</template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="记分牌">
+            <el-input
+              placeholder="请输入Buyin记分牌"
+              :disabled="dataType.buyVipNum != 0"
+              size="small"
+              v-model="ruleForm.ChipsQty"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="10">
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="服务费方式">
+            <el-select
+              size="small"
+              v-model="ruleForm.ChargesType"
+              :disabled="dataType.buyVipNum != 0"
+              placeholder="请选择服务费方式"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in serviceChargeMethod"
+                :key="item.value"
+                :value="item.value"
+                :label="item.label"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="服务费比例" v-if="ruleForm.ChargesType == 0">
+            <el-input
+              placeholder="请输入服务费比例"
+              size="small"
+              :disabled="dataType.buyVipNum != 0"
+              v-model="ruleForm.ChargesRate"
+            >
+              <template slot="append">%</template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="服务费金额" v-if="ruleForm.ChargesType == 1">
+            <el-input
+              placeholder="请输入服务费金额"
+              size="small"
+              :disabled="dataType.buyVipNum != 0"
+              v-model="ruleForm.ChargesMoney"
+            >
+              <template slot="append">元</template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :xs="24" :sm="24">
+          <el-form-item label="备注说明">
+            <el-input
+              size="small"
+              placeholder="请输入备注说明"
+              v-model="ruleForm.Remark"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :xs="24" :sm="24">
+          <el-form-item label="">
+            <el-button plain @click="closeDialog">取消</el-button>
+            <el-button type="primary" @click="submitBtn" :loading="loadingBtn">确认</el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import Vue from "vue";
+import dayjs from "dayjs";
+import { mapState, mapGetters } from "vuex";
+import { getHomeData, getUserInfo } from "@/api/index";
+
+export default {
+  props: ["dataType"],
+  data() {
+    return {
+      ruleForm: {
+        PlayTime: "",
+        IsOnLine: false,
+        Name: "",
+        BuyinMoney: "",
+        ChipsQty: "",
+        ChargesType: 0,
+        ChargesRate: "",
+        ChargesMoney: "",
+        Remark: "",
+        RewardType: 0,
+        EventId: "",
+        DeskId: "",
+        BillId: ""
+      },
+      serviceChargeMethod: [
+        { value: 0, label: "从报名费按比例扣除" },
+        { value: 1, label: "服务费不计入奖池" }
+      ],
+      DelArr: [],
+      loadingBtn: false,
+      rules: {
+        Name: [{ required: true, message: "请输入SNG赛事名称", trigger: "blur" }],
+        BuyinMoney: [{ required: true, message: "请输入参赛报名积分", trigger: "blur" }],
+        EventId: [{ required: true, message: "请选择比赛项目", trigger: "change" }],
+        PlayTime: [{ type: "date", required: true, message: "请选择日期", trigger: "change" }],
+        DeskId: [{ required: true, message: "请选择比赛桌号", trigger: "change" }]
+      },
+      eventsList: [],
+      tableList: [],
+      pageLoading: false
+    };
+  },
+  computed: {
+    ...mapGetters({
+      integralEditGameState: "integralEditGameState",
+      getEventsListAllState: "getEventsListAllState",
+      getEventsDetailsState: "getEventsDetailsState",
+      getTableListState: "getTableListState"
+    })
+  },
+  watch: {
+    dataType(data) {
+      this.defaultItem();
+    },
+    getTableListState(data) {
+      console.log(data);
+      if (data.success) {
+        this.tableList = data.data.List;
+      }
+    },
+    getEventsListAllState(data) {
+      if (data.success) {
+        this.eventsList = data.data.List;
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
+    },
+    getEventsDetailsState(data) {
+      this.pageLoading = false;
+      if (data.success) {
+        console.log(data.data);
+        let obj = data.data.EventObj;
+        this.ruleForm.EventId = obj.ID;
+        this.ruleForm.BuyinMoney = obj.BUYINMONEY;
+        this.ruleForm.ChipsQty = obj.CHIPSQTY;
+        this.ruleForm.ChargesType = obj.CHARGESTYPE;
+        this.ruleForm.ChargesRate = Number(obj.CHARGESRATE) * 100;
+        this.ruleForm.ChargesMoney = obj.CHARGESMONEY;
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
+    },
+    integralEditGameState(data) {
+      this.loadingBtn = false;
+      if (data.success) {
+        this.cleanData();
+        this.$refs["ruleForm"].resetFields();
+        this.$emit("closeModal");
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
+    }
+  },
+  methods: {
+    defaultItem() {
+      let obj = this.dataType.info;
+      this.ruleForm.Name = obj.MATCHNAME;
+      this.ruleForm.EventId = obj.EVENTID;
+      this.ruleForm.BuyinMoney = obj.BUYINPRICE;
+      this.ruleForm.ChipsQty = obj.CHIPSQTY;
+      this.ruleForm.ChargesType = obj.CHARGESTYPE;
+      this.ruleForm.ChargesPrice = obj.CHARGESPRICE;
+      this.ruleForm.ChargesRate = Number(obj.CHARGESRATE) * 100;
+      this.ruleForm.ChargesMoney = obj.CHARGESPRICE;
+      this.ruleForm.PlayTime = obj.PLAYTIME;
+      this.ruleForm.DeskId = obj.DESKID;
+      this.ruleForm.BillId = obj.BILLID;
+      this.ruleForm.IsOnLine = obj.ISONLINE;
+    },
+    selectEventFun(ID) {
+      this.$store.dispatch("getEventsDetails", { Id: ID }).then(() => {
+        this.pageLoading = true;
+      });
+    },
+    cleanData() {
+      this.ruleForm = {
+        EventId: "",
+        DeskId: "",
+        Name: "",
+        PlayTime: "",
+        IsOnLine: false,
+        BuyinMoney: "",
+        ChipsQty: "",
+        ChargesType: 0,
+        ChargesRate: "",
+        ChargesMoney: "",
+        Remark: "",
+        RewardType: 0
+      };
+    },
+    closeDialog() {
+      this.cleanData();
+      this.$refs["ruleForm"].resetFields();
+      this.$emit("closeModal");
+    },
+    submitBtn() {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          let sendData = {
+            Name: this.ruleForm.Name,
+            EventId: this.ruleForm.EventId,
+            DeskId: this.ruleForm.DeskId,
+            PlayTime: dayjs(this.ruleForm.PlayTime).valueOf(),
+            IsOnLine: this.ruleForm.IsOnLine ? 1 : 0,
+            Remark: this.ruleForm.Remark,
+            ChipsQty: this.ruleForm.ChipsQty,
+            BuyinMoney: this.ruleForm.BuyinMoney,
+            ChargesType: this.ruleForm.ChargesType,
+            ChargesMoney: this.ruleForm.ChargesType == 0 ? "" : this.ruleForm.ChargesMoney,
+            ChargesRate:
+              this.ruleForm.ChargesType == 1 ? "" : Number(this.ruleForm.ChargesRate) / 100,
+            BillId: this.ruleForm.BillId
+          };
+          this.$store.dispatch("editIntegralGame", sendData).then(() => {
+            this.loadingBtn = true;
+          });
+        }
+      });
+    }
+  },
+  mounted() {
+    this.defaultItem();
+  }
+};
+</script>
+
+<style scoped>
+.textCenter >>> .el-input__inner {
+  text-align: center !important;
+}
+</style>

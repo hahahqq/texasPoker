@@ -236,7 +236,7 @@
         </el-dialog>
 
         <!-- 计次充值 充值界面 -->
-        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="800px">
             <recharge
                 @closeModalrecharge="showRecharge=false"
                 :totalprice="{ price:TotalPrice,discount:0 }"
@@ -653,15 +653,15 @@ export default {
             if (this.VipId == "") {
                 this.$message("请选择会员");
                 return;
-            } 
-            
+            }
+
                 if (getparametersetup(2)) {
                     if (this.royaltyData.data.length == 0) {
                         this.$message.error("请选择业绩员工");
                         return;
                     }
                 }
-            
+
             nscreenexCodeFun(4, String(this.TotalPrice));
             this.showRecharge = true;
         },

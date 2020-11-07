@@ -35,8 +35,8 @@
                         </div>
                     </div>
                     <!--列表-->
-                <div class="content-table4">
-                    <div class="content-table-center">
+                <div class="content-table" style="height: auto; padding-bottom: 10px">
+                    <div class="content-table-center" :style="`height:${tableHeight  + 60}px; overflow:auto`">
                         <el-table
                         size='small'
                             :data="pagelist"
@@ -68,7 +68,7 @@
                             </el-table-column>
                         </el-table>
                         <!-- 分页 -->
-                        <div v-show="pagelist.length>0" class="m-top-smts clearfix elpagination">
+                        <div v-show="pagelist.length>0" class="m-top-sm clearfix elpagination">
                             <el-pagination
                                 @size-change="handlePageChange"
                                 @current-change="handlePageChange"
@@ -76,7 +76,7 @@
                                 :page-size="pagination.PageSize"
                                 layout="total, prev, pager, next, jumper"
                                 :total="pagination.TotalNumber"
-                                class="text-center"
+                                class="text-right"
                             ></el-pagination>
 
                         </div>
@@ -99,7 +99,7 @@ export default {
     data(){
         return {
             pagelist: [],
-            tableHeight: document.body.clientHeight - 260,
+            tableHeight: document.body.clientHeight - 230,
             loading: true,
             pagination: {
                 TotalNumber: 0,

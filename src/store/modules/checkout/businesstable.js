@@ -1,6 +1,6 @@
 import commonSend from '@/api/api'
 import { getUserInfo,setHomeData,getHomeData } from '@/api/index'
-import { 
+import {
     GET_BUSINESS_TABLE,
     GET_BUSINESS_TABLE_DETAILED,
     EXPORT_BUSINESS_DERIVE
@@ -13,6 +13,7 @@ const state = {
   businesstable: [],
   businesstabledetailed:{},
   exportBusinessDerive:{},
+  businessTableDetailsState: {},
   businesstableState:{
     paying:{
         "TotalNumber": 0,
@@ -29,6 +30,7 @@ const getters = {
     businesstableState: state => state.businesstableState,
     businesstabledetailed: state => state.businesstabledetailed,
     exportBusinessDerive: state => state.exportBusinessDerive,
+    businessTableDetailsState: state => state.businessTableDetailsState
 }
 
 
@@ -45,10 +47,10 @@ const actions = {
       BeginDate:data.BeginDate,
       EndDate:data.EndDate,
       Filter: data.Filter,
-      Status: data.Status ? data.Status:'-1', 
+      Status: data.Status ? data.Status:'-1',
       BillType: data.BillType ? data.BillType:'-1',
     }
-    commonSend.commonSend('post', data => {
+    commonSend.commonSend('get', data => {
       commit(EXPORT_BUSINESS_DERIVE, {data})
     }, sendData)
   },
@@ -56,7 +58,7 @@ const actions = {
     let userInfo = getUserInfo();
     let homeInfo = getHomeData();
     let sendData = {
-      InterfaceCode: 21002070906,
+      InterfaceCode: 9207051,
       CompanyId: userInfo.CompanyID,
       ShopId:homeInfo.shop.ID,
       PN:data.pagination.PN ? data.pagination.PN : 1,
@@ -77,44 +79,38 @@ const actions = {
     let sendData
     if(data.i==1){
       sendData = {
-        InterfaceCode: 210020531,
+        InterfaceCode: 210020531,  // 商品消费
         BillId:data.BILLID,
         CompanyId: userInfo.CompanyID,
         ShopId:homeInfo.shop.ID,
       };
     }else if(data.i==2){
       sendData = {
-        InterfaceCode: 210020530,
-        BillId:data.BILLID,
-        ShopId:homeInfo.shop.ID,
-      };
-    }else if(data.i==3){
-      sendData = {
-        InterfaceCode: '210020532_1',
+        InterfaceCode: 210020530,  // 快速消费
         BillId:data.BILLID,
         ShopId:homeInfo.shop.ID,
         CompanyId: userInfo.CompanyID
       };
     }else if(data.i==4){
       sendData = {
-        InterfaceCode: '210020150',
+        InterfaceCode: '210020150', // 会员充值
         BillId:data.BILLID,
         ShopId:homeInfo.shop.ID,
         CompanyId: userInfo.CompanyID
       };
-    }else if(data.i==5){
+    }else if(data.i == 6){
       sendData = {
-        InterfaceCode: '210020150_1',
-        BillId:data.BILLID,
-        ShopId:homeInfo.shop.ID,
-        CompanyId: userInfo.CompanyID
-      };
+         InterfaceCode: '920332', // 会员领奖
+         BillId:data.BILLID,
+         ShopId:homeInfo.shop.ID,
+         CompanyId: userInfo.CompanyID
+       };
     }
     commonSend.commonSend('get',data => {
       commit(GET_BUSINESS_TABLE_DETAILED, { data })
     }, sendData )
   },
-  
+
 }
 
 // mutations
@@ -123,9 +119,10 @@ const mutations = {
     state.businesstable = Object.assign({},data.data.PageData.DataArr);
     state.businesstableState = Object.assign({},data.data.PageData);
   },
-  
+
   [GET_BUSINESS_TABLE_DETAILED] (state, { data }) {
     state.businesstabledetailed = Object.assign({}, data.data)
+    state.businessTableDetailsState = data
   },
 
   [EXPORT_BUSINESS_DERIVE] (state, { data }) {

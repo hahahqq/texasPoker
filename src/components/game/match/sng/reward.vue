@@ -31,7 +31,7 @@
             {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
             {{
               BillObj.CHARGESTYPE == 0
-                ? BillObj.TOTALMONEY * BillObj.CHARGESRATE +
+                ? BillObj.CHARGESMONEY +
                   " ( 比例 " +
                   BillObj.CHARGESRATE * 100 +
                   "% ) "
@@ -81,11 +81,11 @@
           <div class="ssmemberul-cont-text">
             <span style="width: 120px; float: left">
               储值积分 :
-              <i style="color: #f00">{{ memberdetails.VIPMONEY }}</i>
+              <i style="color: #f00">{{ memberdetails.MONEY }}</i>
             </span>
             <span style="margin-left: 20px" v-if="splitIntegral">
               竞技积分 :
-              <i style="color: #f00">{{ memberdetails.VIPINTEGRAL }}</i>
+              <i style="color: #f00">{{ memberdetails.INTEGRAL }}</i>
             </span>
           </div>
         </div>
@@ -93,53 +93,61 @@
       </div>
     </div>
 
-    <el-select
-      v-model="searchText"
-      v-if="inputShow"
-      filterable
-      @change="searchTextFun"
-      placeholder="请输入会员手机号"
-      popper-class="selectWidth"
-      class="selectStyle"
-      style="width: 100%"
-    >
-      <el-option
-        v-for="(item, index) in noPrizeList"
-        :key="index"
-        :value="item.VIPMOBILENO"
-        style="height: auto; line-height: normal; border-bottom: 1px solid #ddd"
-        class="ssmemberul"
+    <div v-else v-clickOutSide="handleClose">
+      <el-select
+        v-model="memberdetails"
+        filterable
+        remote
+        reserve-keyword
+        :remote-method="remoteMethod"
+        :loading="loadingMember"
+        loading-text="数据加载中..."
+        :default-first-option="true"
+        @change="searchTextFun(memberdetails)"
+        placeholder="请输入会员手机号"
+        popper-class="selectWidth"
+        class="selectStyle"
+        style="width: 100%"
       >
-        <div style="padding: 10px 0">
-          <div class="ssmemberul-cont">
-            <div class="ssmemberul-imgUrl">
-              <img :src="item.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
-            </div>
-
-            <div class="newItmeright">
-              <div class="item_dright-left">
-                <div class="name">{{ item.VIPNAME }}</div>
-                <div class="phone">{{ item.VIPMOBILENO }}</div>
-              </div>
-              <div class="item_dright-right" v-if="splitIntegral">
-                <div style="line-height: 24px">储值积分：{{ item.VIPMONEY }}</div>
-                <div>竞技积分：{{ item.VIPINTEGRAL }}</div>
+        <el-option
+          v-for="(item, index) in noPrizeList"
+          :key="index"
+          :value="item"
+          style="height: auto; line-height: normal; border-bottom: 1px solid #ddd"
+          class="ssmemberul"
+        >
+          <div style="padding: 10px 0">
+            <div class="ssmemberul-cont">
+              <div class="ssmemberul-imgUrl">
+                <img :src="item.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
               </div>
 
-              <div class="item_dright-right" v-else>
-                <div style="line-height: 48px">储值积分：{{ item.VIPMONEY }}</div>
+              <div class="newItmeright">
+                <div class="item_dright-left">
+                  <div class="name">{{ item.VIPNAME }}</div>
+                  <div class="phone">{{ item.VIPMOBILENO }}</div>
+                </div>
+                <div class="item_dright-right" v-if="splitIntegral">
+                  <div style="line-height: 24px">储值积分：{{ item.MONEY }}</div>
+                  <div>竞技积分：{{ item.INTEGRAL }}</div>
+                </div>
+
+                <div class="item_dright-right" v-else>
+                  <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </el-option>
+        </el-option>
 
-      <div slot="empty">
-         <div style="line-height: 60px; width: 100%; color:#888; text-align:center">
-         暂无搜索结果， <i style="color:#409eff; cursor: pointer"> 添加为会员 </i>
-         </div>
-      </div>
-    </el-select>
+        <div slot="empty" v-if="isEmptyData">
+          <div style="line-height: 60px; width: 100%; color: #888; text-align: center">
+            暂无搜索结果，
+            <i style="color: #409eff; cursor: pointer" @click="showAddNew = true">添加为会员</i>
+          </div>
+        </div>
+      </el-select>
+    </div>
 
     <el-form
       :inline="false"
@@ -242,6 +250,21 @@
         确定领奖
       </el-button>
     </div>
+
+    <!-- 新增会员 -->
+    <el-dialog
+      title="新增会员"
+      :visible.sync="showAddNew"
+      append-to-body
+      width="800px"
+      style="max-width: 100%"
+    >
+      <add-new-member
+        @closeModal="showAddNew = false"
+        @resetList="showAddNew = false"
+        :dealType="{ type: 'add', searchText: searchText }"
+      ></add-new-member>
+    </el-dialog>
   </div>
 </template>
 
@@ -258,6 +281,7 @@ export default {
   props: ["dataType"],
   data() {
     return {
+      showAddNew: false,
       searchText: "",
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       BillObj: {
@@ -272,7 +296,6 @@ export default {
         Remark: ""
       },
       inputShow: true,
-      datalist: [],
       pageData: {
         PN: 1,
         Filter: ""
@@ -283,17 +306,30 @@ export default {
       loadingReward: false,
       noPrizeList: [],
       rewardType: 0,
-      memberdetails: {}
+      memberdetails: {},
+      loadingMember: false,
+      isEmptyData: false
     };
   },
   computed: {
     ...mapGetters({
-      getssmemberdListState: "ssmemberdListState",
       sngSubmitRewardState: "sngSubmitRewardState",
-      getGameDetailsState: "getGameDetailsState"
+      getGameDetailsState: "getGameDetailsState",
+      getNoPrizeListState: "getNoPrizeListState"
     })
   },
+  components: {
+    addNewMember: () => import("@/components/member/add")
+  },
   watch: {
+     getNoPrizeListState(data) {
+      console.log(data);
+      this.loadingMember = false;
+      if (data.success) {
+        this.noPrizeList = data.data.BuyObj;
+        this.isEmptyData = data.data.BuyObj.length == 0 ? true : false;
+      }
+    },
     getGameDetailsState(data) {
       if (data.success) {
         console.log(data.data);
@@ -327,32 +363,28 @@ export default {
         this.$message({ message: data.message, type: "error" });
       }
     },
-    getssmemberdListState(data) {
-      if (data.success) {
-        if (this.isshowtatus) {
-          this.datalist = [...data.data.PageData.DataArr];
-          for (let i = 0; i < this.datalist.length; i++) {
-            if (this.datalist[i].IMAGEURL == undefined || this.datalist[i].IMAGEURL == "") {
-              this.datalist[i].showgoodsimg = VIPIMAGESIMG + this.datalist[i].ID + ".png";
-            } else {
-              this.datalist[i].showgoodsimg = this.datalist[i].IMAGEURL;
-            }
-          }
-        } else {
-          this.datalist = [];
-        }
-      }
-    },
     dataType(data) {
-      console.log(data);
       this.defaultItem();
     }
   },
   methods: {
-    searchTextFun() {
+     handleClose() {
+      this.noPrizeList = [];
+    },
+    remoteMethod(query) {
+      this.searchText = query;
+      this.$store
+        .dispatch("getNoPrizeList", {
+          VipFilter: query,
+          IsReward: 0,
+          BillId: this.BillObj.BILLID
+        })
+        .then(() => {
+          this.loadingMember = true;
+        });
+    },
+    searchTextFun(item) {
       this.inputShow = false;
-      let arr = this.noPrizeList.filter((item) => item.VIPMOBILENO == this.searchText);
-      this.memberdetails = arr[0];
     },
     testPrint(billid) {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print6");
@@ -475,14 +507,14 @@ export default {
       let arr1 = this.dataType.buyVipList,
         arr2 = this.dataType.RewardObj;
       let arr3 = arr1.filter((obj) => !arr2.some((obj1) => obj1.VIPID == obj.VIPID));
-      console.info(arr3);
       this.noPrizeList = arr3;
 
-      console.log(vipInfo);
       if (vipInfo.VIPID != undefined) {
         this.memberdetails = vipInfo;
         this.inputShow = false;
       }
+
+      // console.log(this.levelList, this.EventRewardObj)
 
       this.levelList.filter((e) => {
         this.EventRewardObj.find((i) => {
@@ -497,14 +529,21 @@ export default {
     },
     cancelSignUp() {
       this.searchText = "";
+      this.noPrizeList = []
       this.memberdetails = {};
       this.inputShow = true;
+    },
+    addNewVipFun() {
+      console.log(this.searchText);
     }
+  },
+  components: {
+    addNewMember: () => import("@/components/member/add")
   },
   mounted() {
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名", disabled: false });
+      levelList.push({ name: "第" + i + "名", disabled: false });
     }
     this.levelList = levelList;
 

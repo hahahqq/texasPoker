@@ -27,7 +27,7 @@
               </el-col>
 
               <el-col :span="8">
-                  {{ BillObj.CHARGESTYPE == 0 ? '服务费积分：' : '服务费金额：' }} {{ BillObj.CHARGESTYPE == 0 ? BillObj.TOTALMONEY * BillObj.CHARGESRATE + " ( 比例 "+ BillObj.CHARGESRATE * 100 +"% ) " : BillObj.CHARGESMONEY+' 元' }}
+                  {{ BillObj.CHARGESTYPE == 0 ? '服务费积分：' : '服务费金额：' }} {{ BillObj.CHARGESTYPE == 0 ? BillObj.CHARGESMONEY + " ( 比例 "+ BillObj.CHARGESRATE * 100 +"% ) " : BillObj.CHARGESMONEY+' 元' }}
               </el-col>
 
               <el-col :span="7">
@@ -52,7 +52,7 @@
         <el-table-column prop="REWARDMONEY" label='获得积分'></el-table-column>
         <el-table-column prop="REWARDRATE" label='比例'>
             <template slot-scope="scope">
-                {{scope.row.REWARDRATE * 100}} %
+                {{scope.row.REWARDRATE * 100 }} %
             </template>
         </el-table-column>
         <el-table-column prop="VIPNAME" label='兑换人'></el-table-column>

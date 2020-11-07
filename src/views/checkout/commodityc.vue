@@ -215,7 +215,7 @@
             ></yjemployee>
         </el-dialog>
         <!-- 收银-商品消费 -->
-        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="800px">
             <recharge
                 @closeModalrecharge="showRecharge=false"
                 :totalprice="totalTotal"

@@ -66,7 +66,7 @@ const actions = {
     let userInfo = getUserInfo();
     let homeInfo = getHomeData();
     let sendData = {
-      InterfaceCode: '210020516A',
+      InterfaceCode: '920302',
       CompanyId: userInfo.CompanyID,
       ShopId: homeInfo.shop.ID
     };

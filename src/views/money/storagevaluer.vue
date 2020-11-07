@@ -25,7 +25,7 @@
                   style="height: 100%; position: relative; padding-right: 0px; padding-left: 0px"
                 >
                   <div class="commodityc-top">
-                    <span class="title">充值清单</span>
+                    <span class="title">会员清单</span>
                     <span class="commodityc-top-text" @click="closeModal">清空页面</span>
                   </div>
                   <div>
@@ -47,7 +47,7 @@
                             @keyup.native="inputpayMoney"
                             placeholder="请输入充值金额"
                           >
-                            <template slot="append">￥</template>
+                            <template slot="append">元</template>
                           </el-input>
                         </el-form-item>
                         <el-form-item
@@ -66,7 +66,7 @@
                             class="full-width"
                             placeholder="请输入赠送金额"
                           >
-                            <template slot="append">￥</template>
+                            <template slot="append">元</template>
                           </el-input>
                         </el-form-item>
                         <el-form-item
@@ -85,13 +85,13 @@
                             placeholder="0.00"
                             :disabled="true"
                           >
-                            <template slot="append">￥</template>
+                            <template slot="append">元</template>
                           </el-input>
                         </el-form-item>
                       </el-row>
                     </el-form>
                     <div class="timescountc_left_footer" ref="footer">
-                      <div style="position: absolute; bottom: 80px; width: 100%">
+                      <div style="position: absolute; bottom: 60px; width: 100%">
                         <div>
                           <el-select
                             class="g-public-multi-select"
@@ -125,6 +125,7 @@
                               type="primary"
                               style="margin-right: 10px"
                               @click="Rechargeok"
+                              :loading="submitLoading"
                             >
                               收款
                               <i v-if="payMoney != ''">： ¥ {{ payMoney }}</i>
@@ -201,21 +202,24 @@
                       <div class="text-muted margin-sm">
                         <div class="font-16 p-bottom-xs">充值赠送内容:</div>
 
-                        <ul>
+                        <ul style="width: 600px">
                           <li
                             class="rechargeWayItem"
                             v-for="(item, index) in storagevaluerroyaltyState.data.GiftList"
                             :key="index"
                             @click="choseCurWay(item, index)"
+                            :style="`background: ${
+                              curtab == index ? '#ecf5ff' : '#ffffff'
+                            }; border: 1px solid ${curtab == index ? '#b3d8ff' : '#ddd'} `"
                           >
                             <div class="addMoney" style="">充{{ item.ADDMONEY }} 元</div>
                             <div class="giftMoney" style="">送 {{ item.MONEY }} 元</div>
 
                             <div
                               v-if="curtab == index"
-                              :class="{ selected: curtab == index }"
+                              :class="{ 'selected': curtab == index }"
                               style="
-                                border-bottom: 30px solid #333;
+                                border-bottom: 30px solid #137deb;
                                 width: 0;
                                 height: 0;
                                 border-left: 30px solid transparent;
@@ -233,7 +237,7 @@
             </div>
           </div>
 
-          <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+          <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="800px">
             <recharge
               @closeModalrecharge="showRecharge = false"
               :totalprice="{ price: payMoney, discount: 0, title: '充值日期' }"
@@ -307,7 +311,9 @@ export default {
       clientHeight: document.body.clientHeight - 50,
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       curtab: -1,
-      payName: ""
+      payName: "",
+      checkedreceipt: false,
+      submitLoading: false
     };
   },
   computed: {
@@ -327,13 +333,14 @@ export default {
       }
     },
     saveVipRechargeState(data) {
+       this.submitLoading = false
       if (data.success) {
-        this.$message("充值成功");
+        this.$message.success("充值成功");
 
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print1");
         let jsonPrintData = JSON.parse(printRules);
 
-        if (jsonPrintData.autoPrint) {
+        if (jsonPrintData.autoPrint || this.checkedreceipt) {
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.closeModal();
@@ -394,11 +401,11 @@ export default {
       vipInfo[1].value = this.vipIds.NAME;
       vipInfo[2].value = this.vipIds.MONEY + Number(this.payMoney) + Number(this.giveMoney);
       if (this.splitIntegral) {
-         vipInfo.push({
-            label: "竞技积分",
-            value: this.vipIds.INTEGRAL,
-            isShow: vipInfo[2].isShow
-         })
+        vipInfo.push({
+          label: "竞技积分",
+          value: this.vipIds.INTEGRAL,
+          isShow: vipInfo[2].isShow
+        });
       }
 
       jsonPrintData.remark.value = this.ruleFormsock.Remark;
@@ -418,6 +425,7 @@ export default {
       this.payMoney = item.ADDMONEY;
       this.giveMoney = item.MONEY;
       this.curtab = index;
+      this.totalMoney = item.ADDMONEY + item.MONEY
     },
     handleClose(done) {
       this.isShowShop = false;
@@ -454,10 +462,9 @@ export default {
       }
       this.UserName = getUserInfo().UserName;
       if (this.shopList.length == 0) {
-        this.$store.dispatch("getShopList",{});
+        this.$store.dispatch("getShopList", {});
       }
     },
-
     changeShop() {
       let userInfo = getUserInfo();
       if (userInfo.CODE2 == "boss") {
@@ -514,7 +521,6 @@ export default {
       this.giveMoney = this.onlyInputnumber(this.giveMoney);
       this.totalMoney = Number(this.payMoney) + Number(this.giveMoney);
     },
-
     closeModal() {
       this.payMoney = "";
       this.payName = "";
@@ -555,7 +561,10 @@ export default {
       this.showRecharge = true;
     },
     CashRecharge(data) {
-       console.log(data)
+      console.log(data);
+      this.checkedreceipt = data.checkedreceipt;
+      let {checkedreceipt, ...newData} = data;
+
       let param = this.value,
         str = ""; // 销售员
       for (let i in param) {
@@ -566,15 +575,17 @@ export default {
         str = str.substring(0, str.length - 1);
       }
 
+      this.submitLoading = true
+
       this.showRecharge = false;
-      this.payName = data.payName
+      this.payName = newData.payName;
       let sendData = {
         VipId: this.VipId,
         Remark: this.ruleFormsock.Remark,
         GiftMoney: this.giveMoney,
         SaleEmpList: str,
-        PayTypeID: data.PaytypeId,
-        IsSmd: data.IsSms,
+        PayTypeID: newData.PaytypeId,
+        IsSmd: newData.IsSms,
         AddMoney: this.payMoney,
         BillDate: new Date().getTime()
       };
@@ -613,7 +624,7 @@ export default {
   text-align: center;
   border-radius: 4px;
   padding: 10px 16px;
-  margin: 10px 8px;
+  margin: 5px;
   float: left;
   border: 1px solid #fbc4c4;
   background: #f2f2f2;
@@ -627,6 +638,11 @@ export default {
   position: absolute;
   bottom: 0px;
   right: 0px;
+  border-bottom: 30px solid #137deb;
+  border-left: 30px solid transparent;
+   width: 0;
+   height: 0;
+
 }
 .rechargeWayItem .selected i {
   position: absolute;

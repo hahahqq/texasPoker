@@ -197,8 +197,8 @@ const getDayindata = function(printData, printType, qresurl) {
    let printNum = printData.setupPrintnum;
 
    LODOP.SET_PRINT_COPIES(printNum); // 打印份数
-   LODOP.PRINT();
-   // LODOP.PREVIEW();
+   // LODOP.PRINT();
+   LODOP.PREVIEW();
 };
 
 // 增加纯文本打印项

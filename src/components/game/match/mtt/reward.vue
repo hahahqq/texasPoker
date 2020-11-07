@@ -31,7 +31,7 @@
             {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
             {{
               BillObj.CHARGESTYPE == 0
-                ? BillObj.TOTALMONEY * BillObj.CHARGESRATE +
+                ? BillObj.CHARGESMONEY +
                   " ( 比例 " +
                   BillObj.CHARGESRATE * 100 +
                   "% ) "
@@ -51,71 +51,102 @@
     </div>
 
     <!-- 会员选择 -->
-    <div class="vue-dropdown default-theme m-top-sm">
-      <div class="search-module clearfix" v-if="inputShow == true">
-        <input class="search-text" v-model="searchText" placeholder="输入会员手机号/姓名/卡号" />
-      </div>
-      <div
-        class="ssmemberul"
-        v-if="inputShow == false"
-        style="border: 1px solid #f2f2f2; padding: 10px 0"
-      >
-        <div class="ssmemberul-cont">
-          <div class="ssmemberul-imgUrl">
-            <img :src="memberdetails.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
-          </div>
-          <div class="ssmemberul-massge">
-            <div>
-              <span class="ssmemberul-cont-name">{{ memberdetails.NAME }}</span>
-              <!-- <span class="ssmemberul-cont-ka">{{memberdetails.LEVELNAME}}</span> -->
-            </div>
-            <div class="ssmemberul-cont-text">
-              <span style="width: 120px; float: left">卡号 : {{ memberdetails.CODE }}</span>
-              <span style="margin-left: 20px">手机号 : {{ memberdetails.MOBILENO }}</span>
-            </div>
-            <div class="ssmemberul-cont-text">
-              <span style="width: 120px; float: left">
-                储值积分 :
-                <i style="color: #f00">{{ memberdetails.MONEY }}</i>
-              </span>
-              <span style="margin-left: 20px" v-if="splitIntegral">
-                竞技积分 :
-                <i style="color: #f00">{{ memberdetails.INTEGRAL }}</i>
-              </span>
-            </div>
-          </div>
-
-          <i
-            class="el-icon-delete"
-            style="position: absolute; right: 15px"
-            @click="cancelSignUp"
-          ></i>
+    <div
+      class="ssmemberul"
+      v-if="!inputShow"
+      style="
+        border: 1px solid #f2f2f2;
+        height: 80px;
+        padding: 10px 0;
+        margin-top: 20px;
+        width: 100%;
+        position: relative;
+      "
+    >
+      <div class="ssmemberul-cont" style="padding-left: 20px">
+        <div class="ssmemberul-imgUrl">
+          <img
+            :src="memberdetails.IMAGEURL"
+            style="height: 45px; width: 45px"
+            onerror="this.src='static/images/merberpic.png'"
+          />
         </div>
-      </div>
-      <ul class="list-module" v-if="datalist.length != 0 && searchText != ''">
-        <li
-          v-for="(item, index) in datalist"
-          @click="appClick(item)"
-          :key="index"
-          style="margin-top: 0; padding: 10px"
-        >
-          <img :src="item.showgoodsimg" onerror="this.src='static/images/merberpic.png'" />
-          <div class="itmeright">
-            <div class="item_dright-left">
-              <div class="name">{{ item.NAME }}</div>
-              <div class="phone">{{ item.MOBILENO }}</div>
-            </div>
-            <div class="item_dright-right" v-if="splitIntegral">
-              <div style="line-height: 24px">储值积分：{{ item.MONEY }}</div>
-              <div>竞技积分：{{ item.INTEGRAL }}</div>
-            </div>
+        <div class="ssmemberul-massge">
+          <span class="ssmemberul-cont-name">{{ memberdetails.VIPNAME }}</span>
 
-            <div class="item_dright-right" v-else>
-              <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
+          <div class="ssmemberul-cont-text">
+            <span style="width: 120px; float: left">卡号 : {{ memberdetails.VIPCODE }}</span>
+            <span style="margin-left: 20px">手机号 : {{ memberdetails.VIPMOBILENO }}</span>
+          </div>
+          <div class="ssmemberul-cont-text">
+            <span style="width: 120px; float: left">
+              储值积分 :
+              <i style="color: #f00">{{ memberdetails.MONEY }}</i>
+            </span>
+            <span style="margin-left: 20px" v-if="splitIntegral">
+              竞技积分 :
+              <i style="color: #f00">{{ memberdetails.INTEGRAL }}</i>
+            </span>
+          </div>
+        </div>
+        <i class="el-icon-delete" style="position: absolute; right: 15px" @click="cancelSignUp"></i>
+      </div>
+    </div>
+
+    <div v-else v-clickOutSide="handleClose">
+      <el-select
+        v-model="memberdetails"
+        filterable
+        remote
+        reserve-keyword
+        :remote-method="remoteMethod"
+        :loading="loadingMember"
+        loading-text="数据加载中..."
+        :default-first-option="true"
+        @change="searchTextFun(memberdetails)"
+        placeholder="请输入会员手机号"
+        popper-class="selectWidth"
+        class="selectStyle"
+        style="width: 100%"
+      >
+        <el-option
+          v-for="(item, index) in noPrizeList"
+          :key="index"
+          :value="item"
+          style="height: auto; line-height: normal; border-bottom: 1px solid #ddd"
+          class="ssmemberul"
+        >
+          <div style="padding: 10px 0">
+            <div class="ssmemberul-cont">
+              <div class="ssmemberul-imgUrl">
+                <img :src="item.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
+              </div>
+
+              <div class="newItmeright">
+                <div class="item_dright-left">
+                  <div class="name">{{ item.VIPNAME }}</div>
+                  <div class="phone">{{ item.VIPMOBILENO }}</div>
+                </div>
+                <div class="item_dright-right" v-if="splitIntegral">
+                  <div style="line-height: 24px">储值积分：{{ item.MONEY }}</div>
+                  <div>竞技积分：{{ item.INTEGRAL }}</div>
+                </div>
+
+                <div class="item_dright-right" v-else>
+                  <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
+                </div>
+              </div>
             </div>
           </div>
-        </li>
-      </ul>
+        </el-option>
+
+        <div slot="empty" v-if="isEmptyData">
+          <div style="line-height: 60px; width: 100%; color: #888; text-align: center">
+            暂无搜索结果，
+            <i style="color: #409eff; cursor: pointer" @click="showAddNew = true">添加为会员</i>
+          </div>
+        </div>
+      </el-select>
     </div>
 
     <el-form
@@ -124,7 +155,6 @@
       ref="ruleForm"
       label-width="110px"
       class="ruleFormStyle"
-      v-clickOutSide="handleClose"
     >
       <el-row :gutter="10" style="margin-top: 20px">
         <el-col :xs="24" :sm="11">
@@ -208,13 +238,38 @@
 
     <div style="text-align: right; width: 100%; margin-top: 10px; display: table">
       <el-button @click="closeDialog()">取消</el-button>
-      <el-button type="primary" plain style='background:#fff' :lading="loadingReward" @click="submitReward(1)">
+      <el-button
+        type="primary"
+        plain
+        style="background: #fff"
+        :lading="loadingReward"
+        @click="submitReward(1)"
+      >
         确定并继续领奖
       </el-button>
       <el-button type="primary" :lading="loadingReward" @click="submitReward(0)">
         确定领奖
       </el-button>
     </div>
+
+    <!-- 新增会员 -->
+    <el-dialog
+      title="新增会员"
+      :visible.sync="showAddNew"
+      append-to-body
+      width="800px"
+      style="max-width: 100%"
+    >
+      <add-new-member
+        v-if="showAddNew"
+        @closeModal="
+          showAddNew = false;
+          searchText = '';
+        "
+        @resetList="showAddNew = false"
+        :dealType="{ type: 'add', searchText: searchText }"
+      ></add-new-member>
+    </el-dialog>
   </div>
 </template>
 
@@ -231,6 +286,7 @@ export default {
   props: ["dataType"],
   data() {
     return {
+      showAddNew: false,
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       BillObj: {
         MATCHNAME: ""
@@ -245,7 +301,6 @@ export default {
       },
       searchText: "",
       inputShow: true,
-      datalist: [],
       pageData: {
         PN: 1,
         Filter: ""
@@ -254,25 +309,35 @@ export default {
       isshowtatus: false,
       EventRewardObj: [],
       loadingReward: false,
-      rewardType: 0
+      noPrizeList: [],
+      rewardType: 0,
+      loadingMember: false,
+      isEmptyData: false
     };
   },
   computed: {
     ...mapGetters({
-      getssmemberdListState: "ssmemberdListState",
       mttSubmitRewardState: "mttSubmitRewardState",
-      getGameDetailsState: "getGameDetailsState"
+      getGameDetailsState: "getGameDetailsState",
+      getNoPrizeListState: "getNoPrizeListState"
     })
   },
   watch: {
-    searchText() {
-      this.search_mb();
+    getNoPrizeListState(data) {
+      console.log(data);
+      this.loadingMember = false;
+      if (data.success) {
+        this.noPrizeList = data.data.BuyObj;
+        this.isEmptyData = data.data.BuyObj.length == 0 ? true : false;
+      }
     },
     getGameDetailsState(data) {
       if (data.success) {
         this.BillObj = data.data.BillObj;
         this.EventRewardObj = data.data.EventRewardObj;
         this.RewardObj = data.data.RewardObj;
+
+        this.noPrizeList = [];
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -293,30 +358,28 @@ export default {
         this.$message({ message: data.message, type: "error" });
       }
     },
-    getssmemberdListState(data) {
-      if (data.success) {
-        if (this.isshowtatus) {
-          this.datalist = [...data.data.PageData.DataArr];
-          for (let i = 0; i < this.datalist.length; i++) {
-            if (this.datalist[i].IMAGEURL == undefined || this.datalist[i].IMAGEURL == "") {
-              this.datalist[i].showgoodsimg = VIPIMAGESIMG + this.datalist[i].ID + ".png";
-            } else {
-              this.datalist[i].showgoodsimg = this.datalist[i].IMAGEURL;
-            }
-          }
-        } else {
-          this.datalist = [];
-        }
-      }
-    },
     dataType(data) {
       this.defaultItem();
     }
   },
   methods: {
     handleClose() {
-      this.searchText = "";
-      this.datalist = [];
+      this.noPrizeList = [];
+    },
+    remoteMethod(query) {
+      this.searchText = query;
+      this.$store
+        .dispatch("getNoPrizeList", {
+          VipFilter: query,
+          IsReward: 0,
+          BillId: this.BillObj.BILLID
+        })
+        .then(() => {
+          this.loadingMember = true;
+        });
+    },
+    searchTextFun(item) {
+      this.inputShow = false;
     },
     testPrint(billid) {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print6");
@@ -373,33 +436,35 @@ export default {
     },
     submitReward(type) {
       this.rewardType = type;
-      if (this.memberdetails.ID == undefined) {
+      if (this.memberdetails.VIPID == undefined) {
         this.$message({ message: "请先选择要领奖的会员 ！", type: "warning" });
         return;
       }
-      if(this.ruleForm.RewardName == ''){
-         this.$message({ message: "请选择获得名次 ！", type: "warning" });
+      if (this.ruleForm.RewardName == "") {
+        this.$message({ message: "请选择获得名次 ！", type: "warning" });
         return;
       }
-      if(this.ruleForm.RewardIntegral == 0){
-         this.$message({ message: "请输入获得积分 ！", type: "warning" });
-         return
+      if (this.ruleForm.RewardIntegral == 0) {
+        this.$message({ message: "请输入获得积分 ！", type: "warning" });
+        return;
       }
       if (this.ruleForm.RewardIntegral > this.BillObj.NOTEXCHANGEINTEGRAL) {
-          this.$confirm('获得积分大于未兑换积分，是否继续？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-         }).then(() => {
-            this.submitSecond()
-         }).catch(() => { });
-      }else{
-         this.submitSecond()
+        this.$confirm("获得积分大于未兑换积分，是否继续？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        })
+          .then(() => {
+            this.submitSecond();
+          })
+          .catch(() => {});
+      } else {
+        this.submitSecond();
       }
     },
-    submitSecond(){
-       let sendData = {
-        VipId: this.memberdetails.ID,
+    submitSecond() {
+      let sendData = {
+        VipId: this.memberdetails.VIPID,
         BillId: this.BillObj.BILLID,
         Remark: this.ruleForm.Remark,
         RewardName: this.ruleForm.RewardName,
@@ -431,6 +496,7 @@ export default {
       }
     },
     clearDataFun() {
+      this.memberdetails = {};
       this.ruleForm = {
         RewardName: "",
         ContestQty: "",
@@ -438,7 +504,6 @@ export default {
         REWARDRATE: "",
         Remark: ""
       };
-      this.memberdetails = {};
       this.inputShow = true;
       this.searchText = "";
     },
@@ -449,18 +514,11 @@ export default {
     defaultItem() {
       this.BillObj = this.dataType.BillObj;
       this.EventRewardObj = this.dataType.RewardObj;
+      this.buyVipList = this.dataType.buyVipList;
       let vipInfo = this.dataType.vipInfo;
-      console.log(vipInfo);
+
       if (vipInfo.VIPID != undefined) {
-        this.memberdetails = {
-          ID: vipInfo.VIPID,
-          IMAGEURL: vipInfo.IMAGEURL,
-          NAME: vipInfo.VIPNAME,
-          MOBILENO: vipInfo.VIPMOBILENO,
-          CODE: vipInfo.VIPCODE,
-          INTEGRAL: vipInfo.VIPINTEGRAL,
-          MONEY: vipInfo.VIPMONEY
-        };
+        this.memberdetails = vipInfo;
         this.inputShow = false;
       }
 
@@ -471,39 +529,24 @@ export default {
           }
         });
       });
-
-      console.log(this.levelList);
     },
-    search_mb: _.debounce(function () {
-      this.isshowtatus = true;
-      this.searchfun2(0);
-    }, 1000),
     getMemberData() {
       this.$store.dispatch("getSsmemberdList", this.pageData);
     },
-    searchfun2() {
-      if (!this.searchText) {
-        return;
-      }
-      this.pageData.Filter = this.searchText;
-      this.getMemberData();
-    },
-    appClick(data) {
-      this.inputShow = false;
-      this.searchText = "";
-      this.datalist = [];
-      this.memberdetails = data;
-    },
     cancelSignUp() {
       this.memberdetails = {};
+      this.noPrizeList = []
       this.searchText = "";
       this.inputShow = true;
     }
   },
+  components: {
+    addNewMember: () => import("@/components/member/add")
+  },
   mounted() {
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名", disabled: false });
+      levelList.push({ name: "第" + i + "名", disabled: false });
     }
     this.levelList = levelList;
 
@@ -514,102 +557,38 @@ export default {
 
 
 <style lang="scss" scoped>
+.selectStyle >>> .el-input__inner {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  background: #fff;
+  margin-top: 20px;
+}
+.selectStyle >>> .el-input__suffix {
+  display: none;
+}
+
 .ruleFormStyle >>> .el-form-item {
   margin-bottom: 10px;
 }
-.vue-dropdown.default-theme {
-  position: relative;
-  &._self-show {
-    display: block !important;
-  }
 
-  .search-module {
-    position: relative;
-
-    .search-text {
-      width: 100%;
-      height: 80px;
-      padding-right: 2em;
-      padding-left: 20px;
-      background: rgba(255, 255, 255, 1);
-      border-radius: 2px;
-      border: 1px solid #f2f2f2;
-      border-radius: 6px;
-      //   border: none !important;
-      font-size: 12px;
-      color: rgb(204, 192, 200);
-
-      &:focus {
-        border-color: #2198f2;
-      }
-    }
-
-    .search-icon {
-      position: absolute;
-      top: 24%;
-      right: 0.5em;
-      color: #aaa;
-    }
-  }
-
-  .list-module {
-    max-height: 260px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ddd;
-    width: 50%;
-    z-index: 999;
-    border-top: 1px solid #f2f2f2;
-    position: absolute;
-    box-shadow: 0 8px 15px #aaa;
-
-    li {
-      border-bottom: 1px dotted #ddd;
-      padding: 10px;
-      overflow: hidden;
-      position: relative;
-      img {
-        width: 40px;
-        height: 40px;
-        float: left;
-        margin-right: 6px;
-        border-radius: 4px;
-      }
-      .itmeright {
-        align-items: center;
-        display: flex;
-        width: 90%;
-        position: absolute;
-        left: 0;
-        box-sizing: border-box;
-        padding-left: 50px;
-        padding-right: 6px;
-      }
-
-      &._self-hide {
-        display: none;
-      }
-      margin-top: 0.5em;
-      padding: 0.5em;
-      &:hover {
-        cursor: pointer;
-        background: #f5f7fa;
-      }
-      &:last-child {
-        border-bottom: 0;
-      }
-    }
-  }
+.newItmeright {
+  align-items: center;
+  display: flex;
+  width: 90%;
+  position: absolute;
+  left: 0;
+  box-sizing: border-box;
+  padding-left: 56px;
 }
 
 .ssmemberul {
   width: 100%;
-  background: #fff;
   border-radius: 6px;
 }
 .ssmemberul-cont {
   width: 100%;
-  padding-left: 15px;
   display: flex;
   align-items: center;
 }

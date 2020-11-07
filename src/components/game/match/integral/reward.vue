@@ -29,7 +29,7 @@
             {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
             {{
               BillObj.CHARGESTYPE == 0
-                ? BillObj.TOTALMONEY * BillObj.CHARGESRATE +
+                ? BillObj.CHARGESMONEY +
                   " ( 比例 " +
                   BillObj.CHARGESRATE * 100 +
                   "% ) "
@@ -49,63 +49,95 @@
     </div>
 
     <!-- 会员选择 -->
-    <div class="vue-dropdown default-theme m-top-sm">
-      <div class="search-module clearfix" v-if="inputShow == true">
-        <input class="search-text" v-model="searchText" placeholder="输入会员手机号/姓名/卡号" />
-      </div>
-      <div
-        class="ssmemberul"
-        v-if="inputShow == false"
-        style="border: 1px solid #f2f2f2; padding: 10px 0"
-      >
-        <div class="ssmemberul-cont">
-          <div class="ssmemberul-imgUrl">
-            <img :src="memberdetails.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
-          </div>
-          <div class="ssmemberul-massge">
-            <div>
-              <span class="ssmemberul-cont-name">{{ memberdetails.NAME }}</span>
-              <!-- <span class="ssmemberul-cont-ka">{{memberdetails.LEVELNAME}}</span> -->
-            </div>
-            <div class="ssmemberul-cont-text">
-              <span style="width: 120px; float: left">卡号 : {{ memberdetails.CODE }}</span>
-              <span style="margin-left: 20px">手机号 : {{ memberdetails.MOBILENO }}</span>
-            </div>
-            <div class="ssmemberul-cont-text">
-              <span style="width: 120px; float: left">
-                储值积分 :
-                <i style="color: #f00">{{ memberdetails.MONEY }}</i>
-              </span>
-            </div>
-          </div>
-
-          <i
-            class="el-icon-delete"
-            style="position: absolute; right: 15px"
-            @click="cancelSignUp"
-          ></i>
+    <div
+      class="ssmemberul"
+      v-if="!inputShow"
+      style="
+        border: 1px solid #f2f2f2;
+        height: 80px;
+        padding: 10px 0;
+        margin-top: 20px;
+        width: 100%;
+        position: relative;
+      "
+    >
+      <div class="ssmemberul-cont" style="padding-left: 20px">
+        <div class="ssmemberul-imgUrl">
+          <img
+            :src="memberdetails.IMAGEURL"
+            style="height: 45px; width: 45px"
+            onerror="this.src='static/images/merberpic.png'"
+          />
         </div>
+        <div class="ssmemberul-massge">
+          <span class="ssmemberul-cont-name">{{ memberdetails.VIPNAME }}</span>
+
+          <div class="ssmemberul-cont-text">
+            <span style="width: 120px; float: left">卡号 : {{ memberdetails.VIPCODE }}</span>
+            <span style="margin-left: 20px">手机号 : {{ memberdetails.VIPMOBILENO }}</span>
+          </div>
+          <div class="ssmemberul-cont-text">
+            <span style="width: 120px; float: left">
+              储值积分 :
+              <i style="color: #f00">{{ memberdetails.MONEY }}</i>
+            </span>
+          </div>
+        </div>
+        <i class="el-icon-delete" style="position: absolute; right: 15px" @click="clearDataFun"></i>
       </div>
-      <ul class="list-module" v-if="datalist.length != 0 && searchText != ''">
-        <li
-          v-for="(item, index) in datalist"
-          @click="appClick(item)"
+    </div>
+
+    <div v-else v-clickOutSide="handleClose">
+      <el-select
+        v-model="memberdetails"
+        v-if="inputShow"
+        filterable
+        remote
+        reserve-keyword
+        :remote-method="remoteMethod"
+        :loading="loadingMember"
+        loading-text="数据加载中..."
+        :default-first-option="true"
+        @change="searchTextFun(memberdetails)"
+        placeholder="请输入会员手机号"
+        popper-class="selectWidth"
+        class="selectStyle"
+        style="width: 100%"
+      >
+        <el-option
+          v-for="(item, index) in noPrizeList"
           :key="index"
-          style="margin-top: 0; padding: 10px"
+          :value="item"
+          style="height: auto; line-height: normal; border-bottom: 1px solid #ddd"
+          class="ssmemberul"
         >
-          <img :src="item.showgoodsimg" onerror="this.src='static/images/merberpic.png'" />
-          <div class="itmeright">
-            <div class="item_dright-left">
-              <div class="name">{{ item.NAME }}</div>
-              <div class="phone">{{ item.MOBILENO }}</div>
-            </div>
-            <div class="item_dright-right">
-              <div style="line-height: 24px">储值积分：{{ item.MONEY }}</div>
-              <div>竞技积分：{{ item.INTEGRAL }}</div>
+          <div style="padding: 10px 0">
+            <div class="ssmemberul-cont">
+              <div class="ssmemberul-imgUrl">
+                <img :src="item.IMAGEURL" onerror="this.src='static/images/merberpic.png'" />
+              </div>
+
+              <div class="newItmeright">
+                <div class="item_dright-left">
+                  <div class="name">{{ item.VIPNAME }}</div>
+                  <div class="phone">{{ item.VIPMOBILENO }}</div>
+                </div>
+
+                <div class="item_dright-right">
+                  <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
+                </div>
+              </div>
             </div>
           </div>
-        </li>
-      </ul>
+        </el-option>
+
+        <div slot="empty" v-if="isEmptyData">
+          <div style="line-height: 60px; width: 100%; color: #888; text-align: center">
+            暂无搜索结果，
+            <i style="color: #409eff; cursor: pointer">添加为会员</i>
+          </div>
+        </div>
+      </el-select>
     </div>
 
     <el-form
@@ -114,7 +146,6 @@
       ref="ruleForm"
       label-width="110px"
       class="ruleFormStyle"
-      v-clickOutSide="handleClose"
     >
       <el-row :gutter="10" style="margin-top: 20px">
         <el-col :xs="24" :sm="11">
@@ -192,6 +223,21 @@
         确定兑换
       </el-button>
     </div>
+
+    <!-- 新增会员 -->
+    <el-dialog
+      title="新增会员"
+      :visible.sync="showAddNew"
+      append-to-body
+      width="800px"
+      style="max-width: 100%"
+    >
+      <add-new-member
+        @closeModal="showAddNew = false"
+        @resetList="showAddNew = false"
+        :dealType="{ type: 'add', searchText: searchText }"
+      ></add-new-member>
+    </el-dialog>
   </div>
 </template>
 
@@ -209,6 +255,7 @@ export default {
   props: ["dataType"],
   data() {
     return {
+       showAddNew: false,
       BillObj: {
         MATCHNAME: ""
       },
@@ -234,25 +281,34 @@ export default {
       loadingReward: false,
       rewardType: 0,
       rechargeRate: 1,
-      buyVipList: []
+      buyVipList: [],
+      loadingMember: false,
+      isEmptyData: false,
+      noPrizeList: []
     };
   },
   computed: {
     ...mapGetters({
-      getssmemberdListState: "ssmemberdListState",
       integralSubmitRewardState: "integralSubmitRewardState",
-      getGameDetailsState: "getGameDetailsState"
+      getGameDetailsState: "getGameDetailsState",
+      integralBuyObjState: "integralBuyObjState",
+      getNoPrizeListState: "getNoPrizeListState"
     })
   },
   watch: {
-    searchText() {
-      this.search_mb();
+    getNoPrizeListState(data) {
+      console.log(data);
+      this.loadingMember = false;
+      if (data.success) {
+        this.noPrizeList = data.data.BuyObj;
+        this.isEmptyData = data.data.BuyObj.length == 0 ? true : false;
+      }
     },
     getGameDetailsState(data) {
       if (data.success) {
         this.BillObj = data.data.BillObj;
-        this.buyVipList = data.data.buyVipList;
         this.rechargeRate = this.BillObj.CHIPSQTY / this.BillObj.BUYINPRICE;
+        this.$store.dispatch("integralBuyObj", { BillId: this.BillObj.BILLID });
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -272,30 +328,37 @@ export default {
         this.$message({ message: data.message, type: "error" });
       }
     },
-    getssmemberdListState(data) {
-      if (data.success) {
-        if (this.isshowtatus) {
-          this.datalist = [...data.data.PageData.DataArr];
-          for (let i = 0; i < this.datalist.length; i++) {
-            if (this.datalist[i].IMAGEURL == undefined || this.datalist[i].IMAGEURL == "") {
-              this.datalist[i].showgoodsimg = VIPIMAGESIMG + this.datalist[i].ID + ".png";
-            } else {
-              this.datalist[i].showgoodsimg = this.datalist[i].IMAGEURL;
-            }
-          }
-        } else {
-          this.datalist = [];
-        }
-      }
-    },
     dataType(data) {
       this.defaultItem();
+    },
+    integralBuyObjState(data) {
+      if (data.success) {
+        this.buyVipList = data.data.BuyObj;
+      } else {
+        this.$message({ message: data.message, type: "error" });
+      }
     }
   },
   methods: {
     handleClose() {
-      this.searchText = "";
-      this.datalist = [];
+      this.noPrizeList = [];
+    },
+    remoteMethod(query) {
+      this.searchText = query;
+      this.$store
+        .dispatch("getNoPrizeList", {
+          VipFilter: query,
+          IsReward: -1,
+          BillId: this.BillObj.BILLID
+        })
+        .then(() => {
+          this.loadingMember = true;
+        });
+    },
+    searchTextFun(item) {
+      this.inputShow = false;
+      this.ruleForm.buyInPrice = item.BUYINMONEY;
+      this.ruleForm.ContestQty = item.REWARDMONEY;
     },
     testPrint() {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print6");
@@ -355,13 +418,13 @@ export default {
     },
     submitReward(type) {
       this.rewardType = type;
-      if (this.memberdetails.ID == undefined) {
+      if (this.memberdetails.VIPID == undefined) {
         this.$message({ message: "请先选择要兑换的会员 ！", type: "warning" });
         return;
       }
 
       let sendData = {
-        VipId: this.memberdetails.ID,
+        VipId: this.memberdetails.VIPID,
         BillId: this.BillObj.BILLID,
         Remark: this.ruleForm.Remark,
         RewardMoney: this.ruleForm.RewardMoney,
@@ -380,6 +443,7 @@ export default {
         Remark: ""
       };
       this.memberdetails = {};
+      this.noPrizeList = []
       this.inputShow = true;
       this.searchText = "";
     },
@@ -390,59 +454,23 @@ export default {
     defaultItem() {
       this.BillObj = this.dataType.BillObj;
       this.buyVipList = this.dataType.buyVipList;
-      console.log(this.buyVipList);
       this.rechargeRate = this.BillObj.CHIPSQTY / this.BillObj.BUYINPRICE;
       let vipInfo = this.dataType.vipInfo;
       if (vipInfo.VIPID != undefined) {
-        this.memberdetails = {
-          ID: vipInfo.VIPID,
-          IMAGEURL: vipInfo.IMAGEURL,
-          NAME: vipInfo.VIPNAME,
-          MOBILENO: vipInfo.VIPMOBILENO,
-          CODE: vipInfo.VIPCODE,
-          INTEGRAL: vipInfo.INTEGRAL,
-          MONEY: vipInfo.MONEY
-        };
+        this.memberdetails = vipInfo;
         this.ruleForm.buyInPrice = vipInfo.BUYINMONEY;
         this.ruleForm.ContestQty = vipInfo.REWARDMONEY;
         this.inputShow = false;
       }
-    },
-    search_mb: _.debounce(function () {
-      this.isshowtatus = true;
-      this.searchfun2(0);
-    }, 1000),
-    getMemberData() {
-      this.$store.dispatch("getSsmemberdList", this.pageData);
-    },
-    searchfun2() {
-      if (!this.searchText) {
-        return;
-      }
-      this.pageData.Filter = this.searchText;
-      this.getMemberData();
-    },
-    appClick(data) {
-      this.inputShow = false;
-      this.searchText = "";
-      this.datalist = [];
-      this.memberdetails = data;
-      let sameVipObj = this.buyVipList.filter(
-        (item) => item.VIPMOBILENO == data.NAME && item.NAME == data.VIPNAME
-      );
-      this.ruleForm.buyInPrice = sameVipObj[0].MONEY;
-      this.ruleForm.ContestQty = sameVipObj[0].CHARGESMONEY;
-    },
-    cancelSignUp() {
-      this.memberdetails = {};
-      this.searchText = "";
-      this.inputShow = true;
     }
+  },
+  components: {
+    addNewMember: () => import("@/components/member/add")
   },
   mounted() {
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名", disabled: false });
+      levelList.push({ name: "第" + i + "名", disabled: false });
     }
     this.levelList = levelList;
 
@@ -453,101 +481,38 @@ export default {
 
 
 <style lang="scss" scoped>
+.selectStyle >>> .el-input__inner {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  background: #fff;
+  margin-top: 20px;
+}
+.selectStyle >>> .el-input__suffix {
+  display: none;
+}
+
 .ruleFormStyle >>> .el-form-item {
   margin-bottom: 0;
 }
-.vue-dropdown.default-theme {
-  position: relative;
-  &._self-show {
-    display: block !important;
-  }
 
-  .search-module {
-    position: relative;
-
-    .search-text {
-      width: 100%;
-      height: 80px;
-      padding-right: 2em;
-      padding-left: 20px;
-      background: rgba(255, 255, 255, 1);
-      border-radius: 2px;
-      border: 1px solid #f2f2f2;
-      border-radius: 6px;
-      //   border: none !important;
-      font-size: 12px;
-      color: rgb(204, 192, 200);
-
-      &:focus {
-        border-color: #2198f2;
-      }
-    }
-
-    .search-icon {
-      position: absolute;
-      top: 24%;
-      right: 0.5em;
-      color: #aaa;
-    }
-  }
-
-  .list-module {
-    max-height: 260px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ddd;
-    width: 600px;
-    z-index: 999;
-    border-top: 1px solid #f2f2f2;
-    position: absolute;
-
-    li {
-      border-bottom: 1px dotted #ddd;
-      padding: 10px;
-      overflow: hidden;
-      position: relative;
-      img {
-        width: 40px;
-        height: 40px;
-        float: left;
-        margin-right: 6px;
-        border-radius: 4px;
-      }
-      .itmeright {
-        align-items: center;
-        display: flex;
-        width: 90%;
-        position: absolute;
-        left: 0;
-        box-sizing: border-box;
-        padding-left: 50px;
-        padding-right: 6px;
-      }
-
-      &._self-hide {
-        display: none;
-      }
-      margin-top: 0.5em;
-      padding: 0.5em;
-      &:hover {
-        cursor: pointer;
-        background: #f5f7fa;
-      }
-      &:last-child {
-        border-bottom: 0;
-      }
-    }
-  }
+.newItmeright {
+  align-items: center;
+  display: flex;
+  width: 90%;
+  position: absolute;
+  left: 0;
+  box-sizing: border-box;
+  padding-left: 56px;
 }
 
 .ssmemberul {
   width: 100%;
-  background: #fff;
   border-radius: 6px;
 }
 .ssmemberul-cont {
   width: 100%;
-  padding-left: 15px;
   display: flex;
   align-items: center;
 }

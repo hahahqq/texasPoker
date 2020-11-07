@@ -1,0 +1,195 @@
+<template>
+	<div class="bg-white paddingTB-md" v-loading="loading">
+		<!-- table-->
+		<el-table
+			border
+			:data="tableList"
+			header-row-class-name="bg-F1F2F3"
+			class="full-width"
+			:style="{ maxWidth: maxWidth + 'px' }"
+			ref="contentTable"
+			:height="tableHeight"
+		>
+			<el-table-column>
+				<el-table-column prop="SHOPNAME" label="门店"></el-table-column>
+				<el-table-column
+					prop="SHOPSALEMONEY"
+					label="营业实收"
+					width="90px"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="SHOPGAINMONEY"
+					label="盈利"
+					width="90px"
+					align="right"
+				></el-table-column>
+			</el-table-column>
+			<el-table-column label="充值" align="center">
+				<el-table-column prop="ADDMONEY" label="金额" align="right"></el-table-column>
+				<el-table-column
+					prop="ADDMONEYBILLCOUNT"
+					label="笔数"
+					align="right"
+				></el-table-column>
+			</el-table-column>
+			<el-table-column label="销售" align="center">
+				<el-table-column
+					prop="SALEMONEY"
+					label="金额"
+					width="90px"
+					align="right"
+				></el-table-column>
+				<el-table-column prop="SALEBILLCOUNT" label="笔数" align="right"></el-table-column>
+				<el-table-column
+					prop="INTEGRALMONEY"
+					label="积分支付"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="SALEPAYMONEY"
+					label="销售实收"
+					width="90px"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="SALEGAINMONEY"
+					label="盈利"
+					width="90px"
+					align="right"
+				></el-table-column>
+			</el-table-column>
+			<el-table-column label="赛事" align="center">
+				<el-table-column
+					prop="MATCHBUYMONEY"
+					label="买入积分"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="MATCHCHARGESMONEY"
+					label="服务费"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="MATCHREWARDMONEY"
+					label="已兑换积分"
+					width="100px"
+					align="right"
+				></el-table-column>
+				<el-table-column
+					prop="MATCHNOTREWARDMONEY"
+					label="未兑换积分"
+					width="100px"
+					align="right"
+				></el-table-column>
+				<el-table-column prop="MATCHGAINMONEY" label="盈利" align="right"></el-table-column>
+			</el-table-column>
+			<!-- "GIFTMONEY": 500, "ADDMONEYSUM": 3021390, -->
+		</el-table>
+		<!-- 分页 -->
+		<div v-if="tableList.length > 0" class="m-top-sm clearfix">
+			<el-pagination
+				@size-change="handlePageChange"
+				@current-change="handlePageChange"
+				:current-page.sync="pagination.PN"
+				:page-size="pagination.PageSize"
+				layout="total,prev, pager, next, jumper"
+				:total="pagination.TotalNumber"
+				class="text-right"
+			></el-pagination>
+		</div>
+		<div v-else style="height: 42px"></div>
+	</div>
+</template>
+<script>
+import { mapState, mapGetters } from "vuex";
+import { getHomeData } from "@/api/index";
+import { indexQuery } from "@/store/modules2/report/indexFun.js";
+export default {
+	props: {
+		pageData: {
+			type: Object,
+			default: {
+				ShopId: "",
+				BeginDate: "",
+				EndDate: "",
+				show: false,
+				type: 1
+			}
+		}
+	},
+	data() {
+		return {
+			loading: false,
+			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+			tableList: [],
+			pagination: {
+				TotalNumber: 0,
+				PageNumber: 0,
+				PageSize: 20,
+				PN: 0
+			},
+			maxWidth: window.innerWidth - 212,
+			tableHeight: 300
+		};
+	},
+	computed: {
+		...mapGetters({}),
+		dataListState() {
+			return this.$store.getters.cReportDataState.sum;
+		}
+	},
+	watch: {
+		pageData(data) {
+			if (data.show && data.type == 2) {
+				this.defaultData();
+			}
+		},
+		dataListState(data) {
+			if (this.loading) {
+				if (data.success) {
+					this.pagination = Object.assign({}, data.paying);
+					this.tableList = [...data.List];
+				} else {
+					this.$message.error(data.message);
+				}
+			}
+			this.loading = false;
+		}
+	},
+	methods: {
+		getNewData() {
+			this.loading = true;
+			indexQuery.shop(this, "sum", this.formData);
+		},
+		handlePageChange: function (currentPage) {
+			if (this.formData.PN == currentPage || this.loading) {
+				return;
+			}
+			this.formData.PN = parseInt(currentPage);
+			this.getNewData();
+		},
+		defaultData() {
+			this.formData = Object.assign({}, this.pageData);
+			this.getNewData();
+		},
+		setHeight() {
+			if (this.$refs.contentTable) {
+				let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
+				let marginSpace = 10 * 3,
+					pager = 42;
+				this.$nextTick(() => {
+					this.tableHeight = window.innerHeight - top - marginSpace - pager;
+				});
+			}
+		}
+	},
+	mounted() {
+		if (this.pageData.show && this.pageData.type == 2) {
+			this.defaultData();
+		}
+		this.setHeight();
+	}
+};
+</script>
+

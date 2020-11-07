@@ -299,7 +299,7 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
     hPos = PrintLODOPcommon('会员姓名:', VIPNAME, hPos);
   }
   if (!pringInfo || pringInfo.ddList3[2].isShow) { //
-    hPos = PrintLODOPcommon('储值余额:', CURRMONEY, hPos);
+    hPos = PrintLODOPcommon('储值积分:', CURRMONEY, hPos);
   }
   if (ItemsHeaderType != 4) {
     if (!pringInfo || pringInfo.ddList3[3].isShow) { //

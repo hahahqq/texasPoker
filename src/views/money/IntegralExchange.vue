@@ -22,7 +22,7 @@
                   "
                 >
                   <div class="commodityc-top">
-                    <span class="title">商品消费</span>
+                    <span class="title">会员领奖</span>
                     <span class="commodityc-top-text" @click="clearData">清空页面</span>
                   </div>
                   <div style="">
@@ -67,18 +67,6 @@
                       </ul>
                     </div>
                     <div class="timescountc_left_footer" ref="footer">
-                      <div
-                        style="margin: 12px 0; height: 40px; background: #fff; line-height: 40px"
-                      >
-                        <el-row>
-                          <el-col :span="12" style="text-align: center">
-                            <el-checkbox v-model="checkedreceipt">打印小票</el-checkbox>
-                          </el-col>
-                          <el-col :span="12" style="text-align: center">
-                            <el-checkbox v-model="IsSms">短信通知</el-checkbox>
-                          </el-col>
-                        </el-row>
-                      </div>
                       <div>
                         <el-input
                           :rows="2"
@@ -86,17 +74,38 @@
                           placeholder="请输入备注信息"
                         ></el-input>
                       </div>
-                      <div
-                        class="footer_top"
-                        style="margin-top: 10px; line-height: 60px; background: #fff"
-                      >
+
+                      <div class="footer_top" style="margin-top: 10px; padding-bottom: 10px">
+                        <div
+                          style="
+                            width: 100%;
+                            height: 40px;
+                            background: #fff;
+                            margin-bottom: 10px;
+                            line-height: 40px;
+                          "
+                        >
+                          <el-row>
+                            <el-col :span="12" style="text-align: center">
+                              <el-checkbox v-model="checkedreceipt">打印小票</el-checkbox>
+                            </el-col>
+                            <el-col :span="12" style="text-align: center">
+                              <el-checkbox v-model="IsSms">短信通知</el-checkbox>
+                            </el-col>
+                          </el-row>
+                        </div>
+
                         <el-row>
                           <el-col :span="12">
-                            <span style="display: inline-block; margin-left: 10px">
+                            <span
+                              style="display: inline-block; margin-left: 10px"
+                              v-if="addobjCountList.length != 0"
+                            >
                               数量 :&nbsp;&nbsp;{{ totalTotal.num }}
                             </span>
-                            ,
+                            &nbsp;
                             <span
+                              v-if="addobjCountList.length != 0"
                               style="
                                 display: inline-block;
                                 margin-left: 5px;
@@ -104,6 +113,7 @@
                                 font-weight: bold;
                               "
                             >
+                              ,
                               <span class="priceTol">{{ totalTotal.GIFTINTEGRAL }} 积分</span>
                             </span>
                           </el-col>
@@ -116,23 +126,13 @@
                               type="primary"
                               style="margin-right: 10px"
                               @click="co_reckoning"
+                              :loading="submitLoading"
                             >
                               收款
                             </el-button>
                           </el-col>
                         </el-row>
                       </div>
-                      <!-- <div class="footer_top" style="margin: 5px 0;">
-                        <el-row class="footer_btn">
-                           <el-col :span="12">
-                                 <span>数量&nbsp;&nbsp;{{totalTotal.num}}</span>,
-                                 <span style="display: inline-block;margin-left:5px;">积分&nbsp;&nbsp;<span class="integralTol">{{totalTotal.GIFTINTEGRAL}}</span></span>
-                           </el-col>
-                           <el-col :span="12" style="text-align:right">
-                                 <el-button style="width:150px;" type="primary" size="medium" @click="co_reckoning">兑换</el-button>
-                           </el-col>
-                        </el-row>
-                     </div> -->
                     </div>
                   </div>
                 </el-col>
@@ -395,7 +395,8 @@ export default {
         GIFTINTEGRAL: 0,
         discount: 0
       },
-      checkedreceipt: getOthersData().isprint ? true : false,
+      checkedreceipt: true,
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       IsSms: false,
       checkedmessage: false,
       pagelist: [],
@@ -414,7 +415,6 @@ export default {
         DescType: 0
       },
       showyjemployee: false,
-      showRecharge: false,
       shopitemList: {},
       showTishi: "",
       putUpokstatus: "",
@@ -424,7 +424,13 @@ export default {
       activePath: "",
       shopName: getUserInfo().CompanyName,
       tableHeight: document.body.clientHeight - 175,
-      clientHeight: document.body.clientHeight - 50
+      clientHeight: document.body.clientHeight - 50,
+      memberdetails: {},
+      payMoneyDetails: {
+        money: 0,
+        integral: 0
+      },
+      submitLoading: false
     };
   },
   computed: {
@@ -461,7 +467,6 @@ export default {
         this.objCount = data.data.objCount;
       }
     },
-
     dataListState(data) {
       this.loading = false;
       this.isFilter = false;
@@ -486,8 +491,8 @@ export default {
       }
     },
     integralExchange(data) {
+      this.submitLoading = false;
       if (data.success) {
-        this.loading = false;
         this.$message({ message: "操作成功", type: "success" });
 
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print5");
@@ -567,11 +572,12 @@ export default {
       } else {
         vipInfo[0].value = this.memberdetails.CODE;
         vipInfo[1].value = this.memberdetails.NAME;
-        vipInfo[2].value = this.memberdetails.MONEY;
+        vipInfo[2].value =
+          Number(this.memberdetails.INTEGRAL) - Number(this.payMoneyDetails.integral);
         if (this.splitIntegral) {
           vipInfo.push({
-            label: "竞技积分",
-            value: this.memberdetails.INTEGRAL - this.totalTotal.GIFTINTEGRAL,
+            label: "储值积分",
+            value: this.memberdetails.MONEY - this.payMoneyDetails.money,
             isShow: vipInfo[2].isShow
           });
         }
@@ -589,6 +595,7 @@ export default {
         jsonPrintData,
         { billInfo: billInfo },
         { saleInfo: saleInfo },
+        { vipInfo: vipInfo },
         { goodsList: newGoodsList }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
@@ -682,11 +689,16 @@ export default {
     },
     clearData() {
       this.VipId = "";
+      this.memberdetails = {};
       this.addobjCountList = [];
       this.totalTotal = {
         num: 0,
         GIFTINTEGRAL: 0,
         discount: 0
+      };
+      this.payMoneyDetails = {
+        money: 0,
+        integral: 0
       };
       this.$store
         .dispatch("selectingMember", {
@@ -703,6 +715,7 @@ export default {
     // 会员选择
     getmemberID(id, data) {
       this.VipId = id;
+      this.memberdetails = data;
       this.$store.dispatch("selectingMember", {
         isArr: false,
         data: data
@@ -828,40 +841,78 @@ export default {
           });
         });
     },
-
     addjiajianhao1(i, e) {
       this.addobjCountList[i].Qty = e;
-      console.log(e);
       this.dealTotalData();
     },
     co_reckoning() {
-      let shopList = [];
+      if (this.addobjCountList.length == 0) {
+        this.$message("请选择商品！");
+        return;
+      }
 
+      if (this.memberdetails.ID == undefined) {
+        this.$message.warning("请选择会员！");
+        return;
+      }
+
+      let a = this.totalTotal.GIFTINTEGRAL,
+        b = this.memberdetails.INTEGRAL,
+        c = this.memberdetails.MONEY,
+        d = 0,
+        e = 0;
+      if (this.splitIntegral) {
+        if (b >= a) {
+          d = a;
+          e = 0;
+        } else if (b + c >= a) {
+          d = b;
+          e = a - b;
+        } else if (c >= a) {
+          d = 0;
+          e = a;
+        }
+      } else {
+        if (c >= a) {
+          e = a;
+          d = 0;
+        }
+      }
+
+      this.payMoneyDetails = {
+        money: e,
+        integral: d
+      };
+
+      console.log("竞技积分：" + d, "储值积分：" + e);
+      let payMoney = e,
+        payIntegral = d;
+
+      let goodsList = [];
       for (var i in this.addobjCountList) {
         let Obj = {
           GoodsId: this.addobjCountList[i].GoodsId,
           Qty: this.addobjCountList[i].Qty,
           Price: this.addobjCountList[i].PRICE,
-          PayIntegral: this.addobjCountList[i].allIntegral,
+          PayIntegral: this.addobjCountList[i].allIntegral * this.addobjCountList[i].Qty,
           giftName: this.addobjCountList[i].goodsname,
-          giftCode: this.addobjCountList[i].CODE,
-          giftintegral: this.addobjCountList[i].GIFTINTEGRAL
+          giftCode: this.addobjCountList[i].CODE
         };
-        shopList.push(Obj);
+        goodsList.push(Obj);
       }
+
+      this.submitLoading = true;
+
       this.$store.dispatch("getIntegralExchange", {
-        PayIntegral: this.totalTotal.GIFTINTEGRAL,
+        PayIntegral: payIntegral,
+        PayMoney: payMoney,
         Remark: this.Remark,
         VipId: this.VipId,
         IsSms: this.IsSms,
-        goodsdetail: JSON.stringify(shopList)
+        goodsdetail: JSON.stringify(goodsList)
       });
-      if (this.addobjCountList.length == 0) {
-        this.$message("请选择商品");
-        return;
-      }
+
       nscreenexCodeFun(4, String(this.totalTotal.GIFTINTEGRAL));
-      this.showRecharge = true;
     },
     setcommonHeight() {
       let elememtheight = this.$refs.elememt.offsetHeight;
@@ -998,13 +1049,13 @@ export default {
 
 .timescountc_left_footer {
   position: absolute;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
 }
 
 /*模板样式*/
 .timescountc_right .tablelcenter {
-  height: 60px;
+  /* height: 60px; */
   overflow: hidden;
   position: relative;
   border: 1px solid #ded9d9;

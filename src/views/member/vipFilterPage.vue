@@ -155,14 +155,14 @@ export default {
             if(i == 0){ // 今天
                // 现在的时间 大于 营业时间, 为今天
                beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate
-               endTime = todayDate.format('YYYY-MM-DD HH:mm');
+               endTime = todayDate.format('YYYY-MM-DD HH:mm:ss');
             }else if(i == 1){  // 昨日
                beginFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? yesterdayDate : dayjs().subtract(2, 'day').format('YYYY-MM-DD');
                endFormat = nowHourMiusToNumber >= bussinessTimeToNumber ? todayDate.format('YYYY-MM-DD') : yesterdayDate ;
                endTime = endFormat + " " + this.bussinessTime+':00';
             }else if(i == 2){  // 本月
                beginFormat = dayjs().year()+'-'+curMonth+'-'+1
-               endTime = dayjs().endOf('month').format('YYYY-MM-DD HH:mm')
+               endTime = dayjs().endOf('month').format('YYYY-MM-DD HH:mm:ss')
             }else if(i == 3){  // 上月
                beginFormat = dayjs().year()+'-'+dayjs().month()+'-'+1;
                endFormat = dayjs().year()+'-'+curMonth+'-'+1;

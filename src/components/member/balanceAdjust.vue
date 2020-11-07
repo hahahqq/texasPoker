@@ -85,6 +85,7 @@ export default {
     dataState(data) {
       this.loading = false;
       if (data.success) {
+         this.$store.dispatch("getMemberItem2", { ID: this.theData.ID });
         this.$store.dispatch("clearMember", 4);
         this.$emit("resetData");
       }else{

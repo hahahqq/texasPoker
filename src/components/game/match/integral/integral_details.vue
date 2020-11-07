@@ -70,7 +70,7 @@
                   {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
                   {{
                     BillObj.CHARGESTYPE == 0
-                      ? BillObj.TOTALMONEY * BillObj.CHARGESRATE +
+                      ? BillObj.CHARGESMONEY +
                         " ( 比例 " +
                         BillObj.CHARGESRATE * 100 +
                         "% ) "
@@ -79,10 +79,16 @@
                 </el-col>
 
                 <el-col :span="6">
-                  奖池总积分：<i style="color:red"> {{ BillObj.EXCHANGEINTEGRAL + BillObj.NOTEXCHANGEINTEGRAL }} </i>
+                  奖池总积分：
+                  <i style="color: red">
+                    {{ BillObj.EXCHANGEINTEGRAL + BillObj.NOTEXCHANGEINTEGRAL }}
+                  </i>
                 </el-col>
 
-                <el-col :span="6"> 已兑换积分：<i style="color:red">{{ BillObj.EXCHANGEINTEGRAL }} </i> </el-col>
+                <el-col :span="6">
+                  已兑换积分：
+                  <i style="color: red">{{ BillObj.EXCHANGEINTEGRAL }}</i>
+                </el-col>
               </el-row>
             </div>
           </div>
@@ -90,6 +96,7 @@
           <el-tabs
             type="card"
             v-model="tabs"
+            class="tabsStyle"
             @tab-click="selectTabFun(tabs)"
             style="margin-top: 10px"
           >
@@ -106,82 +113,116 @@
             v-if="tabs == 0"
             class="ruleFormStyle"
             style="width: 60%"
-            v-clickOutSide="handleClose"
           >
             <!-- 会员选择 -->
-            <div class="vue-dropdown default-theme">
-              <div class="search-module clearfix" v-if="inputShow == true">
-                <input
-                  class="search-text"
-                  v-model="searchText"
-                  placeholder="输入会员手机号/姓名/卡号"
-                />
-                <span style="position: absolute; right: 20px; line-height: 80px; color: #aaa">
-                  该客人还未办卡,
-                  <el-button type="text" @click="showAddNew = true">新建会员 - F7</el-button>
+            <div
+              class="ssmemberul"
+              v-if="!inputShow"
+              style="
+                border: 1px solid #f2f2f2;
+                height: 80px;
+                padding: 10px 0;
+                width: 100%;
+                position: relative;
+              "
+            >
+              <div class="ssmemberul-cont" style="padding-left: 20px">
+                <div class="ssmemberul-imgUrl">
+                  <img
+                    :src="memberdetails.IMAGEURL"
+                    style="height: 45px; width: 45px"
+                    onerror="this.src='static/images/merberpic.png'"
+                  />
+                </div>
+                <div class="ssmemberul-massge">
+                  <span class="ssmemberul-cont-name">{{ memberdetails.NAME }}</span>
+
+                  <div class="ssmemberul-cont-text">
+                    <span style="width: 120px; float: left">卡号 : {{ memberdetails.CODE }}</span>
+                    <span style="margin-left: 20px">手机号 : {{ memberdetails.MOBILENO }}</span>
+                  </div>
+                  <div class="ssmemberul-cont-text">
+                    <span style="width: 120px; float: left">
+                      储值积分 :
+                      <i style="color: #f00">{{ memberdetails.MONEY }}</i>
+                    </span>
+                  </div>
+                </div>
+                <i class="el-icon-delete" @click="cancelSignUp"></i>
+
+                <span
+                  class="rechargeMoney"
+                  style="position: absolute; right: 15px; color: #409eff"
+                  @click="rechargeFun()"
+                >
+                  充值 - F8
+                  <i class="el-icon-arrow-right"></i>
                 </span>
               </div>
-              <div
-                class="ssmemberul"
-                v-if="inputShow == false"
-                style="border: 1px solid #f2f2f2; padding: 10px 0"
-              >
-                <div class="ssmemberul-cont">
-                  <div class="ssmemberul-imgUrl">
-                    <img
-                      :src="memberdetails.IMAGEURL"
-                      onerror="this.src='static/images/merberpic.png'"
-                    />
-                  </div>
-                  <div class="ssmemberul-massge">
-                    <div>
-                      <span class="ssmemberul-cont-name">{{ memberdetails.NAME }}</span>
-                      <span class="ssmemberul-cont-ka">{{ memberdetails.LEVELNAME }}</span>
-                    </div>
-                    <div class="ssmemberul-cont-text">
-                      <span style="width: 120px; float: left">卡号 : {{ memberdetails.CODE }}</span>
-                      <span style="margin-left: 20px">手机号 : {{ memberdetails.MOBILENO }}</span>
-                    </div>
-                    <div class="ssmemberul-cont-text">
-                      <span>
-                        储值积分 :
-                        <i style="color: #409eff">{{ memberdetails.MONEY }}</i>
-                      </span>
-                    </div>
-                  </div>
-
-                  <i class="el-icon-delete" @click="cancelSignUp"></i>
-
-                  <span
-                    class="rechargeMoney"
-                    style="position: absolute; right: 15px; color: #409eff"
-                    @click="rechargeFun()"
-                  >
-                    充值 - F8
-                    <i class="el-icon-arrow-right"></i>
-                  </span>
-                </div>
-              </div>
-              <ul class="list-module" v-if="datalist.length != 0 && searchText != ''">
-                <li
-                  v-for="(item, index) in datalist"
-                  @click="appClick(item)"
-                  :key="index"
-                  style="margin-top: 0; padding: 10px"
-                >
-                  <img :src="item.showgoodsimg" onerror="this.src='static/images/merberpic.png'" />
-                  <div class="itmeright">
-                    <div class="item_dright-left">
-                      <div class="name">{{ item.NAME }}</div>
-                      <div class="phone">{{ item.MOBILENO }}</div>
-                    </div>
-                    <div class="item_dright-right">
-                      <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
-                    </div>
-                  </div>
-                </li>
-              </ul>
             </div>
+
+            <div style="position: relative" v-else v-clickOutSide="handleClose">
+              <el-select
+                v-model="memberdetails"
+                filterable
+                remote
+                reserve-keyword
+                :remote-method="remoteMethod"
+                :loading="loadingMember"
+                loading-text="数据加载中..."
+                :default-first-option="true"
+                @change="searchTextFun(memberdetails)"
+                placeholder="输入会员手机号/姓名/卡号"
+                popper-class="selectWidth"
+                class="selectStyle"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="(item, index) in datalist"
+                  :key="index"
+                  :value="item"
+                  style="height: auto; line-height: normal; border-bottom: 1px solid #ddd"
+                  class="ssmemberul"
+                >
+                  <div style="padding: 10px 0">
+                    <div class="ssmemberul-cont">
+                      <div class="ssmemberul-imgUrl">
+                        <img
+                          :src="item.IMAGEURL"
+                          onerror="this.src='static/images/merberpic.png'"
+                        />
+                      </div>
+
+                      <div class="newItmeright">
+                        <div class="item_dright-left">
+                          <div class="name">{{ item.NAME }}</div>
+                          <div class="phone">{{ item.MOBILENO }}</div>
+                        </div>
+
+                        <div class="item_dright-right">
+                          <div style="line-height: 48px">储值积分：{{ item.MONEY }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </el-option>
+
+                <div slot="empty" v-if="isEmptyData">
+                  <div style="line-height: 60px; width: 100%; color: #888; text-align: center">
+                    暂无搜索结果，
+                    <i style="color: #409eff; cursor: pointer" @click="showAddNew = true">
+                      添加为会员
+                    </i>
+                  </div>
+                </div>
+              </el-select>
+
+              <span style="position: absolute; right: 20px; line-height: 80px; color: #aaa">
+                客人未办卡,
+                <el-button type="text" @click="showAddNew = true">新建会员 - F7</el-button>
+              </span>
+            </div>
+            <!-- 会员选择 - end -->
 
             <el-row :gutter="10" style="margin-top: 20px">
               <el-col :xs="24" :sm="11">
@@ -192,7 +233,7 @@
                     disabled
                     class="redColor"
                     size="small"
-                    style="width: 100%; color:#f00"
+                    style="width: 100%; color: #f00"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -200,7 +241,7 @@
               <el-col :xs="24" :sm="2">&nbsp;</el-col>
 
               <el-col :xs="24" :sm="11">
-                <el-form-item label="优惠积分">
+                <el-form-item label="优惠积分" class="couponStyle">
                   <el-input
                     placeholder="请输入优惠积分或选择优惠券"
                     class="coupons"
@@ -215,7 +256,7 @@
               </el-col>
             </el-row>
 
-            <el-row :gutter="10"  style='margin-top: 10px'>
+            <el-row :gutter="10" style="margin-top: 10px">
               <el-col :xs="24" :sm="11">
                 <el-form-item label="Buyin手数">
                   <el-input-number
@@ -229,8 +270,7 @@
               </el-col>
             </el-row>
 
-            <el-row  :gutter="10"  style='margin-top: 10px'>
-
+            <el-row :gutter="10" style="margin-top: 10px">
               <el-col :xs="24" :sm="11">
                 <el-form-item label="消费积分">
                   <el-input
@@ -260,14 +300,14 @@
               </el-col>
             </el-row>
 
-            <el-row :gutter="10" style='margin-top: 10px'>
+            <el-row :gutter="10" style="margin-top: 10px">
               <el-col :xs="24" :sm="24">
                 <el-form-item label="备 注">
                   <el-input
                     v-model="formIntegral.Remark"
                     placeholder="请输入备注"
                     size="small"
-                    type='textarea'
+                    type="textarea"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
@@ -434,9 +474,10 @@
             title="会员充值"
             :visible.sync="showRechargeDialog"
             append-to-body
-            width="600px"
+            width="700px"
           >
             <vipRecharge
+              v-if="showRechargeDialog"
               @closeVipRecharge="showRechargeDialog = false"
               @referData="referData"
               :dataType="{ memberdetails: memberdetails }"
@@ -452,8 +493,13 @@
             style="max-width: 100%"
           >
             <add-new-member
-              @closeModal="showAddNew = false"
+              v-if="showAddNew"
+              @closeModal="
+                showAddNew = false;
+                searchText = '';
+              "
               @resetList="showAddNew = false"
+              :dealType="{ type: 'add', searchText: searchText }"
             ></add-new-member>
           </el-dialog>
         </el-main>
@@ -467,12 +513,12 @@ let _ = require("lodash");
 import Vue from "vue";
 import { mapState, mapGetters } from "vuex";
 import { getHomeData, getUserInfo } from "@/api/index";
-import { VIPIMAGESIMG } from "@/util/define";
+import { VIPIMAGESIMG, SYSTEM_INFO } from "@/util/define";
 import MIXINS_GAME from "@/mixins/game.js";
 import CRYPTO from "crypto-js";
-import { SYSTEM_INFO } from "@/util/define.js";
 import dayjs from "dayjs";
 import { getDayindata } from "@/util/testPrinting";
+import { isPurViewFun } from "@/util/com/common.js";
 
 export default {
   mixins: [MIXINS_GAME.GAME_MENU],
@@ -525,7 +571,9 @@ export default {
       showAddNew: false,
       loading: false,
       loadingTemplate: false,
-      disabledSignUp: true
+      disabledSignUp: true,
+      loadingMember: false,
+      isEmptyData: false
     };
   },
   created() {
@@ -572,7 +620,6 @@ export default {
         data.data.obj.LEVELNAME = data.data.obj.DISCOUNTNAME
           ? data.data.obj.DISCOUNTNAME
           : "无折扣";
-        this.appClick(data.data.obj);
       }
     },
     integralCancelVipRewardState(data) {
@@ -597,19 +644,24 @@ export default {
       }
     },
     getssmemberdListState(data) {
+      this.loadingMember = false;
       if (data.success) {
-        if (this.isshowtatus) {
-          this.datalist = [...data.data.PageData.DataArr];
-          for (let i = 0; i < this.datalist.length; i++) {
-            if (this.datalist[i].IMAGEURL == undefined || this.datalist[i].IMAGEURL == "") {
-              this.datalist[i].showgoodsimg = VIPIMAGESIMG + this.datalist[i].ID + ".png";
+        let _data = [...data.data.PageData.DataArr],
+          newData = [];
+        if (_data.length != 0) {
+          for (let i = 0; i < _data.length; i++) {
+            if (_data[i].IMAGEURL == undefined || _data[i].IMAGEURL == "") {
+              _data[i].showgoodsimg = VIPIMAGESIMG + _data[i].ID + ".png";
             } else {
-              this.datalist[i].showgoodsimg = this.datalist[i].IMAGEURL;
+              _data[i].showgoodsimg = _data[i].IMAGEURL;
             }
+            newData.push(_data[i]);
           }
+          this.isEmptyData = false;
         } else {
-          this.datalist = [];
+          this.isEmptyData = true;
         }
+        this.datalist = newData;
       }
     },
     integralExitGameState(data) {
@@ -660,8 +712,24 @@ export default {
   },
   methods: {
     handleClose() {
-      this.searchText = "";
       this.datalist = [];
+      console.log("clear vipList");
+    },
+    remoteMethod(query) {
+      this.pageData.Filter = query;
+      this.searchText = query;
+      this.$store.dispatch("getSsmemberdList", this.pageData).then(() => {
+        this.loadingMember = true;
+      });
+    },
+    searchTextFun(item) {
+      this.inputShow = false;
+      this.buyQty = 1;
+      this.receivableprice = this.BillObj.BUYINNEEDPRICE * this.buyQty;
+      this.integralGroupFun(
+        item,
+        this.BillObj.BUYINNEEDPRICE * this.buyQty - Number(this.couponIntegral)
+      );
     },
     testPrint() {
       let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print4");
@@ -704,8 +772,15 @@ export default {
       }
     },
     rechargeFun() {
-      this.showRechargeDialog = true;
-      this.$store.dispatch("getstoragevaluerroyaltyState", {});
+      if (this.isPurViewFun(92100105)) {
+        this.showRechargeDialog = true;
+        this.$store.dispatch("getstoragevaluerroyaltyState", {});
+      } else {
+        this.$message({
+          message: "暂无会员充值权限！",
+          type: "warning"
+        });
+      }
     },
     loadingData() {
       this.loadingTemplate = true;
@@ -753,6 +828,7 @@ export default {
     },
     closeAllRewardDialog() {
       this.showRewardVipDialog = false;
+      this.vipInfo = {};
       this.$store.dispatch("getGameDetails", { BillId: this.BillObj.BILLID });
     },
     receivePrize() {
@@ -787,7 +863,7 @@ export default {
           inputErrorMessage: "请输入六位数的密码"
         })
           .then(({ value }) => {
-            let cvalue = value != "888888" ? CRYPTO.MD5(value).toString() : "888888";
+            let cvalue = pwd != "888888" ? CRYPTO.MD5(value).toString() : "888888";
             if (pwd == cvalue) {
               this.CashPayok();
             } else {
@@ -812,6 +888,7 @@ export default {
       });
     },
     cancelSignUp() {
+       this.datalist = []
       this.memberdetails = {};
       this.couponIntegral = "";
       this.searchText = "";
@@ -823,31 +900,8 @@ export default {
       this.tabs = "0";
       this.inputShow = true;
     },
-    search_mb: _.debounce(function () {
-      this.isshowtatus = true;
-      this.searchfun2(0);
-    }, 1000),
     getMemberData() {
       this.$store.dispatch("getSsmemberdList", this.pageData);
-    },
-    searchfun2() {
-      if (!this.searchText) {
-        return;
-      }
-      this.pageData.Filter = this.searchText;
-      this.getMemberData();
-    },
-    appClick(data) {
-      this.inputShow = false;
-      this.searchText = "";
-      this.datalist = [];
-      this.buyQty = 1;
-      this.memberdetails = data;
-      this.receivableprice = this.BillObj.BUYINNEEDPRICE * this.buyQty;
-      this.integralGroupFun(
-        data,
-        this.BillObj.BUYINNEEDPRICE * this.buyQty - Number(this.couponIntegral)
-      );
     },
     editBill() {
       this.$store.dispatch("getEventsListAll", { Type: 3 }).then(() => {
@@ -896,11 +950,18 @@ export default {
         .catch(() => {});
     },
     modifyCouponMoney(couponIntegral) {
-      this.receivableprice = this.BillObj.BUYINNEEDPRICE * this.buyQty;
-      this.integralGroupFun(
-        this.memberdetails,
-        this.BillObj.BUYINNEEDPRICE * this.buyQty - couponIntegral
-      );
+      if (this.memberdetails.ID == undefined) {
+        this.$message.warning("请先选择会员 ！");
+        return;
+      }
+      let lastSignUpIntegral = this.BillObj.BUYINNEEDPRICE * this.buyQty;
+      if (Number(couponIntegral) > Number(lastSignUpIntegral)) {
+        this.$message.warning("优惠积分不能大于报名积分");
+        this.couponIntegral = lastSignUpIntegral;
+      }
+
+      this.receivableprice = lastSignUpIntegral;
+      this.integralGroupFun(this.memberdetails, lastSignUpIntegral - this.couponIntegral);
     },
     integralGroupFun(data, BUYINPRICE) {
       // a: 报名积分， b: 储值积分
@@ -963,114 +1024,65 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.redColor >>> .el-input__inner{
-   color:red !important
+.tabsStyle >>> .el-tabs__header .el-tabs__item {
+  color: #aaa !important;
+  background: #f2f2f2 !important;
+  border-left: 1px solid #dddddd !important;
 }
-.blackColor >>> .el-input__inner{
-   color:black !important
+
+.tabsStyle >>> .el-tabs__header .el-tabs__item:first-child {
+  border-left: none !important;
+}
+
+.tabsStyle >>> .el-tabs__header .el-tabs__item.is-active {
+  background: #fff !important;
+  color: #409eff !important;
+}
+.selectStyle >>> .el-input__inner {
+  width: 100%;
+  height: 80px;
+  line-height: 80px;
+  padding: 0 20px;
+  background: #fff;
+}
+.selectStyle >>> .el-input__suffix {
+  display: none;
+}
+
+.newItmeright {
+  align-items: center;
+  display: flex;
+  width: 90%;
+  position: absolute;
+  left: 0;
+  box-sizing: border-box;
+  padding-left: 56px;
+}
+.redColor >>> .el-input__inner {
+  color: red !important;
+}
+.blackColor >>> .el-input__inner {
+  color: black !important;
 }
 .ruleFormStyle >>> .el-form-item {
   margin-bottom: 0;
 }
 .coupons >>> .el-input-group__append {
-  background: #409eff;
-  color: #fff;
-  border: 1px solid #409eff;
+  background: #f5f7fa;
+  color: #606266;
+  border: 1px solid #dcdfe6;
+  border-left: none;
 }
-.vue-dropdown.default-theme {
-  position: relative;
-  &._self-show {
-    display: block !important;
-  }
-
-  .search-module {
-    position: relative;
-
-    .search-text {
-      width: 100%;
-      height: 80px;
-      padding-right: 2em;
-      padding-left: 20px;
-      background: rgba(255, 255, 255, 1);
-      border-radius: 2px;
-      border: 1px solid #f2f2f2;
-      border-radius: 6px;
-      //   border: none !important;
-      font-size: 12px;
-      color: rgb(204, 192, 200);
-
-      &:focus {
-        border-color: #2198f2;
-      }
-    }
-
-    .search-icon {
-      position: absolute;
-      top: 24%;
-      right: 0.5em;
-      color: #aaa;
-    }
-  }
-
-  .list-module {
-    max-height: 260px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid #ddd;
-    width: 600px;
-    z-index: 999;
-    border-top: 1px solid #f2f2f2;
-    position: absolute;
-
-    li {
-      border-bottom: 1px dotted #ddd;
-      padding: 10px;
-      overflow: hidden;
-      // border-bottom: 1px solid #ccc;
-      position: relative;
-
-      img {
-        width: 40px;
-        height: 40px;
-        float: left;
-        margin-right: 6px;
-        border-radius: 4px;
-      }
-      .itmeright {
-        align-items: center;
-        display: flex;
-        width: 90%;
-        position: absolute;
-        left: 0;
-        box-sizing: border-box;
-        padding-left: 50px;
-        padding-right: 6px;
-      }
-
-      &._self-hide {
-        display: none;
-      }
-      margin-top: 0.5em;
-      padding: 0.5em;
-      &:hover {
-        cursor: pointer;
-        background: #f5f7fa;
-      }
-      &:last-child {
-        border-bottom: 0;
-      }
-    }
-  }
+.couponStyle >>> .el-input-group {
+  vertical-align: initial;
 }
 
 .ssmemberul {
   width: 100%;
-  background: #fff;
   border-radius: 6px;
 }
 .ssmemberul-cont {
   width: 100%;
-  padding-left: 15px;
   display: flex;
   align-items: center;
 }

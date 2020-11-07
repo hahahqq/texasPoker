@@ -48,7 +48,7 @@ const actions = {
       ShipIDList:data.ShopId?data.ShopId:'',
       BeginDate:data.BeginDate?data.BeginDate :1,
       EndDate:data.EndDate?data.EndDate : 9999999999999,
-      PN: data.PN,
+      PN: data.PN ? data.PN : 1
     };
     commonSend.commonSend('get',data => {
       commit(GET_DEFRAYREPORT_DATA, { data })

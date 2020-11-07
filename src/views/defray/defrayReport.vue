@@ -26,17 +26,23 @@
                 :height="tableHeight"
                 header-row-class-name="bg-theme2 text-white"
               >
-                <el-table-column
-                  type="index"
-                  label="序号"
-                  align="center"
-                  width="80"
-                ></el-table-column>
-                <el-table-column prop="ITEMNAME" label="排名" width="120"></el-table-column>
-                <el-table-column prop="BILLCOUNT" label="费用项目"></el-table-column>
-                <el-table-column prop="FRATE" label="笔数"></el-table-column>
+                <el-table-column type="index" label="排名" width="120"></el-table-column>
+                <el-table-column prop="ITEMNAME" label="费用项目"></el-table-column>
+                <el-table-column prop="BILLCOUNT" label="笔数"></el-table-column>
                 <el-table-column prop="MONEY" label="金额"></el-table-column>
-                <el-table-column prop="MONEY" label="占比"></el-table-column>
+                <el-table-column prop="FRATE" label="占比">
+                   <template slot-scope="scope">
+                   <div>{{ parseFloat(scope.row.FRATE * 100).toFixed(2) }} %</div>
+							<div >
+								<el-progress
+									:show-text="false"
+									:stroke-width="18"
+									:percentage="scope.row.FRATE * 100"
+									:color="customColors"
+								></el-progress>
+							</div>
+                     </template>
+                </el-table-column>
               </el-table>
             </div>
 
@@ -69,6 +75,14 @@ export default {
   mixins: [MIXINS_DEFRAY.DEFRAY_MENU],
   data() {
     return {
+       customColors: [
+          {color: '#f56c6c', percentage: 20},
+          {color: '#e6a23c', percentage: 40},
+          {color: '#5cb87a', percentage: 60},
+          {color: '#1989fa', percentage: 80},
+          {color: '#6f7ad3', percentage: 100}
+        ],
+
       activeName: "first",
       tebleList: [],
       loading: false,

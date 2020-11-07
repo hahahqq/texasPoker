@@ -2,58 +2,77 @@
   <div>
     <!-- 积分调整 -->
     <div class="m-bottom-sm clearfix">
-            <span v-if="pagelist.length>0">{{pagelist[0].CAPTION1}}</span>
-            <el-button-group v-if="pagelist.length>0" class="m-left-sm">
-                <el-button
-                    size="mini"
-                    class="m-left-sm"
-                    type="primary"
-                    @click="changeFun(601050204)"
-                >调整</el-button>
-            </el-button-group>
-            <el-button
-                size="mini"
-                type="primary"
-                icon="el-icon-refresh"
-                plain
-                class="pull-right"
-                @click="pageData.PN=1;getNewData()"
-            >刷新</el-button>
-        </div>
+      <!-- <span v-if="pagelist.length > 0">{{ pagelist[0].CAPTION1 }}</span> -->
+      <span v-if="pagelist.length > 0" class="inline-block">竞技积分：{{ dataInfo.INTEGRAL }}</span>
+      <el-button-group v-if="pagelist.length > 0" class="m-left-sm">
+        <el-button size="mini" class="m-left-sm" type="primary" @click="changeFun()">
+          调整
+        </el-button>
+      </el-button-group>
+      <el-button
+        size="mini"
+        type="primary"
+        icon="el-icon-refresh"
+        plain
+        class="pull-right"
+        @click="
+          pageData.PN = 1;
+          getNewData();
+        "
+      >
+        刷新
+      </el-button>
+    </div>
     <!--列表-->
     <el-table
-      size='small'
+      size="small"
       :data="pagelist"
       v-loading="loading"
       height="350"
       header-row-class-name="bg-theme2 text-white"
-      style="width: 100%;"
+      style="width: 100%"
     >
-      <el-table-column prop="BILLDATE" label="时间" width="140" :formatter="formatDate"></el-table-column>
+      <el-table-column
+        prop="BILLDATE"
+        label="时间"
+        width="140"
+        :formatter="formatDate"
+      ></el-table-column>
+      <el-table-column prop="BILLTYPE" width="150px" align="center" label="类型"></el-table-column>
+      <el-table-column prop="INTEGRAL" width="150px" align="center" label="变动积分">
+        <template slot-scope="scope">
+          <span :style="`color:${scope.row.INTEGRAL >= 0 ? '#ff6655' : '#008000'}`">
+            {{ scope.row.INTEGRAL }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="CURRINTEGRAL" width="150px" align="center" label="变动后积分">
+        <template slot-scope="scope">
+          <span>{{ scope.row.INTEGRAL + scope.row.CURRINTEGRAL }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="SHOPNAME" width="150px" align="center" label="店铺"></el-table-column>
       <el-table-column prop="SM" label="说明" width="270"></el-table-column>
-      <el-table-column prop="GETINTEGRAL" label="获得积分"></el-table-column>
-      <el-table-column prop="CURRINTEGRAL" label="获得后积分"></el-table-column>
-      <el-table-column prop="SHOPNAME" label="消费店铺"></el-table-column>
     </el-table>
     <!-- 分页 -->
-    <div v-show="pagelist.length>0" class="m-top-sm clearfix elpagination">
+    <div v-show="pagelist.length > 0" class="m-top-sm clearfix elpagination">
       <el-pagination
         @size-change="handlePageChange"
         @current-change="handlePageChange"
         :current-page.sync="pagination.PN"
         :page-size="pagination.PageSize"
-        layout="prev, pager, next, jumper"
+        layout="total,prev, pager, next, jumper"
         :total="pagination.TotalNumber"
         class="text-center"
       ></el-pagination>
-      <div class="text-center clearfix">
-        <span class="inline-block">共{{pagination.TotalNumber}}条，每页{{pagination.PageSize}}条</span>
-      </div>
     </div>
     <el-dialog width="500px" title="积分调整" :visible.sync="isShowDeal" append-to-body>
       <adjust
-        @closeModal="isShowDeal=false"
-        @resetData="getNewData();isShowDeal=false"
+        @closeModal="isShowDeal = false"
+        @resetData="
+          getNewData();
+          isShowDeal = false;
+        "
         :theState="isShowDeal"
         :theData="dataInfo"
       ></adjust>
@@ -108,11 +127,13 @@ export default {
         };
         this.SumBillCount = data.SumBillCount ? parseInt(data.SumBillCount) : 0;
         this.SumMoney = data.SumMoney ? parseInt(data.SumMoney) : 0;
+      } else {
+        this.$message({ message: data.message, type: "error" });
       }
     }
   },
   methods: {
-    formatDate: function(row, column) {
+    formatDate: function (row, column) {
       return this.filterTime(new Date(row.BILLDATE));
     },
     getNewData() {
@@ -125,7 +146,7 @@ export default {
         this.loading = true;
       });
     },
-    handlePageChange: function(currentPage) {
+    handlePageChange: function (currentPage) {
       if (this.pageData.PN == currentPage || this.loading) {
         return;
       }
@@ -145,11 +166,7 @@ export default {
     }
   },
   mounted() {
-    if (this.dataList.length == 0) {
-      this.getNewData();
-    } else {
-      this.pagelist = [...this.dataList];
-    }
+    this.getNewData();
   },
   components: {
     adjust: () => import("@/components/member/integralAdjust.vue")

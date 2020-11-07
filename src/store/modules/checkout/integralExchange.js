@@ -1,6 +1,6 @@
 import commonSend from '@/api/api'
 import { getUserInfo,setHomeData,getHomeData } from '@/api/index'
-import { 
+import {
     GET_INTEGRAL_EXCHANGE
 } from '@/store/mutation-types'
 let selected={}
@@ -24,13 +24,14 @@ const actions = {
     let homeInfo = getHomeData();
     console.log("userInfo")
     let sendData = {
-      InterfaceCode: 210020515,
+      InterfaceCode: 920331,
       ShopId:homeInfo.shop.SHOPID,
       VipId:data.VipId,
       goodsdetail:data.goodsdetail,
       Remark:data.Remark,
       IsSms:data.IsSms ? '1' : '0',
       PayIntegral:data.PayIntegral,
+      PayMoney: data.PayMoney,
       SaleEmpList:""
     };
     if(data){

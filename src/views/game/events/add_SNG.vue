@@ -298,7 +298,7 @@ export default {
     addRanking() {
       this.rewardWayList = this.rewardWayList.concat({
         Id: "",
-        Name: "第 " + Number(this.rewardWayList.length + 1) + " 名",
+        Name: "第" + Number(this.rewardWayList.length + 1) + "名",
         Rate: 0,
         RewardRate: "",
         Integral: 0,
@@ -326,7 +326,7 @@ export default {
        this.rewardWayList = [
         {
           Id: "",
-          Name: "第 1 名",
+          Name: "第1名",
           Rate: 0,
           RewardRate: "",
           Integral: 0,
@@ -350,7 +350,7 @@ export default {
 
       let rewardWayList = this.rewardWayList;
       for (var i = 1; i <= rewardWayList.length; i++) {
-        rewardWayList[i].Name = "第 " + Number(i + 1) + " 名";
+        rewardWayList[i].Name = "第" + Number(i + 1) + "名";
       }
       this.rewardWayList = rewardWayList;
       this.$forceUpdate();
@@ -383,7 +383,7 @@ export default {
   mounted() {
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名" });
+      levelList.push({ name: "第" + i + "名" });
     }
     this.levelList = levelList;
 

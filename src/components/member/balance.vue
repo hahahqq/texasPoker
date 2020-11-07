@@ -1,14 +1,14 @@
 <template>
     <div>
-        <!-- 会员充值，余额调整 -->
+        <!-- 会员充值，余额调整  -->
         <div class="m-bottom-sm clearfix">
-            <span v-if="pagelist.length>0" class="inline-block">储值余额：{{SumMoney}}元</span>
+            <span v-if="pagelist.length>0" class="inline-block">储值积分：{{dataInfo.MONEY}}</span>
             <el-button-group v-if="pagelist.length>0" class="m-left-sm">
-                <el-button size="mini" type="primary" @click="changeFun('recharge',601050201)">充值</el-button>
+                <el-button size="mini" type="primary" @click="changeFun('recharge',92100105)">充值</el-button>
                 <el-button
                     size="mini"
                     type="primary"
-                    @click="changeFun('balanceAdjust',601050203)"
+                    @click="changeFun('balanceAdjust',92100105)"
                 >调整</el-button>
             </el-button-group>
             <el-button
@@ -36,9 +36,18 @@
                 sortable
                 :formatter="formatDate"
             ></el-table-column>
-            <el-table-column prop="PAYTYPENAME" label="类型" width="100px"></el-table-column>
-            <el-table-column prop="ADDMONEY" label="金额" ></el-table-column>
-            <el-table-column prop="CURRMONEY" label="余额"></el-table-column>
+            <el-table-column prop="BILLTYPE" label="类型" width="150px"></el-table-column>
+            <el-table-column prop="MONEY" label="变动积分" align="center" width="150px">
+               <template slot-scope="scope">
+                  <span :style='`color:${scope.row.MONEY >= 0 ? "#ff6655" : "#008000"}`'>{{scope.row.MONEY }} </span>
+               </template>
+            </el-table-column>
+            <el-table-column label="变动后积分" align="center" width="150px">
+               <template slot-scope="scope">
+                  <span>{{scope.row.MONEY + scope.row.CURRMONEY }} </span>
+               </template>
+            </el-table-column>
+            <el-table-column prop="SHOPNAME" label="店铺" align="center" width="150px"></el-table-column>
             <el-table-column prop="SM" label="说明"></el-table-column>
         </el-table>
         <!-- 分页 -->
@@ -119,6 +128,8 @@ export default {
                     ? parseInt(data.SumBillCount)
                     : 0;
                 this.SumMoney = data.data.SumMoney ? parseInt(data.data.SumMoney) : 0;
+            }else{
+               this.$message({ message: data.message, type: "error" });
             }
         }
     },
@@ -156,11 +167,11 @@ export default {
             this.width = "500px";
             switch (name) {
                 case "recharge":
-                    this.title = "储值卡充值";
+                    this.title = "储值积分充值";
                     this.width = "800px";
                     break;
                 case "balanceAdjust":
-                    this.title = "余额调整";
+                    this.title = "积分调整";
                     break;
             }
             this.isShowDeal = true;

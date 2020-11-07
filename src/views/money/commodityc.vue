@@ -26,7 +26,7 @@
                     <span class="commodityc-top-text" @click="clearData">清空页面</span>
                   </div>
                   <div>
-                    <div class="vue-dropdown default-theme"  v-clickOutSide="handleCloseMember">
+                    <div class="vue-dropdown default-theme" v-clickOutSide="handleCloseMember">
                       <div class="search-module clearfix">
                         <input
                           class="search-text"
@@ -388,10 +388,10 @@
 
                               <el-col :span="12" style="text-align: right">
                                 <el-button
-                                  type="danger"
+                                  type="primary"
                                   style="margin-right: 10px"
                                   @click="co_reckoning"
-                                  size="medium"
+                                  :loading="submitLoading"
                                 >
                                   收款
                                 </el-button>
@@ -663,7 +663,13 @@
             </div>
           </div>
         </div>
-        <el-dialog v-if="showRecharge" title="收银" :visible.sync="showRecharge" width="700px">
+        <el-dialog
+          v-if="showRecharge"
+          title="收银"
+          :visible.sync="showRecharge"
+          class="recharge1"
+          width="800px"
+        >
           <recharge
             @closeModalrecharge="showRecharge = false"
             :totalprice="totalPrice"
@@ -793,7 +799,6 @@ export default {
         integral: "",
         title: "销售日期"
       },
-      checkedreceipt: false,
       checkedmessage: false,
       pagelist: [],
       pagelist1: [],
@@ -817,7 +822,6 @@ export default {
       },
       showyjemployee: false,
       showRecharge: false,
-
       shopitemList: {},
       showTishi: "",
       pageCouponList: {
@@ -843,7 +847,9 @@ export default {
       shopName: getUserInfo().CompanyName,
       couponCode: "",
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
-      cashRechargeData: {}
+      cashRechargeData: {},
+      checkedreceipt: true,
+      submitLoading: false
     };
   },
   //取单返回来的数据渲染到商品销售页面
@@ -1014,7 +1020,6 @@ export default {
         this.objCount = data.data.objCount;
       }
     },
-
     dataListState(data) {
       this.loading = false;
       this.isFilter = false;
@@ -1034,7 +1039,7 @@ export default {
     },
     commoditycconsumption(data) {
       if (data.success) {
-        this.loading = false;
+        this.submitLoading = false;
         this.$message({
           message: this.showTishi,
           type: "success"
@@ -1043,7 +1048,7 @@ export default {
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print2");
         let jsonPrintData = JSON.parse(printRules);
 
-        if (jsonPrintData.autoPrint) {
+        if (jsonPrintData.autoPrint || this.checkedreceipt) {
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.clearData();
@@ -1060,9 +1065,9 @@ export default {
     }
   },
   methods: {
-     handleCloseMember(){
-        this.listMember = false
-     },
+    handleCloseMember() {
+      this.listMember = false;
+    },
     showAddNewChange() {
       this.showAddNew = true;
       if (this.Goodscode == true) {
@@ -1714,9 +1719,13 @@ export default {
     },
     // 结账
     CashRecharge(data) {
+      this.submitLoading = true;
       this.totalPrice.price = 0;
       let GoodsDetaila = [];
       this.cashRechargeData = data;
+      this.checkedreceipt = data.checkedreceipt;
+
+      let { checkedreceipt, payName, ...newData } = data;
 
       for (let i = 0; i < this.addobjCountList.length; i++) {
         let Obj = {
@@ -1741,10 +1750,12 @@ export default {
         BillId: this.BillId,
         SaleEmpList: this.SaleEmpList //销售员,
       };
-      let AllsendData = Object.assign({}, otherdata, data);
+      let AllsendData = Object.assign({}, otherdata, newData);
       if (AllsendData.PayMoney) {
         AllsendData.PayMoney = parseFloat(AllsendData.PayMoney).toFixed(2);
       }
+
+      console.log(newData);
 
       this.$store.dispatch("getcommoditycconsumption", AllsendData);
     },

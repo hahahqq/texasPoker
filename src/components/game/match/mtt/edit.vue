@@ -253,13 +253,7 @@
                 添加名次
               </el-button>
             </div>
-            <el-table
-              v-if="rewardWayList.length > 0"
-              size="small"
-              border
-              :data="rewardWayList"
-              header-row-class-name="bg-F1F2F3"
-            >
+            <el-table size="small" border :data="rewardWayList" header-row-class-name="bg-F1F2F3">
               <el-table-column label="比赛名次" align="center">
                 <template slot-scope="scope">
                   <el-select v-model="scope.row.Name" size="small" placeholder="请选择比赛名次">
@@ -376,7 +370,8 @@ export default {
       eventsList: [],
       tableList: [],
       pageLoading: false,
-      levelList: []
+      levelList: [],
+      loadingDefault: true
     };
   },
   computed: {
@@ -389,7 +384,9 @@ export default {
   },
   watch: {
     dataType(data) {
-      this.defaultItem();
+      if (this.loadingDefault) {
+        this.defaultItem();
+      }
     },
     getTableListState(data) {
       console.log(data);
@@ -479,21 +476,24 @@ export default {
             Id: param[i].ID,
             Name: param[i].NAME,
             ContestQty: param[i].CONTESTQTY,
-            RewardRate: Number(param[i].REWARDRATE) * 100,
+            RewardRate: obj.REWARDTYPE == 1 ? param[i].INTEGRAL : Number(param[i].REWARDRATE) * 100,
             Integral: 0,
             Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
             IsCancel: 0
           });
         }
         this.rewardWayList = newParam;
-      }else{
-         this.rewardWayList = []
+      } else {
+        this.rewardWayList = [];
       }
+
+      console.log(newParam)
     },
     addRanking() {
+      this.loadingDefault = false;
       this.rewardWayList = this.rewardWayList.concat({
         Id: "",
-        Name: "第 " + Number(this.rewardWayList.length + 1) + " 名",
+        Name: "第" + Number(this.rewardWayList.length + 1) + "名",
         Rate: 0,
         RewardRate: "",
         Integral: 0,
@@ -528,13 +528,14 @@ export default {
         Remark: "",
         RewardType: 0
       };
+      this.loadingDefault = true
       this.defaultRewardWayList();
     },
     defaultRewardWayList() {
       this.rewardWayList = [
         {
           Id: "",
-          Name: "第 1 名",
+          Name: "第1名",
           Rate: 0,
           RewardRate: "",
           Integral: 0,
@@ -558,7 +559,7 @@ export default {
 
       let rewardWayList = this.rewardWayList;
       for (var i = 1; i <= rewardWayList.length; i++) {
-        rewardWayList[i].Name = "第 " + Number(i + 1) + " 名";
+        rewardWayList[i].Name = "第" + Number(i + 1) + "名";
       }
       this.rewardWayList = rewardWayList;
       this.$forceUpdate();
@@ -603,11 +604,12 @@ export default {
     }
   },
   mounted() {
+    this.loadingDefault = true;
     this.defaultItem();
 
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第 " + i + " 名", disabled: false });
+      levelList.push({ name: "第" + i + "名", disabled: false });
     }
     this.levelList = levelList;
   }
