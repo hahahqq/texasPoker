@@ -383,7 +383,6 @@ const indexQuery = {
          sendData: sendData
       });
    },
-
    member: function(that, type = "data", data) {
       // 会员概况
       if (!data.ShopId) {
@@ -404,8 +403,27 @@ const indexQuery = {
          sendData: sendData
       });
    },
+   memberRegChart: function(that, type = "data", data) {
+      // 会员概况_注册分布
+      if (!data.ShopId) {
+         that.$message.error("请选择店铺");
+         return;
+      }
+      let homeInfo = getHomeData();
+      let sendData = {
+         InterfaceCode: "9207014",
+         CompanyId: homeInfo.shop.COMPANYID,
+         ShopListId: data.ShopId, // 16853,16854
+         BeginDate: data.BeginDate ? data.BeginDate : 1,
+         EndDate: data.EndDate ? data.EndDate : 9999999999999
+      };
+      that.$store.dispatch("actionsData", {
+         type: type,
+         sendData: sendData
+      });
+   },
    memberRegister: function(that, type = "data", data) {
-      // 会员注册统计
+      // 会员注册统计 日报,月报
       if (!data.ShopId) {
          that.$message.error("请选择店铺");
          return;

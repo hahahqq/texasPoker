@@ -1,9 +1,5 @@
 <template>
   <div>
-    <!-- {{ruleForm}} -->
-    <!-- 领奖人数: {{ dataType.RewardNum}}
-      报名人数: {{ dataType.buyVipNum}} -->
-
     <div style="display: none">{{ dataType }}</div>
     <el-form
       :inline="false"
@@ -36,6 +32,7 @@
               v-model="ruleForm.EventId"
               @change="selectEventFun(ruleForm.EventId)"
               placeholder="请选择比赛项目"
+              :disabled="dataType.buyVipNum != 0"
               style="width: 100%"
             >
               <el-option
@@ -338,20 +335,15 @@ export default {
         this.ruleForm.ChargesMoney = obj.CHARGESMONEY;
         this.ruleForm.RewardType = 0;
 
-        let param = data.data.RewardObj,
-          newParam = [];
-        for (var i = 0; i < param.length; i++) {
-          newParam.push({
-            Id: param[i].ID,
-            Name: param[i].NAME,
-            ContestQty: param[i].CONTESTQTY,
-            RewardRate: Number(param[i].REWARDRATE) * 100,
-            Integral: 0,
-            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
-            IsCancel: 0
-          });
-        }
-        this.rewardWayList = newParam;
+        this.rewardWayList = data.data.RewardObj.map((item) => ({
+          Id: item.ID,
+          Name: "第" + item.NAME + "名",
+          ContestQty: item.CONTESTQTY,
+          RewardRate: Number(item.REWARDRATE) * 100,
+          Integral: 0,
+          Remark: item.REMARK != undefined ? item.REMARK : "",
+          IsCancel: 0
+        }));
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -384,28 +376,24 @@ export default {
       this.ruleForm.BillId = obj.BILLID;
       this.ruleForm.IsOnLine = obj.ISONLINE;
 
-      let param = this.dataType.RewardList,
-        newParam = [];
+      let param = this.dataType.RewardList;
       if (param.length != 0) {
-        for (var i = 0; i < param.length; i++) {
-          newParam.push({
-            Id: param[i].ID,
-            Name: param[i].NAME,
-            ContestQty: param[i].CONTESTQTY,
-            RewardRate: Number(param[i].REWARDRATE) * 100,
-            Integral: 0,
-            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
-            IsCancel: 0
-          });
-        }
-        this.rewardWayList = newParam;
+        this.rewardWayList = param.map((item) => ({
+          Id: item.ID,
+          Name: "第" + item.NAME + "名",
+          ContestQty: item.CONTESTQTY,
+          RewardRate: Number(item.REWARDRATE) * 100,
+          Integral: 0,
+          Remark: item.REMARK != undefined ? item.REMARK : "",
+          IsCancel: 0
+        }));
       } else {
         this.rewardWayList = [];
       }
-      console.log(this.rewardWayList)
+      console.log(this.rewardWayList);
     },
     addRanking() {
-       this.loadingDefault = false
+      this.loadingDefault = false;
       this.rewardWayList = this.rewardWayList.concat({
         Id: "",
         Name: "第" + Number(this.rewardWayList.length + 1) + "名",
@@ -423,29 +411,14 @@ export default {
       });
     },
     cleanData() {
-      this.DelArr = [];
-      this.ruleForm = {
-        EventId: "",
-        DeskId: "",
-        Name: "",
-        PlayTime: "",
-        IsOnLine: false,
-        BuyinMoney: "",
-        ChipsQty: "",
-        ChargesType: 0,
-        ChargesRate: "",
-        ChargesMoney: "",
-        Remark: "",
-        RewardType: 0
-      };
-      this.loadingDefault = true
+      Object.assign(this.$data, this.$options.data());
       this.defaultRewardWayList();
     },
     defaultRewardWayList() {
       this.rewardWayList = [
         {
           Id: "",
-          Name: "第 1 名",
+          Name: "第1名",
           Rate: 0,
           RewardRate: "",
           Integral: 0,
@@ -468,8 +441,8 @@ export default {
       this.rewardWayList.splice(idx, 1);
 
       let rewardWayList = this.rewardWayList;
-      for (var i = 1; i <= rewardWayList.length; i++) {
-        rewardWayList[i].Name = "第 " + Number(i + 1) + " 名";
+      for (var i = 0; i < rewardWayList.length; i++) {
+        rewardWayList[i].Name = "第" + Number(i + 1) + "名";
       }
       this.rewardWayList = rewardWayList;
       this.$forceUpdate();
@@ -478,9 +451,7 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           let arr = this.rewardWayList.concat(this.DelArr);
-          let newArr = this.rewardWayList.filter(
-            (item) => item.Name != "" && item.RewardRate != ""
-          );
+          let newArr = arr.filter((item) => item.Name != "" && item.RewardRate != "");
 
           let sendData = {
             Name: this.ruleForm.Name,
@@ -510,7 +481,7 @@ export default {
     }
   },
   mounted() {
-     this.loadingDefault = true
+    this.loadingDefault = true;
     this.defaultItem();
 
     let levelList = [];

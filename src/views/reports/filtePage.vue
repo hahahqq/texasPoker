@@ -46,22 +46,7 @@
 				</div>
 			</div>
 			<div class="full-width">
-				<div class="inline-block">
-					<el-button
-						type="primary"
-						size="small"
-						plain
-						v-if="isExport"
-						@click="exportState()"
-					>
-						<i class="el-icon-upload el-icon--right"></i>
-						导出表格
-					</el-button>
-
-					<!-- 其它按钮 -->
-					<slot name="button"></slot>
-				</div>
-				<div class="pull-right" style="min-width: 120px">
+				<div class="inline-block p-left-md">
 					<span>店铺</span>
 					<el-dropdown
 						v-if="$route.meta.name != 'crossStore'"
@@ -84,6 +69,21 @@
 							</el-dropdown-item>
 						</el-dropdown-menu>
 					</el-dropdown>
+
+					<!-- 其它按钮 -->
+					<slot name="button"></slot>
+				</div>
+				<div class="pull-right text-right" style="min-width: 120px">
+					<el-button
+						type="primary"
+						size="small"
+						plain
+						v-if="isExport"
+						@click="exportState()"
+					>
+						<i class="el-icon-upload el-icon--right"></i>
+						导出表格
+					</el-button>
 				</div>
 			</div>
 		</div>
@@ -142,6 +142,10 @@ export default {
 					BeginDate: "1",
 					EndDate: "9999999999999"
 				};
+			}
+			if (this.ruleFrom.BeginDate > this.ruleFrom.EndDate) {
+				sendData.BeginDate = this.ruleFrom.EndDate;
+				sendData.EndDate = this.ruleFrom.BeginDate;
 			}
 			this.$emit("getNewData", sendData);
 			this.$emit("chooseDateIdx", this.chooseDateIdx);
@@ -265,11 +269,11 @@ export default {
 </script>
 <style scoped>
 .shopCheckTextClass {
-	display: block;
+	/* display: block;
 	width: 90px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: hidden; */
 }
 .shopCheckTextClasslot {
 	display: flex;

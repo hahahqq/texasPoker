@@ -33,6 +33,7 @@ const state = {
       week: {},
       sale: {},
       member: {},
+      memberRegChart: {},
       managementA: Object.assign({}, listdata),
       managementB: Object.assign({}, listdata),
       managementC: Object.assign({}, listdata),
@@ -240,6 +241,10 @@ const mutations = {
    },
    [types.ACTIONS_STATE_member](state, { data }) {
       let mutName = "member";
+      cReporDealData_Fun(2, mutName, state, data);
+   },
+   [types.ACTIONS_STATE_memberRegChart](state, { data }) {
+      let mutName = "memberRegChart";
       cReporDealData_Fun(2, mutName, state, data);
    },
    [types.GET_LIST_memberRegister](state, { data }) {

@@ -209,10 +209,23 @@ export default {
         this.$message({ message: "请先选择会员 !", type: "warning" });
         return;
       }
+
+      if(this.changeAfterMoney < 0){
+         this.$message({ message: "调整后储值积分不能小于 0 !", type: "warning" });
+         return
+      }
+
+      if(this.changeAfterIntegral < 0){
+         this.$message({ message: "调整后竞技积分不能小于 0 !", type: "warning" });
+         return
+      }
+
       if (this.Remark == "") {
         this.$message({ message: "请输入备注 !", type: "warning" });
         return;
       }
+
+
       let setDate = Object.assign(
         {},
         {

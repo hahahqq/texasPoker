@@ -29,13 +29,15 @@ const getters = {
 const actions = {
   //生意通获取优惠卷列表接口
   getcouponListState({ commit,state }, data) {
+     console.log(data)
     let userInfo = getUserInfo();
     let sendData = {
-      'InterfaceCode': '210021027',
-      'openID': "",
+      'InterfaceCode': '9204059',
+      CompanyId: userInfo.CompanyID,
       PN: data.PN?data.PN : 1,
       Type: data.Type ? data.Type : 0,
-      VipId:data.VipId
+      VipId:data.VipId,
+      CouponType: data.CouponType
     };
     commonSend.commonSend('get', data => {
       commit(GET_COUPONLIST_LIST, { data })
@@ -44,7 +46,7 @@ const actions = {
   getcouponcheckState({ commit }, data) {
     let userInfo = getUserInfo();
     let sendData = {
-      InterfaceCode: '601020431',
+      InterfaceCode: '210020521',
       Code: data.Code,
       CompanyId: userInfo.CompanyID
     };

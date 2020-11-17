@@ -138,7 +138,7 @@ export default {
         ]
       },
       dealType: "add",
-      tableHeight: document.body.clientHeight - 200
+      tableHeight: document.body.clientHeight - 180
     };
   },
   computed: {

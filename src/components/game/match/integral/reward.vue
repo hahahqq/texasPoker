@@ -406,7 +406,7 @@ export default {
           { vipInfo: vipInfo }
         );
         let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-        getDayindata(printData, "print6", qresurl);
+        getDayindata(printData, "Print6", qresurl);
       }
     },
     getRateFun(returnChipsQty) {

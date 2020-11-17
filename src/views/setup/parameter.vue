@@ -10,8 +10,8 @@
         </section>
       </el-aside>
       <el-container>
-        <el-main :style="{ height: height + 'px' }">
-          <div class="content-table1">
+        <el-main style="margin-bottom: 0; height:auto">
+          <div class="content-table1" :style="`height:${height}px; float:left`">
             <div class="content-table-center">
               <div class="parameter">
                 <div class="setparametersock">
@@ -245,7 +245,7 @@ export default {
         { ID: 3, NAME: "四舍五入到元" },
         { ID: 4, NAME: "四舍五入到角" }
       ],
-      height: window.innerHeight - 60
+      height: window.innerHeight - 70
     };
   },
   computed: {

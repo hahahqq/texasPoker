@@ -37,18 +37,17 @@ const getters = {
 // actions
 const actions = {
   getExportBusinessTableData({ commit }, data) {  // 导出
-    console.log("营业查询导出11111111111111",data)
     let homeInfo = getHomeData();
     let userInfo = getUserInfo();
     let sendData = {
-      'InterfaceCode': '210021433',
+      'InterfaceCode': '921201',
       CompanyId: userInfo.CompanyID,
       ShopId:homeInfo.shop.ID,
       BeginDate:data.BeginDate,
       EndDate:data.EndDate,
       Filter: data.Filter,
-      Status: data.Status ? data.Status:'-1',
-      BillType: data.BillType ? data.BillType:'-1',
+      Status: data.Status ? data.Status : '-1',
+      BillType: data.BillType ? data.BillType : '-1',
     }
     commonSend.commonSend('get', data => {
       commit(EXPORT_BUSINESS_DERIVE, {data})
@@ -126,7 +125,7 @@ const mutations = {
   },
 
   [EXPORT_BUSINESS_DERIVE] (state, { data }) {
-    state.exportBusinessDerive = Object.assign({}, data.data.List)
+    state.exportBusinessDerive = Object.assign({}, data)
   }
 }
 

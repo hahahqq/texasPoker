@@ -25,30 +25,14 @@
                   ></el-option>
                 </el-select>
               </el-col>
-              <!-- <el-col :span="6">
-              <span>职务&nbsp;&nbsp;</span>
-              <el-select v-model="value" clearable placeholder="请选择" @change="scletJob" size="small">
-                <el-option
-                  v-for="(item,index) in jobList"
-                  :key="index"
-                  :label="item.POSITION"
-                  :value="item.POSITION"
-                  :disabled="item.disabled">
-                </el-option>
-              </el-select>
-            </el-col> -->
-              <!-- <el-col :span="9" style="text-align:right">
-            <el-input size="small" placeholder="请输入内容" v-model="input2" style="width:200px;">
-              <template slot="append">搜索</template>
-            </el-input>
-            </el-col> -->
             </el-row>
           </div>
         </div>
       </div>
     </div>
     <!--列表-->
-    <div class="content-table m-top-sm">
+    <div class="content-table m-top-sm" style="height: auto">
+      <div class="content-table-center">
         <el-table
           :data="pagelist"
           v-loading="loading"
@@ -97,6 +81,7 @@
             </template>
           </el-table-column>
         </el-table>
+    </div>
     </div>
     <!-- deal -->
     <el-dialog

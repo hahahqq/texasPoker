@@ -293,7 +293,7 @@ export default {
       formLoading: false,
       showForm2: false,
       showForm3: false,
-      tableHeight: document.body.clientHeight - 250,
+      tableHeight: document.body.clientHeight - 200,
       dateBE: [new Date(this.getCustomDay(-7)).getTime(), new Date().getTime()],
       pageData: {
         ShopId: getHomeData().shop.SHOPID,

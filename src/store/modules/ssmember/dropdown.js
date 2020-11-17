@@ -28,7 +28,7 @@ const actions = {
       //  let ShopId=data.Filter!='' ? '' :shopuserInfo.ID;
       let ShopId = shopuserInfo.ID;
       let sendData = {
-         InterfaceCode: "210020104_1_1",
+         InterfaceCode: "9204051",
          ShopId: ShopId,
          CompanyId: homeInfo.shop.COMPANYID,
          Name: data.Filter,
@@ -54,7 +54,7 @@ const actions = {
       //  let ShopId=data.Filter!='' ? '' :shopuserInfo.ID;
       let ShopId = shopuserInfo.ID;
       let sendData = {
-         InterfaceCode: "210020104_1_1",
+         InterfaceCode: "9204051",
          ShopId: ShopId,
          CompanyId: homeInfo.shop.COMPANYID,
          Name: data.Filter,

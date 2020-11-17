@@ -237,6 +237,13 @@ export const DEL_INTEGRAL_RESET = "DEL_INTEGRAL_RESET";
 export const SAVE_INTEGRAL_RESET = "SAVE_INTEGRAL_RESET";
 export const DETAIL_INTEGRAL_RESET = "DETAIL_INTEGRAL_RESET";
 
+export const GETGAMEGOODS_COUPON_LIST = 'GETGAMEGOODS_COUPON_LIST'
+export const ADD_GAMEGOODS_COUPON = 'ADD_GAMEGOODS_COUPON'
+export const OPEN_CLOSE_COUPON = 'OPEN_CLOSE_COUPON'
+export const COUPON_GET_DETAILS = 'COUPON_GET_DETAILS'
+export const DEL_GETCOUPON = 'DEL_GETCOUPON'
+export const CANCEL_ALL_COUPON = 'CANCEL_ALL_COUPON'
+
 // 预约
 export const BESPEAK_LIST = "BESPEAK_LIST";
 export const BESPEAK_LIST2 = "BESPEAK_LIST2";
@@ -340,6 +347,8 @@ export const GET_PERMISSION_LIST = "GET_PERMISSION_LIST";
 export const SET_PERMISSION = "SET_PERMISSION";
 export const GET_PARAMETERSTATE = "GET_PARAMETERSTATE";
 export const SET_PARAMETERSTATE = "SET_PARAMETERSTATE";
+export const GET_SHOP_VIPQTY = 'GET_SHOP_VIPQTY'
+
 // |-- user
 export const GET_USER_LIST = "GET_USER_LIST";
 export const GET_USER_ITEM = "GET_USER_ITEM";
@@ -542,6 +551,7 @@ export const GET_LIST_goods = "GET_LIST_goods";
 export const GET_LIST_goodsItem = "GET_LIST_goodsItem";
 export const GET_LIST_shop = "GET_LIST_shop";
 export const ACTIONS_STATE_member = "ACTIONS_STATE_member";
+export const ACTIONS_STATE_memberRegChart = "ACTIONS_STATE_memberRegChart";
 export const GET_LIST_memberRegister = "GET_LIST_memberRegister";
 export const GET_LIST_memberRegisterItem = "GET_LIST_memberRegisterItem";
 export const GET_LIST_memberRecharge = "GET_LIST_memberRecharge";

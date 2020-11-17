@@ -75,7 +75,7 @@
                         ></el-input>
                       </div>
 
-                      <div class="footer_top" style="margin-top: 10px; padding-bottom: 10px">
+                      <div class="footer_top" style="margin-top: 10px; ">
                         <div
                           style="
                             width: 100%;
@@ -95,26 +95,25 @@
                           </el-row>
                         </div>
 
-                        <el-row>
+                        <el-row style="line-height: 40px; background:#fff; padding: 10px 0">
                           <el-col :span="12">
                             <span
                               style="display: inline-block; margin-left: 10px"
                               v-if="addobjCountList.length != 0"
                             >
-                              数量 :&nbsp;&nbsp;{{ totalTotal.num }}
+                              数量 &nbsp;&nbsp;{{ totalTotal.num }} ,
                             </span>
-                            &nbsp;
+                                 &nbsp;
                             <span
                               v-if="addobjCountList.length != 0"
                               style="
                                 display: inline-block;
                                 margin-left: 5px;
-                                color: #f00;
                                 font-weight: bold;
                               "
                             >
-                              ,
-                              <span class="priceTol">{{ totalTotal.GIFTINTEGRAL }} 积分</span>
+                              <span class="priceTol text-red font-18">{{ totalTotal.GIFTINTEGRAL }} </span>
+                              <i>积分</i>
                             </span>
                           </el-col>
 
@@ -395,7 +394,7 @@ export default {
         GIFTINTEGRAL: 0,
         discount: 0
       },
-      checkedreceipt: true,
+      checkedreceipt: false,
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       IsSms: false,
       checkedmessage: false,
@@ -498,7 +497,10 @@ export default {
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print5");
         let jsonPrintData = JSON.parse(printRules);
 
-        if (jsonPrintData.autoPrint || this.checkedreceipt) {
+        jsonPrintData.autoPrint = this.checkedreceipt ? true : false;
+        localStorage.setItem(SYSTEM_INFO.PREFIX + "Print5", JSON.stringify(jsonPrintData));
+
+        if (this.checkedreceipt) {
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.clearData();
@@ -542,11 +544,11 @@ export default {
       for (var i in GoodsDetaila) {
         newGoodsList.push({
           name: GoodsDetaila[i].goodsname,
-          purPrice: GoodsDetaila[i].PURPRICE,
+          purPrice: GoodsDetaila[i].GIFTINTEGRAL,
           qty: GoodsDetaila[i].Qty,
-          price: GoodsDetaila[i].PURPRICE * GoodsDetaila[i].Qty
+          price: GoodsDetaila[i].GIFTINTEGRAL * GoodsDetaila[i].Qty
         });
-        totalPrice += GoodsDetaila[i].PURPRICE * GoodsDetaila[i].Qty;
+        totalPrice += GoodsDetaila[i].GIFTINTEGRAL * GoodsDetaila[i].Qty;
       }
 
       let payMoney = Number(this.totalTotal.GIFTINTEGRAL);
@@ -561,10 +563,17 @@ export default {
           value: totalPrice.toFixed(2)
         },
         {
-          label: "支付方式：",
-          value: "竞技积分"
-        }
+            label: '储值积分：',
+            value: this.payMoneyDetails.money
+         }
       ];
+
+      if(this.splitIntegral){
+         saleInfo.push({
+            label: '竞技积分：',
+            value: this.payMoneyDetails.integral
+         })
+      }
 
       let vipInfo = jsonPrintData.vipInfo;
       if (this.VipId == undefined || this.VipId == "") {
@@ -599,7 +608,8 @@ export default {
         { goodsList: newGoodsList }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-      getDayindata(printData, "print2", qresurl);
+      getDayindata(printData, "Print5", qresurl);
+      this.clearData();
     },
     handleClose(done) {
       this.isShowShop = false;
@@ -938,7 +948,6 @@ export default {
     yjemployee,
     recharge
   },
-
   beforeCreate() {
     let list = this.$store.state.commodityc.commoditycflList;
     if (list.length == 0) {
@@ -951,10 +960,13 @@ export default {
     });
   },
   mounted() {
+     let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print5");
+    let jsonPrintData = JSON.parse(printRules);
+    this.checkedreceipt = jsonPrintData.autoPrint;
+
     this.$store.dispatch("getGoodsList4", {}).then(() => {});
     this.$store.dispatch("getcommoditycflList", {}).then(() => {});
     this.setcommonHeight();
-    // this.setfenleiWidth();
     this.fenleiscrollwidth();
     this.pagination = {
       TotalNumber: this.dataListState.paying.TotalNumber,

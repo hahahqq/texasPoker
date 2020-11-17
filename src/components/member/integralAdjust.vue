@@ -2,11 +2,16 @@
   <div>
     <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
       <el-form-item label="会员">
-        <div>{{theData.NAME}}</div>
+        <div>{{ theData.NAME }}</div>
       </el-form-item>
       <el-form-item label="调整积分" prop="Integral">
         <el-input placeholder="请输入调整积分" v-model.number="ruleForm.Integral">
-          <el-select v-model="numberState" slot="prepend" placeholder="请选择" style="min-width:80px">
+          <el-select
+            v-model="numberState"
+            slot="prepend"
+            placeholder="请选择"
+            style="min-width: 80px"
+          >
             <el-option label="增加" :value="0"></el-option>
             <el-option label="减少" :value="1"></el-option>
           </el-select>
@@ -14,7 +19,12 @@
       </el-form-item>
       <el-form-item label="门店" prop="ShopId">
         <el-select v-model="ruleForm.ShopId" placeholder="请选择门店" class="full-width">
-          <el-option v-for="item in shopList" :key="item.ID" :label="item.NAME" :value="item.ID"></el-option>
+          <el-option
+            v-for="item in shopList"
+            :key="item.ID"
+            :label="item.NAME"
+            :value="item.ID"
+          ></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="是否发短信">
@@ -85,10 +95,10 @@ export default {
     dataState(data) {
       this.loading = false;
       if (data.success) {
-         this.$store.dispatch("getMemberItem2", { ID: this.theData.ID });
+        this.$store.dispatch("getMemberItem2", { ID: this.theData.ID });
         this.$store.dispatch("clearMember", 5);
         this.$emit("resetData");
-      }else{
+      } else {
         this.$message.error(data.message);
       }
     }
@@ -98,8 +108,15 @@ export default {
       this.$emit("closeModal");
     },
     onSubmit() {
+      let rechargeNum = this.numberState == 1 ? parseFloat(-this.ruleForm.Integral) : parseFloat(this.ruleForm.Integral)
+      let rechargeAfter = Number(this.theData.INTEGRAL) + Number(rechargeNum);
+      if (rechargeAfter < 0) {
+         this.$message({ message: "调整后竞技积分不能小于 0 !", type: "warning" });
+         return;
+      }
+
       this.ruleForm.VipId = this.theData.ID;
-      this.$refs["ruleForm"].validate(valid => {
+      this.$refs["ruleForm"].validate((valid) => {
         if (valid) {
           let data = Object.assign({}, this.ruleForm, {
             Integral:

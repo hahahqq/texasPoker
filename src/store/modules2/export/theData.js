@@ -107,7 +107,12 @@ const columnData = [
       id: 19,
       label: "",
       value: {}
-   }
+   },
+   {   // 商品导出
+      id: 22,
+      label: "",
+      value: {}
+   },
 ];
 
 const exportDataFun = function(index, data) {

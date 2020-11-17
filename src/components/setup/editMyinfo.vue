@@ -16,7 +16,7 @@
                 ></el-input>
             </el-form-item>
 
-            <el-form-item label="所属行业" prop="TradeID">
+            <!-- <el-form-item label="所属行业" prop="TradeID">
                 <el-select v-model="ruleForm.TradeID" placeholder="请选择" class="full-width">
                     <el-option v-if="industryList.length==0" label="请选择" value="-1"></el-option>
                     <el-option
@@ -26,7 +26,7 @@
                         :value="item.ID"
                     ></el-option>
                 </el-select>
-            </el-form-item>
+            </el-form-item> -->
             <!-- <el-form-item label="营业执照号" prop="LicenseNo">
         <el-input
           v-model.number="ruleForm.LicenseNo"
@@ -183,9 +183,9 @@ export default {
                 CompanyName: this.dataInfo.name != 'undefined' ? this.dataInfo.name : '',
                 TradeID: this.dataInfo.tradeid,
                 LicenseNo: "",
-                Linker: this.dataInfo.linker != 'undefined' ? this.dataInfo.name : '',
-                PhoneNo: this.dataInfo.phoneno != 'undefined' ? this.dataInfo.name : '',
-                Address: this.dataInfo.address != 'undefined' ? this.dataInfo.name : '',
+                Linker: this.dataInfo.linker != 'undefined' ? this.dataInfo.linker : '',
+                PhoneNo: this.dataInfo.phoneno != 'undefined' ? this.dataInfo.phoneno : '',
+                Address: this.dataInfo.address != 'undefined' ? this.dataInfo.address : '',
                 QQ: "",
                 ProvinceID: "",
                 CityID: "",

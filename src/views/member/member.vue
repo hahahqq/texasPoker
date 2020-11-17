@@ -84,7 +84,7 @@
                     <span style="font-size: 12px">归属店铺&nbsp;&nbsp;&nbsp;</span>
                     <el-select
                       v-model="value2"
-                      placeholder="请选择"
+                      placeholder="请选择归属店铺"
                       size="small"
                       style="width: 200px"
                       @change="selectShop"
@@ -103,7 +103,7 @@
                     <span style="font-size: 12px">销售顾问&nbsp;&nbsp;&nbsp;</span>
                     <el-select
                       v-model="value3"
-                      placeholder="请选择"
+                      placeholder="请选择销售顾问"
                       size="small"
                       style="width: 200px"
                       @change="selectShop"
@@ -273,7 +273,10 @@
           </div>
 
           <div class="content-table" style="height: auto; padding-bottom: 10px">
-            <div class="content-table-center" :style="`height:${tableHeight + 60}px`">
+            <div
+              class="content-table-center tableCellStyle"
+              :style="`height:${tableHeight + 60}px`"
+            >
               <el-table
                 size="small"
                 :data="pagelist"
@@ -289,6 +292,7 @@
                   <template slot-scope="scope">
                     <img
                       :src="scope.row.IMAGEURL"
+                      onerror="this.src='static/images/shopmore.png'"
                       alt=""
                       style="
                         float: left;
@@ -296,19 +300,12 @@
                         width: 40px;
                         height: 40px;
                         margin-right: 8px;
-                        margin-top: 4px;
                       "
                     />
-                    <span style="height: 40px; width: 102px">
+                    <span>
                       <i
-                        class="pull-left inline-block"
-                        style="
-                          color: #2589ff;
-                          width: 92px;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
+                        class="pull-left inline-block text-overflow"
+                        style="color: #2589ff; width: 92px; line-height: 20px"
                       >
                         <span style="cursor: pointer" @click="handleEdit(scope.$index, scope.row)">
                           {{ scope.row.NAME ? scope.row.NAME : " " }}
@@ -324,29 +321,39 @@
                         />
                       </i>
                       <i
-                        class="pull-left inline-block"
-                        style="
-                          width: 92px;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
+                        class="pull-left inline-block text-overflow"
+                        style="width: 92px; line-height: 20px"
                       >
                         {{ scope.row.MOBILENO }}
                       </i>
                     </span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="CODE" label="卡号" align="center"></el-table-column>
-                <el-table-column prop="SHOPNAME" label="归属店铺" align="center"></el-table-column>
-                <el-table-column prop="LEVELNAME" label="会员等级" align="center"></el-table-column>
+                <el-table-column
+                  prop="CODE"
+                  label="卡号"
+                  align="center"
+                  width="110"
+                ></el-table-column>
+                <el-table-column
+                  prop="SHOPNAME"
+                  label="归属店铺"
+                  align="center"
+                  show-overflow-tooltip
+                ></el-table-column>
+                <el-table-column
+                  prop="LEVELNAME"
+                  label="会员等级"
+                  align="center"
+                  width="100"
+                ></el-table-column>
                 <el-table-column
                   prop="VIPFLAG"
                   label="标签"
                   width="100"
                   align="center"
                 ></el-table-column>
-                <el-table-column label="生日时间" align="center">
+                <el-table-column label="生日时间" align="center" width="110">
                   <template slot-scope="scope">
                     <span v-if="scope.row.BIRTHDATE != 0 && scope.row.BIRTHDATE != undefined">
                       {{ new Date(scope.row.BIRTHDATE) | time }}
@@ -355,9 +362,25 @@
                   </template>
                 </el-table-column>
 
-                <el-table-column prop="MONEY" label="储值积分" align="center"></el-table-column>
-                <el-table-column prop="INTEGRAL" label="竞技积分" align="center"></el-table-column>
-                <el-table-column prop="OWEMONEY" label="欠款" align="center"></el-table-column>
+                <el-table-column
+                  prop="MONEY"
+                  label="储值积分"
+                  align="right"
+                  width="100"
+                ></el-table-column>
+                <el-table-column
+                  prop="INTEGRAL"
+                  label="竞技积分"
+                  align="right"
+                  width="100"
+                  v-if="splitIntegral"
+                ></el-table-column>
+                <el-table-column
+                  prop="OWEMONEY"
+                  label="欠款"
+                  align="right"
+                  width="90"
+                ></el-table-column>
                 <el-table-column label="操作" width="70" fixed="right" align="right">
                   <template slot-scope="scope">
                     <el-button
@@ -417,16 +440,17 @@ import { mapState, mapGetters } from "vuex";
 import MIXNINS_EXPORT from "@/mixins/exportData.js";
 let _ = require("lodash");
 import MIXINS_MEMBER from "@/mixins/member";
-import listPage from "./list.vue";
-import gradePage from "../selected/level.vue";
-import recordPage from "./record.vue";
-import promotionPage from "./promotion.vue";
+// import listPage from "./list.vue";
+// import gradePage from "../selected/level.vue";
+// import recordPage from "./record.vue";
+// import promotionPage from "./promotion.vue";
 import QRCode from "qrcode";
-import { getHomeData } from "@/api/index";
+import { getHomeData, getUserInfo } from "@/api/index";
 export default {
   mixins: [MIXINS_MEMBER.MEMBER_MENU, MIXNINS_EXPORT.TOEXCEL, MIXNINS_EXPORT.TODATA],
   data() {
     return {
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       activeName: "first",
       height: window.innerHeight,
       pagelist: [],
@@ -436,7 +460,7 @@ export default {
       secltListWastageDate: [],
       selectlistType: [],
       tallerShow: false,
-      value2: "",
+      value2: getHomeData().shop.ID,
       value3: "",
       activeNames: 1,
       tableUploadData: [],
@@ -478,11 +502,8 @@ export default {
       isFilter: false,
       pageData: {
         PN: 1,
-        Filter: "",
         Status: -1,
-        LevelName: "",
         ShopId: "",
-        SaleEmpId: "",
         VipFlag: "",
         SaleEmpId: "",
         birthday: "",
@@ -557,7 +578,6 @@ export default {
         });
     },
     searchText() {
-      console.log("8888888946+5555656566565");
       this.searchfun();
     },
     memberFlagList(data) {
@@ -578,20 +598,19 @@ export default {
       this.shopName = data;
     },
     employeeList(data) {
-      this.disoptionsman = [];
-      let employeemen = data;
-      for (var i in employeemen) {
-        let Obj = {
-          value: employeemen[i].ID,
-          label: employeemen[i].NAME,
-          isSelect: false
-        };
-        this.disoptionsman.push(Obj);
-      }
-      this.disoptionsman.unshift({
-        label: "全部",
-        isSelect: true
-      });
+      let employeemen = data.map((item) => ({
+        value: item.ID,
+        label: item.NAME,
+        isSelect: false
+      }));
+      let allArr = [
+        {
+          label: "全部",
+          value: "",
+          isSelect: true
+        }
+      ];
+      this.disoptionsman = allArr.concat(employeemen);
     },
     dataListState(data) {
       this.loading = false;
@@ -703,7 +722,6 @@ export default {
           return item.isSelect != false;
         });
       }
-      console.log(this.selectlist);
     },
     secltListContType(e, items) {
       if (e == 0) {
@@ -723,7 +741,6 @@ export default {
           return item.isSelect != false;
         });
       }
-      console.log(this.selectlistType);
     },
     secltListBirthday(e, items) {
       for (var i in this.birthdayDate) {
@@ -736,7 +753,6 @@ export default {
           this.birthdayDate[i].isSelect = false;
         }
       }
-      console.log(this.selectlistBirthdayDate.id);
     },
     secltListConsume(e, items) {
       for (var i in this.PayCount) {
@@ -768,36 +784,45 @@ export default {
     //确定筛选
     screenChange() {
       let selectlistId = [];
-      for (var i in this.selectlist) {
-        selectlistId.push(this.selectlist[i].VIPFLAG);
-      }
-      //把数组变为字符串
-      let permission = selectlistId.join(",");
+      if (this.selectlist.length != 0) {
+        for (var i in this.selectlist) {
+          selectlistId.push(this.selectlist[i].VIPFLAG);
+        }
+        //把数组变为字符串
+        let permission = selectlistId.join(",");
 
-      //在把字符串加单引号
-      var str1 = "";
-      var arr = [];
-      arr = permission.split(",");
-      for (var i = 0; i < arr.length; i++) {
-        str1 += "'" + arr[i] + "',";
-      }
-      str1 = str1.substring(0, str1.length - 1);
+        //在把字符串加单引号
+        var str1 = "";
+        var arr = [];
+        arr = permission.split(",");
+        for (var i = 0; i < arr.length; i++) {
+          str1 += "'" + arr[i] + "',";
+        }
+        str1 = str1.substring(0, str1.length - 1);
 
-      this.pageData.VipFlag = str1;
+        this.pageData.VipFlag = str1;
+      } else {
+        this.pageData.VipFlag = "";
+      }
+
       let selectlistTypeId = [];
-      for (var i in this.selectlistType) {
-        selectlistTypeId.push(this.selectlistType[i].value);
+      if (this.selectlistType.length != 0) {
+        for (var i in this.selectlistType) {
+          selectlistTypeId.push(this.selectlistType[i].value);
+        }
+        let permissions = selectlistTypeId.join(",");
+        //在把字符串加单引号
+        var str2 = "";
+        var arrs = [];
+        arrs = permissions.split(",");
+        for (var i = 0; i < arrs.length; i++) {
+          str2 += "'" + arrs[i] + "',";
+        }
+        str2 = str2.substring(0, str2.length - 1);
+        this.pageData.SaleEmpId = str2;
+      } else {
+        this.pageData.SaleEmpId = "";
       }
-      let permissions = selectlistTypeId.join(",");
-      //在把字符串加单引号
-      var str2 = "";
-      var arrs = [];
-      arrs = permissions.split(",");
-      for (var i = 0; i < arrs.length; i++) {
-        str2 += "'" + arrs[i] + "',";
-      }
-      str2 = str2.substring(0, str2.length - 1);
-      this.pageData.SaleEmpId = str2;
       this.pageData.birthday = this.selectlistBirthdayDate.id;
       this.pageData.PayCount = this.secltListConsumeDate.id;
       this.pageData.LossVip = this.secltListWastageDate.id;
@@ -808,55 +833,32 @@ export default {
     clearChange() {
       this.tallerShow = false;
       for (var i in this.datamemberLeveList) {
-        if (i > 0) {
-          this.datamemberLeveList[i].isSelect = false;
-        } else {
-          this.datamemberLeveList[i].isSelect = true;
-        }
+        this.datamemberLeveList[i].isSelect = i > 0 ? false : true;
       }
       for (var j in this.disoptionsman) {
-        if (j > 0) {
-          this.disoptionsman[j].isSelect = false;
-        } else {
-          this.disoptionsman[j].isSelect = true;
-        }
+        this.disoptionsman[j].isSelect = j > 0 ? false : true;
       }
       for (var t in this.birthdayDate) {
-        if (t == 0) {
-          this.birthdayDate[t].isSelect = true;
-        } else {
-          this.birthdayDate[t].isSelect = false;
-        }
+        this.birthdayDate[t].isSelect = t == 0 ? true : false;
       }
       for (var g in this.PayCount) {
-        if (g == 0) {
-          this.PayCount[g].isSelect = true;
-        } else {
-          this.PayCount[g].isSelect = false;
-        }
+        this.PayCount[g].isSelect = g == 0 ? true : false;
       }
       for (var y in this.birthdayDate) {
-        if (y == 0) {
-          this.memberWastage[y].isSelect = true;
-        } else {
-          this.memberWastage[y].isSelect = false;
-        }
+        this.memberWastage[y].isSelect = y == 0 ? true : false;
       }
-      (this.pageData = {
+      this.pageData = {
         PN: 1,
-        Filter: "",
         Status: -1,
-        LevelName: "",
         ShopId: "",
-        SaleEmpId: "",
         VipFlag: "",
         SaleEmpId: "",
         birthday: "",
         PayCount: "",
         LossVip: "",
         Name: ""
-      }),
-        this.getNewData();
+      };
+      this.getNewData();
     },
     changeTaller() {
       this.tallerShow = !this.tallerShow;
@@ -869,15 +871,14 @@ export default {
     selectShop() {
       this.pageData = {
         PN: 1,
-        Filter: "",
         Status: -1,
-        LevelName: "",
         ShopId: this.value2,
-        SaleEmpId: "'" + this.value3 + "'",
+        SaleEmpId: this.value3 == "" ? "" : "'" + this.value3 + "'",
         VipFlag: "",
         birthday: "",
         PayCount: "",
-        LossVip: ""
+        LossVip: "",
+        Name: ""
       };
       this.getNewData();
     },
@@ -911,13 +912,9 @@ export default {
         this.$message("请选择会员");
         return;
       }
-      let name, ID;
-      console.log("删除会员");
-      if (this.multipleSelection.length > 0) {
-        name = this.multipleSelection[0].NAME;
-        ID = this.multipleSelection[0].ID;
-        console.log(ID);
-      }
+      let name = this.multipleSelection[0].NAME;
+      let ID = this.multipleSelection[0].ID;
+
       this.$confirm("确认删除会员 【" + name + " 】?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -963,11 +960,9 @@ export default {
         return;
       }
       let name, ID;
-      console.log("删除会员");
       if (this.multipleSelection.length > 0) {
         name = this.multipleSelection[0].NAME;
         ID = this.multipleSelection[0].ID;
-        console.log(ID);
       }
       this.reportLoss.num = 0;
       this.$confirm("您确认挂失/取消挂失已选会员?", "提示", {
@@ -976,13 +971,7 @@ export default {
         type: "warning"
       })
         .then(() => {
-          // for (let i = 0; i < this.multipleSelection.length; i++) {
-          //     let allsetdate = {
-          //         id: this.multipleSelection[i].ID,
-          //         Type: this.multipleSelection[i].STATUS == 0 ? 0 : 1
-          //     };
           this.$store.dispatch("setReportLoss", ID);
-          // }
         })
         .catch(() => {});
     },
@@ -1006,7 +995,7 @@ export default {
         .dispatch("getExportMemberData", {
           Name: this.searchText,
           VipFlag: this.pageData.VipFlag,
-          LevelName: this.pageData.LevelName
+          LevelName: ""
         })
         .then(() => {
           this.exportLoading = true;
@@ -1138,24 +1127,17 @@ export default {
   },
   beforeCreate() {
     let list = this.$store.state.member.memberList;
-    let list2 = this.$store.state.member.memberLevelList;
-    let list3 = this.$store.state.member.memberFlagList;
-    //   if (list.length == 0) {
     this.$store.dispatch("getMemberList", { PN: 1 }).then(() => {
       this.loading = true;
     });
-    //   }
     this.$store.dispatch("getMemberCode", {});
-    if (list2.length == 0) {
-      this.$store.dispatch("getMemberLevel");
-    }
-    if (list3.length == 0) {
-      this.$store.dispatch("getMemberFlag");
-    }
   }
 };
 </script>
 <style scoped>
+.tableCellStyle >>> .el-table .cell {
+  line-height: normal !important;
+}
 .member-header {
   display: flex;
   align-items: center;
@@ -1313,6 +1295,11 @@ input::-webkit-input-placeholder {
 }
 .member-detailed >>> .el-dialog__body {
   padding: 0px 20px 30px 20px !important;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
 

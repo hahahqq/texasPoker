@@ -131,7 +131,7 @@ export default {
   mixins: [MIXINS_SETUP.SIDERBAR_MENU],
   data() {
     return {
-      sysLogo: "static/images/" + ROOT_STATE + "/sysLogo.png",
+      sysLogo: "static/images/sysLogo.png",
       showEdit: false,
       showEdit2: false,
       activeNames: "",

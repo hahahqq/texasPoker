@@ -31,10 +31,7 @@
             {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
             {{
               BillObj.CHARGESTYPE == 0
-                ? BillObj.CHARGESMONEY +
-                  " ( 比例 " +
-                  BillObj.CHARGESRATE * 100 +
-                  "% ) "
+                ? BillObj.CHARGESMONEY + " ( 比例 " + BillObj.CHARGESRATE * 100 + "% ) "
                 : BillObj.CHARGESMONEY + " 元"
             }}
           </el-col>
@@ -308,7 +305,8 @@ export default {
       rewardType: 0,
       memberdetails: {},
       loadingMember: false,
-      isEmptyData: false
+      isEmptyData: false,
+      rewardLevel: []
     };
   },
   computed: {
@@ -322,7 +320,7 @@ export default {
     addNewMember: () => import("@/components/member/add")
   },
   watch: {
-     getNoPrizeListState(data) {
+    getNoPrizeListState(data) {
       console.log(data);
       this.loadingMember = false;
       if (data.success) {
@@ -336,13 +334,7 @@ export default {
         this.BillObj = data.data.BillObj;
         this.EventRewardObj = data.data.EventRewardObj;
         this.RewardObj = data.data.RewardObj;
-        let arr1 = data.data.buyVipList;
-
-        // 已报名，未领奖会员
-        let arr2 = this.RewardObj;
-        let arr3 = arr1.filter((obj) => !arr2.some((obj1) => obj1.VIPID == obj.VIPID));
-        console.info(arr3);
-        this.noPrizeList = arr3;
+        this.noPrizeList = [];
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -368,7 +360,7 @@ export default {
     }
   },
   methods: {
-     handleClose() {
+    handleClose() {
       this.noPrizeList = [];
     },
     remoteMethod(query) {
@@ -430,7 +422,7 @@ export default {
           { vipInfo: vipInfo }
         );
         let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-        getDayindata(printData, "print6", qresurl);
+        getDayindata(printData, "Print6", qresurl);
       }
     },
     getRateFun(RewardIntegral) {
@@ -462,13 +454,17 @@ export default {
       });
     },
     selectLevel(name) {
-      let curReward = this.EventRewardObj.filter((item) => item.NAME == name);
+      let splitName = name.substr(1);
+      let str = splitName.substr(0, splitName.length - 1); // 去掉名次中的 “第”、“名”
+
+      let curReward = this.rewardLevel.filter((item) => item.NAME == str);
+
       if (curReward.length != 0) {
         this.ruleForm = {
-          RewardName: curReward[0].NAME,
+          RewardName: '第'+curReward[0].NAME+'名',
           ContestQty: curReward[0].CONTESTQTY,
           REWARDRATE: curReward[0].REWARDRATE * 100,
-          RewardIntegral: parseInt(this.BillObj.REWARDMONEY * curReward[0].REWARDRATE),
+          RewardIntegral: (curReward[0].REWARDRATE * this.BillObj.REWARDMONEY).toFixed(2),
           Remark: ""
         };
       } else {
@@ -501,20 +497,13 @@ export default {
       this.BillObj = this.dataType.BillObj;
       this.EventRewardObj = this.dataType.RewardObj;
       this.buyVipList = this.dataType.buyVipList;
+      this.rewardLevel = this.dataType.EventRewardObj;
       let vipInfo = this.dataType.vipInfo;
-
-      // 已报名，未领奖会员
-      let arr1 = this.dataType.buyVipList,
-        arr2 = this.dataType.RewardObj;
-      let arr3 = arr1.filter((obj) => !arr2.some((obj1) => obj1.VIPID == obj.VIPID));
-      this.noPrizeList = arr3;
 
       if (vipInfo.VIPID != undefined) {
         this.memberdetails = vipInfo;
         this.inputShow = false;
       }
-
-      // console.log(this.levelList, this.EventRewardObj)
 
       this.levelList.filter((e) => {
         this.EventRewardObj.find((i) => {
@@ -529,12 +518,9 @@ export default {
     },
     cancelSignUp() {
       this.searchText = "";
-      this.noPrizeList = []
+      this.noPrizeList = [];
       this.memberdetails = {};
       this.inputShow = true;
-    },
-    addNewVipFun() {
-      console.log(this.searchText);
     }
   },
   components: {
@@ -551,7 +537,6 @@ export default {
   }
 };
 </script>
-
 
 <style lang="scss" scoped>
 .selectStyle >>> .el-input__inner {

@@ -320,6 +320,7 @@ export default {
           this.clearData();
         }
         this.$emit("referData", this.submitVipID);
+
       }
       this.$message({ type: data.success ? "success" : "error", message: data.message });
     },
@@ -372,7 +373,6 @@ export default {
 
       let vipInfo = jsonPrintData.vipInfo;
       vipInfo[0].value = this.vipnews.CODE;
-      console.log(this.vipnews);
       vipInfo[1].value = this.vipnews.NAME;
       vipInfo[2].value = this.vipnews.MONEY + Number(this.addMoney) + Number(this.giftMoney);
       if (this.splitIntegral) {
@@ -392,7 +392,7 @@ export default {
         { saleInfo: saleInfo }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-      getDayindata(printData, "print1", qresurl);
+      getDayindata(printData, "Print1", qresurl);
 
       this.clearData();
     },

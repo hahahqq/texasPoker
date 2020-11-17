@@ -229,7 +229,7 @@ export default {
     saveEventsState(data) {
       if (data.success) {
         let arr = this.rewardWayList.concat(this.DelArr);
-        let newArr = this.rewardWayList.filter((item) => item.Name != "" && item.RewardRate != "");
+        let newArr = arr.filter((item) => item.Name != "" && item.RewardRate != "");
 
         if (arr.length != 0) {
           this.$store.dispatch("saveRewardWay", {
@@ -274,20 +274,16 @@ export default {
           RewardType: 0
         };
 
-        let param = this.dataType.info.RewardObj,
-          newParam = [];
-        for (var i = 0; i < param.length; i++) {
-          newParam.push({
-            Id: param[i].ID,
-            Name: param[i].NAME,
-            ContestQty: param[i].CONTESTQTY,
-            RewardRate: Number(param[i].REWARDRATE) * 100,
-            Integral: 0,
-            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
-            IsCancel: 0
-          });
-        }
-        this.rewardWayList = newParam;
+        this.rewardWayList = this.dataType.info.RewardObj.map((item) => ({
+          Id: item.ID,
+          Name: "第" + item.NAME + "名",
+          ContestQty: item.CONTESTQTY,
+          RewardRate: Number(item.REWARDRATE) * 100,
+          Integral: 0,
+          Remark: item.REMARK != undefined ? item.REMARK : "",
+          IsCancel: 0
+        }));
+
       } else {
         this.cleanData();
       }
@@ -308,22 +304,11 @@ export default {
       });
     },
     cleanData() {
-      this.DelArr = [];
-      this.ruleForm = {
-        Id: "",
-        Name: "",
-        BuyinMoney: "",
-        ChipsQty: "",
-        ChargesType: 0,
-        ChargesRate: "",
-        ChargesMoney: "",
-        Remark: "",
-        RewardType: 0
-      };
-      this.defaultRewardWayList()
+      Object.assign(this.$data, this.$options.data());
+      this.defaultRewardWayList();
     },
-    defaultRewardWayList(){
-       this.rewardWayList = [
+    defaultRewardWayList() {
+      this.rewardWayList = [
         {
           Id: "",
           Name: "第1名",
@@ -349,7 +334,7 @@ export default {
       this.rewardWayList.splice(idx, 1);
 
       let rewardWayList = this.rewardWayList;
-      for (var i = 1; i <= rewardWayList.length; i++) {
+      for (var i = 0; i < rewardWayList.length; i++) {
         rewardWayList[i].Name = "第" + Number(i + 1) + "名";
       }
       this.rewardWayList = rewardWayList;
@@ -387,7 +372,7 @@ export default {
     }
     this.levelList = levelList;
 
-    this.defaultRewardWayList()
+    this.defaultRewardWayList();
   }
 };
 </script>

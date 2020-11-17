@@ -8,7 +8,7 @@ const ROOT_STATE = ROOT_URL == 'http://www.dlaico88.cn' ? 2 : 1;
 var title = "德州会员系统";
 document.title = title;
 
-document.getElementById('icon').href = "static/images/" + ROOT_STATE + "/sysLogo.png"
+document.getElementById('icon').href = "static/images/sysLogo.png"
 
 const IMGUPLOAD_URL = ROOT_URL + ROOT_PORT + "/toFileUpload/oneFileUpload";
 const IMG_URL = ROOT_URL + ROOT_PORT + "/resources/";

@@ -256,7 +256,6 @@ export default {
 			loading: false,
 			loading2: false,
 			componentName: "",
-			logoImg: "static/images/testLogin2.png",
 			tradeList: [
 				{
 					id: 0,

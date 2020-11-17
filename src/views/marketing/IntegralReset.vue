@@ -19,12 +19,7 @@
 					<div class="content-eighty">
 						<div class="content-center">
 							<div>
-								<el-button
-									icon="el-icon-plus"
-									size="small"
-									type="primary"
-									@click="handleNew"
-								>
+								<el-button size="small" type="primary" @click="handleNew">
 									添加积分清零
 								</el-button>
 							</div>

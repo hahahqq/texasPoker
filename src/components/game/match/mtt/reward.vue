@@ -312,7 +312,8 @@ export default {
       noPrizeList: [],
       rewardType: 0,
       loadingMember: false,
-      isEmptyData: false
+      isEmptyData: false,
+      rewardLevel: []
     };
   },
   computed: {
@@ -425,7 +426,7 @@ export default {
           { vipInfo: vipInfo }
         );
         let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-        getDayindata(printData, "print6", qresurl);
+        getDayindata(printData, "Print6", qresurl);
       }
     },
     getRateFun(RewardIntegral) {
@@ -476,15 +477,20 @@ export default {
       });
     },
     selectLevel(name) {
-      let curReward = this.EventRewardObj.filter((item) => item.NAME == name);
+       console.log(name)
+      let splitName = name.substr(1)
+      let str = splitName.substr(0, splitName.length - 1); // 去掉名次中的 “第”、“名”
+
+      let curReward = this.rewardLevel.filter((item) => item.NAME == str);
       if (curReward.length != 0) {
         this.ruleForm = {
-          RewardName: curReward[0].NAME,
+          RewardName: '第'+curReward[0].NAME+'名',
           ContestQty: curReward[0].CONTESTQTY,
-          REWARDRATE: curReward[0].REWARDRATE * 100,
-          RewardIntegral: parseInt(this.BillObj.REWARDMONEY * curReward[0].REWARDRATE),
           Remark: ""
         };
+
+        this.ruleForm.REWARDRATE = this.BillObj.REWARDTYPE == 1 ? curReward[0].INTEGRAL / this.BillObj.REWARDMONEY * 100 : curReward[0].REWARDRATE * 100
+        this.ruleForm.RewardIntegral = this.BillObj.REWARDTYPE == 1 ? curReward[0].INTEGRAL : (curReward[0].REWARDRATE * this.BillObj.REWARDMONEY).toFixed(2)
       } else {
         this.ruleForm = {
           RewardName: name,
@@ -515,6 +521,7 @@ export default {
       this.BillObj = this.dataType.BillObj;
       this.EventRewardObj = this.dataType.RewardObj;
       this.buyVipList = this.dataType.buyVipList;
+      this.rewardLevel = this.dataType.EventRewardObj
       let vipInfo = this.dataType.vipInfo;
 
       if (vipInfo.VIPID != undefined) {
@@ -546,7 +553,7 @@ export default {
   mounted() {
     let levelList = [];
     for (var i = 1; i <= 30; i++) {
-      levelList.push({ name: "第" + i + "名", disabled: false });
+      levelList.push({ name: "第"+i+"名", disabled: false });
     }
     this.levelList = levelList;
 

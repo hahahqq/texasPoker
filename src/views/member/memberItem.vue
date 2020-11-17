@@ -61,15 +61,15 @@
                 </div>
                 <div style="line-height: 34px">
                   <i>{{ memberItem.MOBILENO }}</i>
-                  <i v-if="memberItem.LASTMATCHTIME != undefined" style="margin-left: 20px">
+                  <i v-if="memberItem.LASTSALETIME != undefined" style="margin-left: 20px">
                     最近一次消费：
-                    {{ new Date(memberItem.LASTMATCHTIME) | timehf }}
+                    {{ new Date(memberItem.LASTSALETIME) | timehf }}
                   </i>
-                  <i style="margin-left: 20px">无消费记录</i>
-                  <i v-if="memberItem.LASTMATCHTIME != undefined" style="margin-left: 20px">
+                  <i v-else style="margin-left: 20px">无消费记录</i>
+                  <i v-if="memberItem.LASTSALETIME != undefined" style="margin-left: 20px">
                     【 距今
                     <a style="color: #f00; font-size: 14px">
-                      {{ new Date(memberItem.LASTMATCHTIME) | dateBetweenDay }}
+                      {{ new Date(memberItem.LASTSALETIME) | dateBetweenDay }}
                     </a>
                     天 】
                   </i>
@@ -90,7 +90,7 @@
                 <div>{{ memberItem.MONEY }}</div>
               </li>
 
-              <li>
+              <li v-if="splitIntegral">
                 <div>竞技积分</div>
                 <div>{{ memberItem.INTEGRAL }}</div>
               </li>
@@ -213,7 +213,7 @@
                 <balancePage v-if="activeName == 'second'"></balancePage>
               </el-tab-pane>
 
-              <el-tab-pane name="third" label="竞技积分记录">
+              <el-tab-pane name="third" label="竞技积分记录" v-if="splitIntegral">
                 <integralPage v-if="activeName == 'third'"></integralPage>
               </el-tab-pane>
 
@@ -259,6 +259,7 @@
 import { mapState, mapGetters } from "vuex";
 import MIXINS_MEMBER from "@/mixins/member";
 import CRYPTO from "crypto-js";
+import { getHomeData, getUserInfo } from "@/api/index";
 export default {
   mixins: [MIXINS_MEMBER.MEMBER_MENU],
   data() {
@@ -271,7 +272,8 @@ export default {
       queryUrl: {},
       memberItem: {},
       vipPassword: "",
-      IsUsePasswd: false
+      IsUsePasswd: false,
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
     };
   },
   computed: {

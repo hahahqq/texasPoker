@@ -10,8 +10,8 @@
         </section>
       </el-aside>
       <el-container>
-        <el-main :style="{ height: height + 'px' }">
-          <div class="content-table1">
+        <el-main style="margin-bottom: 0; height:auto">
+          <div class="content-table1" :style="`height:${height}px; float:left`">
             <div class="content-table-center">
               <div class="system" style="width: 100%; float: left">
                 <div class="setparametersock">
@@ -131,7 +131,7 @@ export default {
         seconds: 60
       },
       loading: false,
-      height: window.innerHeight - 60
+      height: window.innerHeight - 70
     };
   },
   components: {
@@ -174,7 +174,7 @@ export default {
         return;
       }
       let msg =
-        "同意因我决定而清除的数据【无法恢复】智讯生意通将不负责任，请输入“确认清除”表示您已确认！";
+        "同意因我决定而清除的数据【无法恢复】智讯软件将不负责任，请输入“确认清除”表示您已确认！";
       this.$prompt(msg, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

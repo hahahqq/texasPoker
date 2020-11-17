@@ -14,37 +14,75 @@
           <div class="shopquery">
             <div class="content-eighty">
               <div class="content-center">
-                <el-input
-                  type="default"
-                  size="small"
-                  v-model="searchText"
-                  clearable
-                  @keyup.enter.native="
-                    pageData.Filter = searchText;
-                    pageData.PN = 1;
-                    getStockData();
-                  "
-                  placeholder="请输入商品名称或编码"
-                  style="width: 400px"
-                >
-                  <el-button
-                    slot="append"
-                    type="primary"
-                    icon="el-icon-search"
-                    size="small"
-                    @click="
-                      pageData.Filter = searchText;
-                      pageData.PN = 1;
-                      getStockData();
-                    "
-                  >
-                    查询
-                  </el-button>
-                </el-input>
+                <el-row class="member-main-top-type">
+                  <el-col :span="7">
+                    店铺&nbsp;&nbsp;&nbsp;
+                    <el-select
+                      class="selectStyle"
+                      size="small"
+                      v-model="radio"
+                      @change="submitSearch"
+                      multiple
+                      collapse-tags
+                      placeholder="请选择店铺"
+                    >
+                      <el-option value="所有店铺">所有店铺</el-option>
+                      <el-option
+                        :disabled="radio == '所有店铺'"
+                        v-for="item in shopList"
+                        :key="item.ID"
+                        :label="item.NAME"
+                        :value="item.ID"
+                      ></el-option>
+                    </el-select>
+                  </el-col>
+
+                  <el-col :span="7">
+                    商品分类&nbsp;&nbsp;&nbsp;
+                    <el-select
+                      v-model="TypeId"
+                      placeholder="请选择商品分类"
+                      size="small"
+                      @change="submitSearch"
+                      clearable
+                    >
+                      <el-option
+                        v-for="item in commoditycflList"
+                        :key="item.ID"
+                        :label="item.NAME"
+                        :value="item.ID"
+                      ></el-option>
+                    </el-select>
+                  </el-col>
+
+                  <el-col :span="10" style="text-align: right">
+                    <el-input
+                      v-model="searchText"
+                      placeholder="请输入商品名称或货号"
+                      style="width: 70%"
+                      size="small"
+                    >
+                      <template slot="append">
+                        <span style="font-size: 12px; cursor: default" @click="searchfun2(1)">
+                          搜索
+                        </span>
+                      </template>
+                    </el-input>
+                  </el-col>
+                </el-row>
               </div>
             </div>
             <div class="content-table4">
               <div class="content-table-center">
+                <el-tabs v-model="activeName" type="card" @tab-click="handleTabClick(activeName)">
+                  <el-tab-pane
+                    :key="item.name"
+                    v-for="item in tableTabs"
+                    :label="item.label"
+                    :name="item.name"
+                  ></el-tab-pane>
+                </el-tabs>
+
                 <el-table
                   size="small"
                   :data="tableData"
@@ -60,9 +98,13 @@
                     width="70"
                   ></el-table-column>
                   <el-table-column
+                    prop="SHOPNAME"
+                    label="店铺"
+                    v-if="activeName == 'first'"
+                  ></el-table-column>
+                  <el-table-column
                     align="center"
                     prop="GOODSNAME"
-                    sortable
                     label="商品名称"
                   ></el-table-column>
                   <el-table-column
@@ -70,6 +112,8 @@
                     prop="GOODSCODE"
                     label="商品编码"
                   ></el-table-column>
+                  <el-table-column align="center" prop="TYPENAME" label="分类"></el-table-column>
+                  <el-table-column align="center" prop="UNITNAME" label="单位"></el-table-column>
                   <el-table-column align="center" prop="PRICE" label="商品价格"></el-table-column>
                   <el-table-column align="center" label="商品成本">
                     <template slot-scope="scope">
@@ -84,7 +128,7 @@
                   ></el-table-column>
                 </el-table>
                 <!-- 分页 -->
-                <div class="m-top-smts clearfix elpagination">
+                <div class="m-top-sm clearfix elpagination">
                   <el-pagination
                     background
                     @size-change="handlePageChange"
@@ -133,38 +177,93 @@ export default {
       pageData: {
         ShopId: getHomeData().shop.SHOPID,
         CategoryId: "",
-        Satus: -1, //  -1=全部，0=停用，1=启用
-        ZeroQty: 1, //  -1=全部，1=不显示零库存
         Filter: "",
         PN: 1,
-        OrderType: 3,
-        OrderMode: 0
+        Type: ""
       },
-      tableHeight: document.body.clientHeight - 250
+      tableHeight: document.body.clientHeight - 286,
+      activeName: "first",
+      tableTabs: [
+        { name: "first", label: "库存明细" },
+        { name: "second", label: "库存汇总" }
+      ],
+      TypeId: "",
+      radio: [getHomeData().shop.ID]
     };
   },
   computed: {
     ...mapGetters({
+      shopList: "shopList",
       stockqueryList: "stockqueryList",
-      stockqueryiState: "stockqueryiState"
+      stockDetailsState: "stockDetailsState",
+      stockTotalState: "stockTotalState",
+      commoditycflList: "commoditycflList"
     })
   },
   watch: {
-    stockqueryiState(data) {
+    stockTotalState(data) {
       this.loading = false;
-      if (data.success) {
-        this.tableData = [...this.stockqueryList];
+      if (data.success && this.activeName == "second") {
+        this.tableData = data.data.PageData.DataArr;
         this.pagination = {
-          TotalNumber: data.paying.TotalNumber,
-          PageNumber: data.paying.PageNumber,
-          PageSize: data.paying.PageSize,
-          PN: data.paying.PN
+          TotalNumber: data.data.PageData.TotalNumber,
+          PageNumber: data.data.PageData.PageNumber,
+          PageSize: data.data.PageData.PageSize,
+          PN: data.data.PageData.PN
+        };
+      }
+    },
+    stockDetailsState(data) {
+      this.loading = false;
+      if (data.success && this.activeName == "first") {
+        this.tableData = data.data.PageData.DataArr;
+        this.pagination = {
+          TotalNumber: data.data.PageData.TotalNumber,
+          PageNumber: data.data.PageData.PageNumber,
+          PageSize: data.data.PageData.PageSize,
+          PN: data.data.PageData.PN
         };
       }
     }
   },
 
   methods: {
+    handleTabClick(activeName) {
+      this.pageData.PN = 1;
+      this.pageData.Filter = "";
+      this.getStockData();
+    },
+    submitSearch() {
+      this.pageData.TypeId = this.TypeId;
+
+      let haveAllShop = this.radio.filter((item) => item == "所有店铺"),
+        shopIdList = [];
+      if (haveAllShop.length == 1) {
+        this.radio = ["所有店铺"];
+        shopIdList = this.shopList.map((item) => item.ID);
+      } else if (this.radio.length == 0) {
+        shopIdList = [getHomeData().shop.ID];
+        this.radio = [getHomeData().shop.ID];
+      } else {
+        shopIdList = this.radio;
+      }
+
+      let str = "",
+        id = "";
+      for (let i in shopIdList) {
+        str += shopIdList[i] + ",";
+      }
+      if (str.length > 0) {
+        //去掉最后一个逗号
+        str = str.substring(0, str.length - 1);
+      }
+      this.pageData.ShopId = str;
+
+      this.pageData.Filter = this.searchText;
+      this.pageData.PN = 1;
+      this.getStockData();
+    },
+
     handlePageChange: function (currentPage) {
       if (this.pageData.PN == currentPage || this.loading) {
         return;
@@ -173,9 +272,11 @@ export default {
       this.getStockData();
     },
     getStockData() {
-      this.$store.dispatch("getsqueryItem", this.pageData).then(() => {
-        this.loading = true;
-      });
+      this.$store
+        .dispatch(this.activeName == "first" ? "GetStockDetails" : "GetStockTotal", this.pageData)
+        .then(() => {
+          this.loading = true;
+        });
     }
   },
   mounted() {
@@ -183,6 +284,13 @@ export default {
   },
   components: {
     headerPage: () => import("@/components/header")
+  },
+  beforeCreate() {
+    let list = this.$store.state.commodityc.commoditycflList;
+    if (list.length == 0) {
+      this.$store.dispatch("getcommoditycflList", {}).then(() => {});
+    }
+    this.$store.dispatch("getShopList");
   }
 };
 </script>
@@ -239,5 +347,8 @@ export default {
 
 .el-main {
   padding: 5px !important;
+}
+.selectStyle >>> .el-select__tags {
+  max-width: none !important;
 }
 </style>

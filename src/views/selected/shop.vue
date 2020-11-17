@@ -18,41 +18,48 @@
       </div>
     </div>
     <!--列表-->
-    <div class="content-table m-top-sm">
-      <el-table
-        :data="pagelist"
-        v-loading="loading"
-        :height="clientHeight"
-        size="small"
-        header-row-class-name="bg-theme2 text-white"
-      >
-        <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
-        <el-table-column prop="SHOPNAME" label="店铺名称"></el-table-column>
-        <el-table-column prop="MANAGER" label="联系人" align="center"></el-table-column>
-        <el-table-column prop="PHONENO" label="联系电话" align="center"></el-table-column>
-        <el-table-column prop="ADDRESS" label="地址"></el-table-column>
-        <el-table-column label="到期时间" align="center">
-          <template slot-scope="scope">
-            <span>{{ new Date(scope.row.INVALIDDATE) | time }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="right">
-          <template slot-scope="scope">
-            <el-button type="text" size="small" @click="handleDeal(scope.row)" icon="el-icon-edit">
-              编辑
-            </el-button>
-            <el-button
-              size="small"
-              type="text"
-              v-if="!scope.row.ISINIT"
-              @click="handleDel(scope.$index, scope.row)"
-              icon="el-icon-delete"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <div class="content-table m-top-sm" style="height: auto">
+      <div class="content-table-center">
+        <el-table
+          :data="pagelist"
+          v-loading="loading"
+          :height="clientHeight"
+          size="small"
+          header-row-class-name="bg-theme2 text-white"
+        >
+          <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
+          <el-table-column prop="SHOPNAME" label="店铺名称"></el-table-column>
+          <el-table-column prop="MANAGER" label="联系人" align="center"></el-table-column>
+          <el-table-column prop="PHONENO" label="联系电话" align="center"></el-table-column>
+          <el-table-column prop="ADDRESS" label="地址"></el-table-column>
+          <el-table-column label="到期时间" align="center">
+            <template slot-scope="scope">
+              <span>{{ new Date(scope.row.INVALIDDATE) | time }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="right">
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                size="small"
+                @click="handleDeal(scope.row)"
+                icon="el-icon-edit"
+              >
+                编辑
+              </el-button>
+              <el-button
+                size="small"
+                type="text"
+                v-if="!scope.row.ISINIT"
+                @click="handleDel(scope.$index, scope.row)"
+                icon="el-icon-delete"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </div>
 
     <!-- deal -->
@@ -82,7 +89,7 @@ export default {
       dialogVisible: false,
       dealType: "add",
       input2: "",
-      clientHeight: document.body.clientHeight - 160
+      clientHeight: document.body.clientHeight - 180
     };
   },
   computed: {

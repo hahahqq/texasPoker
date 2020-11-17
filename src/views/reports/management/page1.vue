@@ -351,8 +351,14 @@ export default {
 			};
 		},
 		getNewData_fun(data) {
-			this.formData = Object.assign({}, data);
-			this.getNewData();
+			let diff = (data.EndDate - data.BeginDate) / 3600 / 1000 / 24;
+			console.log(diff);
+			if (diff > 90) {
+				this.$message.error("时间跨度不能大于90天");
+			} else {
+				this.formData = Object.assign({}, data);
+				this.getNewData();
+			}
 		},
 		getNewData() {
 			this.loading = true;
@@ -365,16 +371,17 @@ export default {
 		},
 		setEchartFormData() {
 			// 图表 区间段小于7天的，显示结束时间前7天的数据
-			let date1 = this.formData.BeginDate,
-				date2 = this.formData.EndDate;
-			if (date2 - date1 >= 3600 * 1000 * 24 * 7) {
-				this.echartFormData = Object.assign({ PN: 1 }, this.formData);
-			} else {
-				let date = new Date().setTime(date2 - 3600 * 1000 * 24 * 7);
-				this.echartFormData = Object.assign({ PN: 1 }, this.formData, {
-					BeginDate: new Date(date).getTime()
-				});
-			}
+			// let date1 = this.formData.BeginDate,
+			// 	date2 = this.formData.EndDate;
+			// if (date2 - date1 >= 3600 * 1000 * 24 * 7) {
+			// 	this.echartFormData = Object.assign({ PN: 1 }, this.formData);
+			// } else {
+			// 	let date = new Date().setTime(date2 - 3600 * 1000 * 24 * 7);
+			// 	this.echartFormData = Object.assign({ PN: 1 }, this.formData, {
+			// 		BeginDate: new Date(date).getTime()
+			// 	});
+			// }
+			this.echartFormData = Object.assign({ PN: 1 }, this.formData);
 			this.echartAct = 0;
 			this.getEchartNewData(0);
 			this.getEchartNewData(1);

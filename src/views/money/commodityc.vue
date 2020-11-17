@@ -61,9 +61,22 @@
                               </div>
                             </div>
                             <div class="ssmemberul-cont-text">
-                              <span>储值积分 : {{ memberdetails.MONEY }}</span>
+                              <span style="width: 120px; float: left">
+                                卡号 : {{ memberdetails.CODE }}
+                              </span>
+                              <span style="margin-left: 20px">
+                                手机号 : {{ memberdetails.MOBILENO }}
+                              </span>
+                            </div>
+
+                            <div class="ssmemberul-cont-text">
+                              <span style="width: 120px; float: left">
+                                储值积分 :
+                                <i style="color: #409eff">{{ memberdetails.MONEY }}</i>
+                              </span>
                               <span style="margin-left: 20px" v-if="splitIntegral">
-                                竞技积分 : {{ memberdetails.INTEGRAL }}
+                                竞技积分 :
+                                <i style="color: #409eff">{{ memberdetails.INTEGRAL }}</i>
                               </span>
                             </div>
                           </div>
@@ -71,7 +84,7 @@
                         </div>
                       </div>
 
-                      <ul class="list-module" v-show="listMember">
+                      <ul class="list-module" v-if="listMember && loadingMember == false">
                         <li
                           v-for="(item, index) in datalist"
                           @click="appClick(item)"
@@ -97,6 +110,14 @@
                             </div>
                           </div>
                         </li>
+                      </ul>
+
+                      <ul
+                        class="list-module"
+                        style="line-height: 60px; width: 100%; color: #888; text-align: center"
+                        v-if="loadingMember"
+                      >
+                        数据加载中...
                       </ul>
                     </div>
                     <div class="timescountc_left overflowscroll" ref="addsockheight">
@@ -289,7 +310,7 @@
                                                 </div>
                                               </div>
                                               <div class="coupont-list-bottom">
-                                                <span>[全品类]可用</span>
+                                                <span>【商品券】{{item.REMARK}}</span>
                                               </div>
                                             </div>
                                           </li>
@@ -825,6 +846,7 @@ export default {
       shopitemList: {},
       showTishi: "",
       pageCouponList: {
+        CouponType: 0,
         VipId: "",
         Type: "",
         PN: 1
@@ -849,7 +871,8 @@ export default {
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       cashRechargeData: {},
       checkedreceipt: true,
-      submitLoading: false
+      submitLoading: false,
+      loadingMember: false
     };
   },
   //取单返回来的数据渲染到商品销售页面
@@ -952,6 +975,7 @@ export default {
       }
     },
     getssmemberdListState(data) {
+      this.loadingMember = false;
       this.loading = false;
       if (data.success) {
         if (this.isshowtatus) {
@@ -1047,8 +1071,10 @@ export default {
 
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print2");
         let jsonPrintData = JSON.parse(printRules);
-
         if (jsonPrintData.autoPrint || this.checkedreceipt) {
+          jsonPrintData.autoPrint = true;
+          localStorage.setItem(SYSTEM_INFO.PREFIX + "Print2", JSON.stringify(jsonPrintData));
+
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.clearData();
@@ -1066,6 +1092,7 @@ export default {
   },
   methods: {
     handleCloseMember() {
+      this.searchText1 = "";
       this.listMember = false;
     },
     showAddNewChange() {
@@ -1121,24 +1148,41 @@ export default {
         {
           label: "实付金额：",
           value: payMoney
-        },
-        {
-          label: "支付方式：",
-          value: this.cashRechargeData.payName
         }
       ];
 
+      if (this.cashRechargeData.payName == "积分支付") {
+        saleInfo.push({
+          label: "储值积分：",
+          value: this.cashRechargeData.payMoney
+        });
+
+        if (this.splitIntegral) {
+          saleInfo.push({
+            label: "竞技积分：",
+            value: this.cashRechargeData.PayIntegral
+          });
+        }
+      } else {
+        saleInfo.push({
+          label: "支付方式：",
+          value: this.cashRechargeData.payName
+        });
+      }
+
       let vipInfo = jsonPrintData.vipInfo;
       if (this.VipId == undefined || this.VipId == "") {
-        vipInfo = [];
+        vipInfo[0].isShow = false;
+        vipInfo[1].value = "散客";
+        vipInfo[2].isShow = false;
       } else {
         vipInfo[0].value = this.memberdetails.CODE;
         vipInfo[1].value = this.memberdetails.NAME;
-        vipInfo[2].value = this.memberdetails.MONEY - Number(payMoney);
+        vipInfo[2].value = this.memberdetails.MONEY - Number(this.cashRechargeData.payMoney);
         if (this.splitIntegral) {
           vipInfo.push({
             label: "竞技积分",
-            value: this.memberdetails.INTEGRAL,
+            value: this.memberdetails.INTEGRAL - Number(this.cashRechargeData.PayIntegral),
             isShow: vipInfo[2].isShow
           });
         }
@@ -1159,7 +1203,8 @@ export default {
         { goodsList: newGoodsList }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-      getDayindata(printData, "print2", qresurl);
+      console.log(qresurl);
+      getDayindata(printData, "Print2", qresurl);
 
       this.clearData();
     },
@@ -1437,6 +1482,7 @@ export default {
     search_mb() {
       this.listMember = this.searchText1 == "" ? false : true;
       this.isshowtatus = true;
+
       this.searchfun3();
     },
     getNewData1() {
@@ -1446,6 +1492,7 @@ export default {
       if (!this.searchText1) {
         return;
       }
+      this.loadingMember = true;
       this.pageDataMember.Filter = this.searchText1;
       this.getNewData1();
     },
@@ -1598,12 +1645,15 @@ export default {
     },
     //根据会员ID调优惠卷接口的方法
     selctCoupon() {
+       console.log(this.pageCouponList)
       if (this.memberdetails.ID == null) {
         this.$message("请选择会员");
         return;
       } else {
         this.pageCouponList.VipId = this.VipId;
-        this.pageCouponList.Type = 1;
+        this.pageCouponList.Type = 0;
+        this.pageCouponList.CouponType = 0;
+
         this.$store.dispatch("getcouponListState", this.pageCouponList);
       }
     },
@@ -1725,7 +1775,7 @@ export default {
       this.cashRechargeData = data;
       this.checkedreceipt = data.checkedreceipt;
 
-      let { checkedreceipt, payName, ...newData } = data;
+      let { checkedreceipt, payName, payMoney, ...newData } = data;
 
       for (let i = 0; i < this.addobjCountList.length; i++) {
         let Obj = {
@@ -1746,6 +1796,7 @@ export default {
         CouponNo: this.couponCode, //优惠卷号
         PaytypeId: "", //付款方式
         GetIntegral: "", //获得积分
+        IntegralMoney: newData.PayIntegral,
         Remark: this.remark,
         BillId: this.BillId,
         SaleEmpList: this.SaleEmpList //销售员,
@@ -1888,9 +1939,10 @@ export default {
 }
 .ssmemberul {
   position: relative;
-  height: 60px;
+  //   height: 60px;
   width: 100%;
   background: #fff;
+  padding: 10px 0;
   /* border: solid 1px #00a0e9; */
 }
 .ssmemberul-cont {
@@ -1906,12 +1958,12 @@ export default {
   color: rgba(51, 51, 51, 1);
 }
 .ssmemberul-cont-ka {
-  margin-left: 130px;
+  margin-left: 15px;
   text-align: center;
   color: rgba(255, 255, 255, 1);
   background: rgba(37, 137, 255, 1);
   border-radius: 4px;
-  padding: 3px 6px;
+  padding: 2px 4px;
 }
 .ssmemberul-massge-ncp {
   display: flex;

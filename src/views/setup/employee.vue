@@ -18,7 +18,7 @@
           </section>
       </el-aside>
       <el-container>
-        <el-main>
+        <el-main style='height:auto'>
           <page></page>
         </el-main>
       </el-container>

@@ -96,6 +96,7 @@
           :height="tableHeight"
           show-summary
           :summary-method="getSummaries1"
+          ref='table'
           header-row-class-name="bg-theme2 text-white"
           style="width: 100%"
         >
@@ -179,7 +180,7 @@
           </el-table-column>
         </el-table>
 
-        <div class="m-top-smts clearfix elpagination">
+        <div class="m-top-sm clearfix elpagination">
           <el-pagination
             background
             @size-change="handlePageChange"
@@ -201,9 +202,10 @@
         </div>
         <el-table
           size="small"
+          ref='table1'
           :data="theGoodsListInfo"
           height="300"
-          header-row-class-name="bg-theme text-white"
+          header-row-class-name="bg-theme2 text-white"
           class="full-width m-top-sm"
           show-summary
           :summary-method="getSummaries"
@@ -371,9 +373,14 @@ export default {
       editStatu: "",
       isPrintStatu: "",
       totalPrice: "",
-      tableHeight: document.body.clientHeight - 260
+      tableHeight: document.body.clientHeight - 230
     };
   },
+//   updated () {
+// 　　this.$nextTick(() => {
+// 　　　　this.$refs['table'].doLayout();
+// 　　})
+// },
   computed: {
     ...mapGetters({
       warehousingListState: "warehousingListState",
@@ -489,6 +496,9 @@ export default {
   },
   methods: {
     getSummaries1(param) {
+       this.$nextTick(() => {
+   　　　　this.$refs['table'].doLayout();
+   　　})
       const { columns, data } = param;
       const sums = [];
       columns.forEach((column, index) => {
@@ -529,12 +539,8 @@ export default {
           sums[index] = "合计";
           return;
         }
-        if (index > 0 && index < 8) {
+        if (index > 0 && index < 3) {
           sums[index] = "";
-          return;
-        }
-        if (index == 9) {
-          sums[index] = this.isPurViewFun(92100310) ? this.dataObj.GOODSMONEY : "****";
           return;
         }
         const values = data.map((item) => Number(item[column.property]));
@@ -552,6 +558,9 @@ export default {
           sums[index] = "";
         }
       });
+      this.$nextTick(() => {
+   　　　　this.$refs['table1'].doLayout();
+   　　})
 
       return sums;
     },

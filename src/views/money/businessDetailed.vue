@@ -23,19 +23,18 @@
               <span>店 铺:</span>
               <span>{{ billlist.SHOPNAME }}</span>
             </el-col>
-
           </el-row>
 
           <el-row class="content">
-             <el-col :span="8">
+            <el-col :span="8">
               <span>制单人: {{ billlist.USERNAME }}</span>
               <span></span>
             </el-col>
             <el-col :span="8">
               <span>销售员:</span>
-              <span>{{ billlist.SALEEMPNAME ? billlist.SALEEMPNAME : '--' }}</span>
+              <span>{{ billlist.SALEEMPNAME ? billlist.SALEEMPNAME : "--" }}</span>
             </el-col>
-             <el-col :span="8">
+            <el-col :span="8">
               <span>会 员:</span>
               <span>{{ billlist.VIPNAME }}</span>
             </el-col>
@@ -43,11 +42,14 @@
           <el-row class="content">
             <el-col :span="8">
               <span>付款方式:</span>
-              <span> {{billGoods.data.BILLTYPE == '会员领奖' ? '竞技积分' : billlist.PAYTYPENAME}}</span>
+              <span v-if="billGoods.data.BILLTYPE == '快速消费'">
+                {{ billlist.PAYMONEY != 0 ? "储值积分" : "竞技积分" }}
+              </span>
+              <span v-else>{{ billlist.PAYTYPENAME }}</span>
             </el-col>
             <el-col :span="8">
               <span>备注:</span>
-              <span>{{ billlist.REMARK ? billlist.REMARK : '--' }}</span>
+              <span>{{ billlist.REMARK ? billlist.REMARK : "--" }}</span>
             </el-col>
           </el-row>
         </div>
@@ -69,47 +71,50 @@
           >
             <thead>
               <tr>
-                 <th align="left" style="width: 140px">商品</th>
-                 <th align="center" style="width: 140px">售价</th>
-                 <th align="center" style="width: 140px">折扣 %</th>
-                 <th align="center" style="width: 140px">单价</th>
-                 <th align="center" style="width: 140px">数量</th>
-                 <th align="center" style="width: 140px">小计</th>
+                <th align="left" style="width: 140px">商品</th>
+                <th align="center" style="width: 140px">售价</th>
+                <th align="center" style="width: 140px">折扣 %</th>
+                <th align="center" style="width: 140px">单价</th>
+                <th align="center" style="width: 140px">数量</th>
+                <th align="center" style="width: 140px">小计</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(item, index) in goodsList" :key="index">
                 <td align="center" style="width: 500px">
                   <div class="imggood">
-                        <img
-                          :src="item.goodsimg"
-                          width="55"
-                          height="55"
-                          onerror="this.src='static/images/shopmore.png'"
-                          style="float:left"
-                        />
-                        <span style="float:left">{{ item.GOODSNAME }}</span>
-                   </div>
+                    <img
+                      :src="item.goodsimg"
+                      width="55"
+                      height="55"
+                      onerror="this.src='static/images/shopmore.png'"
+                      style="float: left"
+                    />
+                    <span style="float: left">{{ item.GOODSNAME }}</span>
+                  </div>
                 </td>
                 <td align="center" style="width: 200px">￥{{ item.PRICE }}</td>
                 <td align="center" style="width: 200px">{{ item.DISCOUNT }}</td>
-                <td align="center" style="width: 200px">￥{{ item.MONEY }}</td>
+                <td align="center" style="width: 200px">￥{{ item.GOODSPRICE }}</td>
                 <td align="center" style="width: 200px">x {{ item.QTY }}</td>
-                <td align="center" style="width: 200px">
-                 ￥ {{ item.QTY * item.PRICE }}
-                </td>
+                <td align="center" style="width: 200px">￥ {{ item.QTY * item.PRICE }}</td>
               </tr>
               <tr>
                 <td colspan="6" align="right">
-                   <div style="width: 150px; margin-top: 10px">
-                      <i style='float:left'>合计：</i> <i style="margin-left: 20px">  ￥{{ billlist.SUMSALEMONEY }} </i>
-                   </div>
-                   <div style="width: 150px; margin-top: 10px">
-                      <i style='float:left'>优惠：</i> <i style="margin-left: 20px"> ￥{{ billlist.FAVORMONEY }} </i>
-                     </div>
-                     <div style="width: 150px; margin-top: 10px">
-                        <i style='float:left'>付款：</i> <i style="margin-left: 20px; color:#f00"> ￥{{ billlist.PAYMONEY }} </i>
-                   </div>
+                  <div style="width: 150px; margin-top: 10px">
+                    <i style="float: left">合计：</i>
+                    <i style="margin-left: 20px">￥{{ billlist.GOODSMONEY }}</i>
+                  </div>
+                  <div style="width: 150px; margin-top: 10px">
+                    <i style="float: left">优惠：</i>
+                    <i style="margin-left: 20px">￥{{ billlist.FAVORMONEY }}</i>
+                  </div>
+                  <div style="width: 150px; margin-top: 10px">
+                    <i style="float: left">付款：</i>
+                    <i style="margin-left: 20px; color: #f00">
+                      ￥{{ (billlist.PAYMONEY + billlist.PAYINTEGRAL).toFixed(2) }}
+                    </i>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -128,22 +133,24 @@
             <thead>
               <tr>
                 <th align="left" style="width: 25%">商品</th>
-                 <th align="center" style="width: 25%">消费金额</th>
-                 <th align="center" style="width: 50%; text-align:right;">小计</th>
+                <th align="center" style="width: 25%">消费金额</th>
+                <th align="center" style="width: 50%; text-align: right">小计</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td align="left" style="width: 25%">快速消费</td>
                 <td align="center" style="width: 25%">{{ billlist.PAYMONEY }}</td>
-                <td align="center" style="width: 50%; text-align:right">{{ billlist.SUMSALEMONEY }}</td>
+                <td align="center" style="width: 50%; text-align: right">
+                  {{ billlist.SUMSALEMONEY }}
+                </td>
               </tr>
               <tr>
                 <td colspan="3" align="right">
-                   <div style="margin-top: 20px">
-                      付款 :
-                      <i style="margin-left: 20px; color:#f00"> ￥{{ billlist.PAYMONEY }} </i>
-                   </div>
+                  <div style="margin-top: 20px">
+                    付款 :
+                    <i style="margin-left: 20px; color: #f00">￥{{ billlist.PAYMONEY }}</i>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -163,42 +170,44 @@
             <thead>
               <tr>
                 <th align="left" style="width: 25%">商品</th>
-                 <th align="center" style="width: 25%">充值金额</th>
-                 <th align="center" style="width: 25%">赠送金额</th>
-                 <th align="center" style="width: 25%; text-align:right;">小计</th>
+                <th align="center" style="width: 25%">充值金额</th>
+                <th align="center" style="width: 25%">赠送金额</th>
+                <th align="center" style="width: 25%; text-align: right">小计</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td align="center" style="width: 25%">
                   <div class="imggood">
-                        <img
-                          src="static/images/shopmore.png"
-                          width="55"
-                          height="55"
-                          onerror="this.src='static/images/shopmore.png'"
-                          style="float:left"
-                        />
-                        <span style="float:left">{{ billlist.BILLTYPENAME }}</span>
-                   </div>
+                    <img
+                      src="static/images/shopmore.png"
+                      width="55"
+                      height="55"
+                      onerror="this.src='static/images/shopmore.png'"
+                      style="float: left"
+                    />
+                    <span style="float: left">{{ billlist.BILLTYPENAME }}</span>
+                  </div>
                 </td>
                 <td align="center" style="width: 25%">￥{{ billlist.ADDMONEY }}</td>
-                <td align="center" style="width: 25%">￥{{ billlist.GIFTMONEY}}</td>
-                <td align="center" style="width: 25%; text-align:right">￥{{ billlist.ADDSUMMONEY }}</td>
+                <td align="center" style="width: 25%">￥{{ billlist.GIFTMONEY }}</td>
+                <td align="center" style="width: 25%; text-align: right">
+                  ￥{{ billlist.ADDSUMMONEY }}
+                </td>
               </tr>
               <tr>
-                 <td colspan="4" align="right">
-                   <div style="margin-top: 20px">
-                      付款 :
-                      <i style="margin-left: 20px; color:#f00"> ￥{{ billlist.ADDMONEY }} </i>
-                   </div>
+                <td colspan="4" align="right">
+                  <div style="margin-top: 20px">
+                    付款 :
+                    <i style="margin-left: 20px; color: #f00">￥{{ billlist.ADDMONEY }}</i>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-         <!-- 会员领奖 -->
+        <!-- 会员领奖 -->
         <div class="detailed-goods-list" v-if="billGoods.data.BILLTYPE == '会员领奖'">
           <table
             class="tableStock"
@@ -210,25 +219,25 @@
           >
             <thead>
               <tr>
-                 <th align="left" style="width: 25%">商品</th>
-                 <th align="center" style="width: 25%">单价</th>
-                 <th align="center" style="width: 25%">数量</th>
-                 <th align="center" style="width: 25%">小计</th>
+                <th align="left" style="width: 25%">商品</th>
+                <th align="center" style="width: 25%">单价</th>
+                <th align="center" style="width: 25%">数量</th>
+                <th align="center" style="width: 25%">小计</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(item, index) in goodsList" :key="index">
                 <td align="center" style="width: 25%">
-                   <div class="imggood">
-                        <img
-                          :src="item.goodsimg"
-                          width="55"
-                          height="55"
-                          onerror="this.src='static/images/shopmore.png'"
-                          style="float:left"
-                        />
-                        <span style="float:left">{{ item.GOODSNAME }}</span>
-                   </div>
+                  <div class="imggood">
+                    <img
+                      :src="item.goodsimg"
+                      width="55"
+                      height="55"
+                      onerror="this.src='static/images/shopmore.png'"
+                      style="float: left"
+                    />
+                    <span style="float: left">{{ item.GOODSNAME }}</span>
+                  </div>
                 </td>
                 <td align="center" style="width: 25%">￥{{ item.PAYINTEGRAL / item.QTY }}</td>
                 <td align="center" style="width: 25%">x{{ item.QTY }}</td>
@@ -238,10 +247,12 @@
               </tr>
               <tr>
                 <td colspan="6" align="right">
-                   <div style="margin-top: 20px">
-                      付款 :
-                      <i style="margin-left: 20px; color:#f00"> ￥{{ billlist.PAYINTEGRAL + billlist.PAYMONEY }} </i>
-                   </div>
+                  <div style="margin-top: 20px">
+                    付款 :
+                    <i style="margin-left: 20px; color: #f00">
+                      ￥{{ billlist.PAYINTEGRAL + billlist.PAYMONEY }}
+                    </i>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -252,29 +263,7 @@
 
     <el-row class="total" style="margin-top: 20px; padding-right: 30px">
       <el-col style="text-align: right" :span="24">
-        <el-button
-          size="medium"
-          @click="gooodsChange(billlist)"
-          v-if="billGoods.data.BILLTYPE == '商品消费'"
-        >
-          打印
-        </el-button>
-
-        <el-button
-          size="medium"
-          @click="integralExchange(billlist)"
-          v-if="billGoods.data.BILLTYPE == '会员领奖'"
-        >
-          打印
-        </el-button>
-
-        <el-button
-          size="medium"
-          @click="fastChange(billlist)"
-          v-if="billGoods.data.BILLTYPE == '快速消费'"
-        >
-          打印
-        </el-button>
+        <el-button size="medium" @click="printData(billGoods.data.BILLTYPE)">打印</el-button>
         <el-button size="medium" @click="toCancelFun(billlist)">作废</el-button>
       </el-col>
     </el-row>
@@ -283,8 +272,9 @@
 <script>
 var QRCode = require("qrcode");
 import { mapState, mapGetters } from "vuex";
-import { GOODS_IMGURL } from "@/util/define";
-import { getDayindate } from "@/util/Printing";
+import { GOODS_IMGURL, SYSTEM_INFO } from "@/util/define";
+import { getDayindata } from "@/util/testPrinting";
+import { getUserInfo } from "@/api/index";
 export default {
   props: {
     billGoods: {
@@ -296,12 +286,10 @@ export default {
   },
   data() {
     return {
-      goodsListTime: [],
       goodsList: [],
       billlist: {},
-      getgoodsIMGURL: "",
-      commoditycname: ["商品", "售价", "折扣 %", "单价", "数量", "小计"],
-      timesconttr: ["商品", "售价", "折扣", "单价", "次数", "有效期", "小计"]
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
+      commoditycname: ["商品", "售价", "折扣 %", "单价", "数量", "小计"]
     };
   },
   computed: {
@@ -312,23 +300,17 @@ export default {
     })
   },
   watch: {
-     billGoods(data){
-        console.log(data)
-     },
+    billGoods(data) {
+      console.log(data);
+    },
     businesstabledetailed(data) {
       let Obj = [];
       Obj = data.GoodsObj;
       this.billlist = data.Obj;
-      this.getgoodsIMGURL = GOODS_IMGURL;
       for (var j in Obj) {
-        Obj[j].goodsimg = this.getgoodsIMGURL + Obj[j].GOODSID + ".png";
+        Obj[j].goodsimg = GOODS_IMGURL + Obj[j].GOODSID + ".png";
       }
       this.goodsList = Obj;
-      this.goodsListTime = data.GoodsList;
-      for (var i in this.goodsListTime) {
-        this.goodsListTime[i].goodsimg =
-          this.getgoodsIMGURL + this.goodsListTime[i].GOODSID + ".png";
-      }
     },
     memberQRcodeurlstate(data) {
       QRCode.toDataURL(data.data.BarCode)
@@ -351,20 +333,184 @@ export default {
     }
   },
   methods: {
-    gooodsChange(item) {
-      let qresurl = this.$store.state.commodityc.saveQRcodeIMG; // 注意获取图片
-      getDayindate("210020531", item.BILLID, 1, qresurl);
-    },
-    integralExchange(item){
-       let qresurl = this.$store.state.commodityc.saveQRcodeIMG; // 注意获取图片
-      getDayindate("920332", item.BILLID, 6, qresurl);
-    },
-    fastChange(items) {
-      let qresurl = this.$store.state.commodityc.saveQRcodeIMG; // 注意获取图片
-      getDayindate("210020530", items.BILLID, 3, qresurl);
-    },
-    storagevaluerChange() {
-      // getDayindate("210020150", data.data.BillId, 4, qresurl);
+    printData(billType) {
+      let type = 0,
+        printName = "";
+      if (billType == "商品消费") {
+        type = 0;
+        printName = "Print2";
+      } else if (billType == "会员领奖") {
+        type = 1;
+        printName = "Print5";
+      } else if (billType == "快速消费") {
+        type = 2;
+        printName = "Print3";
+      } else if (billType == "储值充值") {
+        type = 3;
+        printName = "Print1";
+      }
+      let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + printName);
+      let jsonPrintData = JSON.parse(printRules);
+      let billInfo = [
+        {
+          label: "结账单号：",
+          value: this.billlist.BILLID
+        },
+        {
+          label: "结账日期：",
+          value: this.billlist.BILLDATE
+        }
+      ];
+      let saleInfo = [],
+        newGoodsList = [],
+        GoodsDetails = this.goodsList;
+
+      if (type == 0) {
+        // 商品消费
+        for (var i in GoodsDetails) {
+          newGoodsList.push({
+            name: GoodsDetails[i].GOODSNAME,
+            purPrice: GoodsDetails[i].PRICE,
+            qty: GoodsDetails[i].QTY,
+            price: GoodsDetails[i].PRICE * GoodsDetails[i].QTY
+          });
+        }
+
+        saleInfo = [
+          {
+            label: "商品总数：",
+            value: this.goodsList.length
+          },
+          {
+            label: "金额合计：",
+            value: this.billlist.GOODSMONEY
+          },
+          {
+            label: "优惠金额：",
+            value: Number(this.billlist.FAVORMONEY)
+          },
+          {
+            label: "实付金额：",
+            value: Number(this.billlist.PAYMONEY) + Number(this.billlist.PAYINTEGRAL)
+          }
+        ];
+
+        if (this.billlist.PAYTYPENAME == "储值卡") {
+          saleInfo.push({
+            label: "储值积分：",
+            value: this.billlist.PAYMONEY
+          });
+
+          if (this.splitIntegral) {
+            saleInfo.push({
+              label: "竞技积分：",
+              value: this.billlist.PAYINTEGRAL
+            });
+          }
+        } else {
+          saleInfo.push({
+            label: "支付方式：",
+            value: this.billlist.PAYTYPENAME
+          });
+        }
+      } else if (type == 1) {
+        // 会员领奖
+        for (var i in GoodsDetails) {
+          newGoodsList.push({
+            name: GoodsDetails[i].GOODSNAME,
+            purPrice: GoodsDetails[i].GOODSPRICE,
+            qty: GoodsDetails[i].QTY,
+            price: GoodsDetails[i].PAYINTEGRAL
+          });
+        }
+
+        saleInfo = [
+          {
+            label: "兑换总数：",
+            value: newGoodsList.length
+          },
+          {
+            label: "消耗积分：",
+            value: this.billlist.PAYMONEY + this.billlist.PAYINTEGRAL
+          },
+          {
+            label: "储值积分：",
+            value: this.billlist.PAYMONEY
+          }
+        ];
+
+        if (this.splitIntegral) {
+          saleInfo.push({
+            label: "竞技积分：",
+            value: this.billlist.PAYINTEGRAL
+          });
+        }
+      } else if (type == 2) {
+        // 快速消费
+        saleInfo = [
+          {
+            label: "消费金额：",
+            value: this.billlist.SUMSALEMONEY
+          },
+          {
+            label: "支付方式：",
+            value: this.billlist.PAYMONEY != 0 ? "储值积分" : "竞技积分"
+          }
+        ];
+      } else if (type == 3) {
+        saleInfo = [
+          {
+            label: "充值金额：",
+            value: this.billlist.ADDMONEY
+          },
+          {
+            label: "赠送金额：",
+            value: this.billlist.GIFTMONEY
+          },
+          {
+            label: "充值合计：",
+            value: this.billlist.ADDSUMMONEY
+          },
+          {
+            label: "支付方式：",
+            value: this.billlist.PAYTYPENAME
+          }
+        ];
+      }
+
+      let vipInfo = jsonPrintData.vipInfo;
+      if (this.billlist.VIPID != undefined) {
+        vipInfo[0].value = this.billlist.VIPCODE;
+        vipInfo[1].value = this.billlist.VIPNAME;
+        vipInfo[2].value = this.billlist.VIPMONEY;
+        if (this.splitIntegral) {
+          vipInfo.push({
+            label: "竞技积分",
+            value: this.billlist.VIPINTEGRAL,
+            isShow: vipInfo[2].isShow
+          });
+        }
+      } else {
+        vipInfo[0].isShow = false;
+        vipInfo[1].value = "散客";
+        vipInfo[2].isShow = false;
+      }
+
+      jsonPrintData.remark.value = this.billlist.REMARK != undefined ? this.billlist.REMARK : "";
+      jsonPrintData.saleEmploy.value =
+        this.billlist.SALEEMPNAME != undefined ? this.billlist.SALEEMPNAME : "";
+
+      let printData = Object.assign(
+        {},
+        jsonPrintData,
+        { billInfo: billInfo },
+        { saleInfo: saleInfo },
+        { goodsList: newGoodsList }
+      );
+
+      let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
+      console.log(printData);
+      getDayindata(printData, printName, qresurl);
     },
     toCancelFun(item) {
       console.log(item);
@@ -398,13 +544,13 @@ export default {
     }
   },
   mounted() {
-     console.log(this.billGoods)
-     this.$store.dispatch("getBusinesstableDetailed", this.billGoods.setDate).then(() => {});
-
+    console.log(this.billGoods);
+    this.$store.dispatch("getBusinesstableDetailed", this.billGoods.setDate);
     this.$store.dispatch("getmemberQRcodeurlstate");
   }
 };
 </script>
+
 <style scoped>
 .detailed {
   height: 500px;
@@ -466,7 +612,7 @@ export default {
 .detailed-goods-list {
   margin-top: 20px;
   width: 100%;
-  padding: 0 30px
+  padding: 0 30px;
 }
 .detailed-goods-list .content {
   width: 92%;
@@ -506,22 +652,23 @@ export default {
   height: 36px;
   line-height: 36px;
 }
-.tableStock tr td, .tableStock tr th {
-   border-bottom: 1px solid #EBEEF5;
-   padding: 6px
+.tableStock tr td,
+.tableStock tr th {
+  border-bottom: 1px solid #ebeef5;
+  padding: 6px;
 }
-.tableStock tr:last-child td{
-   border-bottom: none;
+.tableStock tr:last-child td {
+  border-bottom: none;
 }
-.imggood{
-   display: flex;
+.imggood {
+  display: flex;
   align-items: center;
 }
-.imggood img{
-   border-radius: 6px;
-   vertical-align: middle;
-   width: 40px;
-   height: 40px;
-   margin-right: 10px;
+.imggood img {
+  border-radius: 6px;
+  vertical-align: middle;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 </style>

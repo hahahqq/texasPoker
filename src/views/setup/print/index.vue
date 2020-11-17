@@ -41,6 +41,8 @@
 </template>
 
 <script>
+var QRCode = require("qrcode");
+import { mapState, mapGetters } from "vuex";
 import qrcode from "@/assets/qrcode.png";
 import MIXINS_SETUP from "@/mixins/setup";
 import { SYSTEM_INFO } from "@/util/define.js";
@@ -52,10 +54,27 @@ export default {
           activeName: '0'
        }
     },
+     computed: {
+         ...mapGetters({
+            memberQRcodeurlstate: "memberQRcodeurlstate"
+         })
+      },
+    watch:{
+       memberQRcodeurlstate(data) {
+      QRCode.toDataURL(data.data.BarCode)
+        .then((url) => {
+          this.$store.state.commodityc.saveQRcodeIMG = url;
+        })
+        .catch((err) => {});
+    }
+    },
     methods:{
        selectTabsFun(activeName){
 
        }
+    },
+    mounted(){
+       this.$store.dispatch("getmemberQRcodeurlstate");
     },
     components: {
       headerPage: () => import("@/components/header"),

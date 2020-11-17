@@ -1,243 +1,236 @@
 <template>
-	<!-- 比赛登记统计 -->
-	<section v-loading="loading">
-		<div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 73px">
-			<div class="marginLR-md">
-				<filtePage
-					:isAll="true"
-					:isExport="true"
-					@getNewData="getNewData_fun"
-					@exportState="exportState_fun"
-				></filtePage>
-			</div>
-		</div>
-		<div class="bg-white m-bottom-sm">
-			<div class="bg-white m-bottom-sm- paddingTB-md">
-				<div class="marginLR-md">
-					<!-- table-->
-					<el-table
-						border
-						:data="tableList"
-						header-row-class-name="bg-F1F2F3"
-						class="full-width"
-						ref="contentTable"
-						:height="tableHeight"
-					>
-						<el-table-column
-							prop="BILLNO"
-							label="单号"
-							width="130px"
-							fixed="left"
-						></el-table-column>
-						<el-table-column prop="" label="日期" width="140px">
-							<template slot-scope="scope">
-								<span>{{ new Date(scope.row.SIGNTIME) | formatTime }}</span>
-							</template>
-						</el-table-column>
-						<el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
-						<el-table-column
-							prop="MATCHNAME"
-							label="赛事名称"
-							width="130px"
-						></el-table-column>
-						<el-table-column
-							prop="TYPENAME"
-							label="比赛类型"
-							width="100px"
-						></el-table-column>
-						<el-table-column prop="DESKNAME" label="比赛桌号"></el-table-column>
-						<el-table-column
-							prop="VIPCODE"
-							label="卡号"
-							width="100px"
-						></el-table-column>
-						<el-table-column prop="VIPNAME" label="姓名"></el-table-column>
-						<el-table-column
-							prop="VIPMOBILENO"
-							label="手机"
-							width="110px"
-						></el-table-column>
-						<el-table-column prop="BUYMODE" label="买入方式"></el-table-column>
-						<el-table-column
-							prop="BUYPRICE"
-							label="单手积分"
-							align="right"
-						></el-table-column>
-						<el-table-column
-							prop="QTY"
-							label="买入手数"
-							align="right"
-						></el-table-column>
+   <!-- 比赛登记统计 -->
+   <section v-loading="loading">
+      <div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 73px">
+         <div class="marginLR-md">
+            <filtePage
+               :isAll="true"
+               :isExport="true"
+               @getNewData="getNewData_fun"
+               @exportState="exportState_fun"
+            ></filtePage>
+         </div>
+      </div>
+      <div class="bg-white m-bottom-sm">
+         <div class="bg-white m-bottom-sm- paddingTB-md">
+            <div class="marginLR-md">
+               <!-- table-->
+               <el-table
+                  border
+                  :data="tableList"
+                  header-row-class-name="bg-F1F2F3"
+                  class="full-width"
+                  ref="contentTable"
+                  :height="tableHeight"
+               >
+                  <el-table-column
+                     prop="BILLNO"
+                     label="单号"
+                     width="130px"
+                     fixed="left"
+                  ></el-table-column>
+                  <el-table-column prop="" label="日期" width="140px">
+                     <template slot-scope="scope">
+                        <span>{{ new Date(scope.row.SIGNTIME) | formatTime }}</span>
+                     </template>
+                  </el-table-column>
+                  <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                  <el-table-column
+                     prop="MATCHNAME"
+                     label="赛事名称"
+                     width="130px"
+                  ></el-table-column>
+                  <el-table-column prop="TYPENAME" label="比赛类型" width="100px"></el-table-column>
+                  <el-table-column prop="DESKNAME" label="比赛桌号"></el-table-column>
+                  <el-table-column prop="VIPCODE" label="卡号" width="100px"></el-table-column>
+                  <el-table-column prop="VIPNAME" label="姓名"></el-table-column>
+                  <el-table-column prop="VIPMOBILENO" label="手机" width="110px"></el-table-column>
+                  <el-table-column prop="BUYMODE" label="买入方式"></el-table-column>
+                  <el-table-column prop="BUYPRICE" label="单手积分" align="right"></el-table-column>
+                  <el-table-column prop="QTY" label="买入手数" align="right"></el-table-column>
 
-						<el-table-column
-							prop="CHARGESMONEY"
-							label="储值积分扣减"
-							width="100px"
-							align="right"
-						></el-table-column>
-
-						<el-table-column
+                  <el-table-column
+                     prop="CHARGESMONEY"
+                     label="储值积分扣减"
+                     width="100px"
+                     align="right"
+                  ></el-table-column>
+                  <!-- <el-table-column
 							prop="PAYINTEGRAL"
 							label="竞技积分扣减"
 							width="100px"
 							align="right"
-						></el-table-column>
-						<el-table-column prop="" label="结束时间" width="140px">
-							<template slot-scope="scope">
-								<span v-if="scope.row.ENDTIME">
-									{{ new Date(scope.row.ENDTIME) | formatTime }}
-								</span>
-							</template>
-						</el-table-column>
-						<el-table-column prop="USERNAME" label="制单人"></el-table-column>
-						<!-- <el-table-column prop="" label="录入时间" width="140px">
+						></el-table-column> -->
+                  <el-table-column prop="" label="结束时间" width="140px">
+                     <template slot-scope="scope">
+                        <span v-if="scope.row.ENDTIME">
+                           {{ new Date(scope.row.ENDTIME) | formatTime }}
+                        </span>
+                     </template>
+                  </el-table-column>
+                  <el-table-column prop="USERNAME" label="制单人"></el-table-column>
+                  <!-- <el-table-column prop="" label="录入时间" width="140px">
 							<template slot-scope="scope">
 								<span>{{ new Date(scope.row.WRITETIME) | formatTime }}</span>
 							</template>
 						</el-table-column> -->
-						<el-table-column prop="REMARK" label="备注"></el-table-column>
-						<el-table-column prop="" label="报名方式">
-							<template slot-scope="scope">
-								<span v-text="scope.row.SIGNTYPE == 1 ? '线上' : '线下'"></span>
-							</template>
-						</el-table-column>
-						<el-table-column prop="" label="核销否">
-							<template slot-scope="scope">
-								<span v-text="scope.row.ISCHECK ? '已核销' : '待核销'"></span>
-							</template>
-						</el-table-column>
-					</el-table>
-					<!-- 分页 -->
-					<div v-if="tableList.length > 0" class="m-top-sm clearfix">
-						<el-pagination
-							@size-change="handlePageChange"
-							@current-change="handlePageChange"
-							:current-page.sync="pagination.PN"
-							:page-size="pagination.PageSize"
-							layout="prev, pager, next, jumper"
-							:total="pagination.TotalNumber"
-							class="text-right"
-						></el-pagination>
-					</div>
-					<div v-else style="height: 42px"></div>
-				</div>
-			</div>
-		</div>
-		<!-- 数据导出 -->
-		<el-dialog
-			append-to-body
-			:close-on-click-modal="false"
-			:close-on-press-escape="false"
-			:show-close="false"
-			title="数据导出"
-			:visible.sync="exportData.show"
-			width="400px"
-		>
-			<exportPage
-				:dataType="exportData"
-				:isPage="true"
-				@closeModal="exportData.show = false"
-			></exportPage>
-		</el-dialog>
-	</section>
+                  <el-table-column prop="REMARK" label="备注"></el-table-column>
+                  <el-table-column prop="" label="报名方式">
+                     <template slot-scope="scope">
+                        <span v-text="scope.row.SIGNTYPE == 1 ? '线上' : '线下'"></span>
+                     </template>
+                  </el-table-column>
+                  <el-table-column prop="" label="核销否">
+                     <template slot-scope="scope">
+                        <span v-text="scope.row.ISCHECK ? '已核销' : '待核销'"></span>
+                     </template>
+                  </el-table-column>
+                  <el-table-column prop="" label="操作" fixed="right" align="center" width="70px">
+                     <template slot-scope="scope">
+                        <el-button-group>
+                           <el-button type="text" size="small" @click="printFun(scope.row)">
+                              打印
+                           </el-button>
+                        </el-button-group>
+                     </template>
+                  </el-table-column>
+               </el-table>
+               <!-- 分页 -->
+               <div v-if="tableList.length > 0" class="m-top-sm clearfix">
+                  <el-pagination
+                     @size-change="handlePageChange"
+                     @current-change="handlePageChange"
+                     :current-page.sync="pagination.PN"
+                     :page-size="pagination.PageSize"
+                     layout="prev, pager, next, jumper"
+                     :total="pagination.TotalNumber"
+                     class="text-right"
+                  ></el-pagination>
+               </div>
+               <div v-else style="height: 42px"></div>
+            </div>
+         </div>
+      </div>
+      <!-- 数据导出 -->
+      <el-dialog
+         append-to-body
+         :close-on-click-modal="false"
+         :close-on-press-escape="false"
+         :show-close="false"
+         title="数据导出"
+         :visible.sync="exportData.show"
+         width="400px"
+      >
+         <exportPage
+            :dataType="exportData"
+            :isPage="true"
+            @closeModal="exportData.show = false"
+         ></exportPage>
+      </el-dialog>
+   </section>
 </template>
 <script>
 import { mapState, mapGetters } from "vuex";
 import { getHomeData } from "@/api/index";
 import { indexQuery } from "@/store/modules2/report/indexFun.js";
 export default {
-	data() {
-		return {
-			loading: false,
-			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
-			tableList: [],
-			pagination: {
-				TotalNumber: 0,
-				PageNumber: 0,
-				PageSize: 20,
-				PN: 0
-			},
-			maxWidth: window.innerWidth - 210,
-			exportData: { show: false },
-			tableHeight: 300
-		};
-	},
-	computed: {
-		...mapGetters({}),
-		dataListState() {
-			return this.$store.getters.cReportDataState.matchCheckIn;
-		}
-	},
-	watch: {
-		dataListState(data) {
-			if (this.loading) {
-				if (data.success) {
-					this.pagination = Object.assign({}, data.paying);
-					this.tableList = [...data.List];
-					console.log(111, this.tableList);
-				} else {
-					this.$message.error(data.message);
-				}
-			}
-			this.loading = false;
-		}
-	},
-	methods: {
-		exportState_fun(data) {
-			this.exportData = {
-				show: true,
-				data: {},
-				index: 1
-			};
-		},
-		getNewData_fun(data) {
-			this.formData = Object.assign({}, this.formData, data);
-			this.getNewData();
-		},
-		getNewData() {
-			this.loading = true;
-			indexQuery.matchCheckIn(this, "matchCheckIn", this.formData);
-		},
-		handlePageChange: function (currentPage) {
-			if (this.formData.PN == currentPage || this.loading) {
-				return;
-			}
-			this.formData.PN = parseInt(currentPage);
-			this.getNewData();
-		},
-		defaultData() {},
-		setHeight() {
-			if (this.$refs.contentTable) {
-				let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
-				let marginSpace = 10 * 3,
-					pager = 42;
-				this.$nextTick(() => {
-					this.tableHeight = window.innerHeight - top - marginSpace - pager;
-				});
-			}
-		}
-	},
+   data() {
+      return {
+         loading: false,
+         formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+         tableList: [],
+         pagination: {
+            TotalNumber: 0,
+            PageNumber: 0,
+            PageSize: 20,
+            PN: 0
+         },
+         maxWidth: window.innerWidth - 210,
+         exportData: { show: false },
+         tableHeight: 300
+      };
+   },
+   computed: {
+      ...mapGetters({}),
+      dataListState() {
+         return this.$store.getters.cReportDataState.matchCheckIn;
+      }
+   },
+   watch: {
+      dataListState(data) {
+         if (this.loading) {
+            if (data.success) {
+               this.pagination = Object.assign({}, data.paying);
+               this.tableList = [...data.List];
+               console.log(111, this.tableList);
+            } else {
+               this.$message.error(data.message);
+            }
+         }
+         this.loading = false;
+      }
+   },
+   methods: {
+      exportState_fun(data) {
+         this.exportData = {
+            show: true,
+            data: {},
+            index: 1
+         };
+      },
+      getNewData_fun(data) {
+         this.formData = Object.assign({}, this.formData, data);
+         this.getNewData();
+      },
+      getNewData() {
+         this.loading = true;
+         indexQuery.matchCheckIn(this, "matchCheckIn", this.formData);
+      },
+      handlePageChange: function(currentPage) {
+         if (this.formData.PN == currentPage || this.loading) {
+            return;
+         }
+         this.formData.PN = parseInt(currentPage);
+         this.getNewData();
+      },
+      printFun(item) {
+         this.$message({
+            type: "info",
+            message: "开发中..."
+         });
+      },
+      defaultData() {},
+      setHeight() {
+         if (this.$refs.contentTable) {
+            let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
+            let marginSpace = 10 * 3,
+               pager = 42;
+            this.$nextTick(() => {
+               this.tableHeight = window.innerHeight - top - marginSpace - pager;
+            });
+         }
+      }
+   },
 
-	mounted() {
-		let homeInfo = getHomeData();
-		this.formData = Object.assign(
-			{},
-			this.formData,
-			{
-				ShopId: homeInfo.shop.ID,
-				BeginDate: this.getTimeStamp(),
-				EndDate: new Date().getTime()
-			},
-			{ PN: 1 }
-		);
-		this.getNewData();
-		this.setHeight();
-	},
-	components: {
-		filtePage: () => import("@/views/reports/filtePage.vue"),
-		exportPage: () => import("@/components/export/common.vue")
-	}
+   mounted() {
+      let homeInfo = getHomeData();
+      this.formData = Object.assign(
+         {},
+         this.formData,
+         {
+            ShopId: homeInfo.shop.ID,
+            BeginDate: this.getTimeStamp(),
+            EndDate: new Date().getTime()
+         },
+         { PN: 1 }
+      );
+      this.getNewData();
+      this.setHeight();
+   },
+   components: {
+      filtePage: () => import("@/views/reports/filtePage.vue"),
+      exportPage: () => import("@/components/export/common.vue")
+   }
 };
 </script>
-<style scoped>
-</style>
+<style scoped></style>

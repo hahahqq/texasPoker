@@ -98,6 +98,15 @@ export default {
       this.$emit("closeModal");
     },
     onSubmit() {
+
+       let rechargeNum = this.numberState == 1 ? parseFloat(-this.ruleForm.Money) : parseFloat(this.ruleForm.Money)
+      let rechargeAfter = Number(this.theData.MONEY) + Number(rechargeNum);
+      if (rechargeAfter < 0) {
+         this.$message({ message: "调整后储值积分不能小于 0 !", type: "warning" });
+         return;
+      }
+
+
       this.ruleForm.VipId = this.theData.ID;
       this.$refs["ruleForm"].validate(valid => {
         if (valid) {

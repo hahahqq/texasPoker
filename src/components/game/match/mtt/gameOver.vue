@@ -59,7 +59,11 @@
       height="360"
       header-row-class-name="bg-F1F2F3"
     >
-      <el-table-column prop="REWARDNAME" label="名次"></el-table-column>
+      <el-table-column prop="REWARDNAME" label="名次">
+         <template slot-scope="scope">
+            第{{scope.row.REWARDNAME}}名
+         </template>
+      </el-table-column>
       <el-table-column prop="INTEGRAL" label="获得积分"></el-table-column>
       <el-table-column prop="REWARDRATE" label="比例">
         <template slot-scope="scope">{{ scope.row.REWARDRATE * 100 }} %</template>

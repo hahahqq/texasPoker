@@ -162,7 +162,7 @@ const actions = {
     let homeInfo = getHomeData();
     let sendData={
       'InterfaceCode':'21002030101_v2',
-      FilterStr:'',
+      FilterStr: data.Filter ? data.Filter : '',
       PN: data.PN,
       status: 1, // -1=all  1=启用 0=停用
       Mode: -1,
@@ -324,14 +324,17 @@ const actions = {
     }, sendData)
   },
   getExportGoodsData({ commit }, data) {  // 导出
+   console.log(data)
     let homeInfo = getHomeData();
     let sendData = {
-      'InterfaceCode': '21002030101_1',
+      'InterfaceCode': '21002030101_1A',
+      'CompanyId': homeInfo.shop.COMPANYID,
       'ShopId': homeInfo.shop.ID,
       FilterStr: data.FilterStr,
-      Mode: data.Mode, // -1=all  1=商品 0=服务
+      Mode: -1, // -1=all  1=商品 0=服务
       TypeID: data.TypeID,
-      status: data.Status // -1=all  1=上架 0=下架
+      PN: 1,
+      status: data.Status ? data.Status : -1 // -1=all  1=上架 0=下架
     }
     commonSend.commonSend('get', data => {
       commit(GOODS_EXPORTDATA, { data })

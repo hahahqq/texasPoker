@@ -300,11 +300,11 @@ export default {
     toggletab(index, item) {
       this.curtab = index;
       this.PaytypeId = item.ID;
-      console.log(this.payprice, this.receivableprice)
+      console.log(this.payprice, this.receivableprice);
       this.payName = item.NAME;
       if (item.NAME == "现金") {
         this.disabled = false;
-        this.payprice = this.payprice
+        this.payprice = this.payprice;
         this.$nextTick(() => {
           this.$refs["cash"].focus();
         });
@@ -313,7 +313,7 @@ export default {
         this.disabled = true;
         this.pocketmoney = "0.00";
       }
-      console.log(this.payprice)
+      console.log(this.payprice);
       this.isAllowClickFun();
     },
     handleInput2(e) {
@@ -380,42 +380,50 @@ export default {
       this.barcodepaystatus = "";
       let IsSms = this.IsSms == true ? 1 : 0;
 
-      let a = this.receivableprice, b = this.isselectvip.INTEGRAL, c = this.isselectvip.MONEY, d = 0 , e = 0
-      if(this.payName == '积分支付'){
-         if(this.isselectvip.ID != undefined){
-            if (this.splitIntegral) {
-               if (b >= a) {
-                  d = a;
-                  e = 0;
-               } else if (b + c >= a) {
-                  d = b;
-                  e = a - b;
-               } else if (c >= a) {
-                  d = 0;
-                  e = a;
-               }
-            } else {
-               if (c >= a) {
-                  e = a;
-                  d = 0;
-               }
+      let a = this.receivableprice,
+        b = this.isselectvip.INTEGRAL,
+        c = this.isselectvip.MONEY,
+        d = 0,
+        e = 0;
+      if (this.payName == "积分支付") {
+        if (this.isselectvip.ID != undefined) {
+          if (this.splitIntegral) {
+            if (b >= a) {
+              d = a;
+              e = 0;
+            } else if (b + c >= a) {
+              d = b;
+              e = a - b;
+            } else if (c >= a) {
+              d = 0;
+              e = a;
             }
-         }else if(this.isselectvip.ID == undefined){   // 不选择会员  直接本单金额
-            e = a;
-            d = 0
-         }
-      }else{
-         e = a;
-         d = 0
+          } else {
+            if (c >= a) {
+              e = a;
+              d = 0;
+            }
+          }
+        } else if (this.isselectvip.ID == undefined) {
+          // 不选择会员  直接本单金额
+          e = a;
+          d = 0;
+        }
+      } else {
+        e = a;
+        d = 0;
       }
-      console.log('竞技积分：'+ d, '储值积分：'+ e)
-      let payMoney = e, payIntegral = d
+      console.log("竞技积分：" + d, "储值积分：" + e);
+      let payMoney = e,
+        payIntegral = d;
+
 
       let comdata = {
         PaytypeId: this.PaytypeId,
         payName: this.payName,
         IsSms: IsSms,
         PayIntegral: payIntegral,
+        payMoney: payMoney,
         checkedreceipt: this.checkedreceipt
       };
 
@@ -467,7 +475,6 @@ export default {
       }
 
       this.$emit("CashRecharge", comdata);
-
     },
     barcodePaycomback(data) {
       this.barcodepaystatus = 1;
@@ -480,16 +487,19 @@ export default {
     isAllowClickFun() {
       this.isAllowClick = true;
       if (this.rechargeListList.length == 0) this.isAllowClick = false;
-      let dd = 0
-      console.log(this.splitIntegral)
-      if(this.splitIntegral){
-         dd = this.isselectvip.ID == undefined ? 0 : Number(this.isselectvip.MONEY) + Number(this.isselectvip.INTEGRAL);
-      }else{
-         dd = this.isselectvip.ID == undefined ? 0 : Number(this.isselectvip.MONEY)
+      let dd = 0;
+      console.log(this.splitIntegral);
+      if (this.splitIntegral) {
+        dd =
+          this.isselectvip.ID == undefined
+            ? 0
+            : Number(this.isselectvip.MONEY) + Number(this.isselectvip.INTEGRAL);
+      } else {
+        dd = this.isselectvip.ID == undefined ? 0 : Number(this.isselectvip.MONEY);
       }
 
-      if (this.rechargeListList[this.curtab].NAME == "积分支付" && this.payprice > dd){
-         this.isAllowClick = false;
+      if (this.rechargeListList[this.curtab].NAME == "积分支付" && this.payprice > dd) {
+        this.isAllowClick = false;
       }
     }
   },

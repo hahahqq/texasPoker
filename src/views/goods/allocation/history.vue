@@ -167,7 +167,7 @@
           </el-table>
 
           <!-- 分页 -->
-          <div class="m-top-smts clearfix elpagination" v-if="pagination.TotalNumber > 0">
+          <div class="m-top-sm clearfix elpagination" v-if="pagination.TotalNumber > 0">
             <el-pagination
               background
               @size-change="handlePageChange"
@@ -195,7 +195,7 @@
           <el-table
             size="small"
             :data="theGoodsListInfo"
-            :height="tableHeight"
+            height="300"
             header-row-class-name="bg-theme2 text-white"
             class="full-width m-top-sm"
             v-loading="loadingInfo"
@@ -365,7 +365,7 @@ export default {
       editStatu: "",
       isPrintStatu: "",
       showEditStatu: true,
-      tableHeight: document.body.clientHeight - 280
+      tableHeight: document.body.clientHeight - 230
     };
   },
   computed: {

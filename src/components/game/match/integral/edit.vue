@@ -32,6 +32,7 @@
               v-model="ruleForm.EventId"
               @change="selectEventFun(ruleForm.EventId)"
               placeholder="请选择比赛项目"
+              :disabled="dataType.buyVipNum != 0"
               style="width: 100%"
             >
               <el-option
@@ -77,7 +78,7 @@
           </el-form-item>
         </el-col>
 
-        <el-col :xs="24" :sm="12">
+        <!-- <el-col :xs="24" :sm="12">
           <el-form-item label="启动线上报名">
             <el-switch
               v-model="ruleForm.IsOnLine"
@@ -85,7 +86,7 @@
               inactive-color="#ccc"
             ></el-switch>
           </el-form-item>
-        </el-col>
+        </el-col> -->
       </el-row>
 
       <el-row :gutter="10">
@@ -302,21 +303,7 @@ export default {
       });
     },
     cleanData() {
-      this.ruleForm = {
-        EventId: "",
-        DeskId: "",
-        Name: "",
-        PlayTime: "",
-        IsOnLine: false,
-        BuyinMoney: "",
-        ChipsQty: "",
-        ChargesType: 0,
-        ChargesRate: "",
-        ChargesMoney: "",
-        Remark: "",
-        RewardType: 0
-      };
-      this.loadingDefault = true
+       Object.assign(this.$data, this.$options.data())
     },
     closeDialog() {
       this.cleanData();

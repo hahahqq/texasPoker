@@ -25,7 +25,9 @@
             </div>
           </div>
           <!--列表-->
-          <div class="content-table m-top-sm">
+          <div class="content-table m-top-sm" style="height: auto">
+      <div class="content-table-center">
+
             <el-table
               size="small"
               :data="dataList"
@@ -82,6 +84,7 @@
                 </template>
               </el-table-column>
             </el-table>
+             </div>
           </div>
           <el-dialog
             :title="`${dialogTitle}支付方式`"
@@ -152,7 +155,7 @@ export default {
       dataList: [],
       dialogTitle: "",
       value1: true,
-      clientHeight: document.body.clientHeight - 160
+      clientHeight: document.body.clientHeight - 200
     };
   },
   computed: {

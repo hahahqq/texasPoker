@@ -33,6 +33,7 @@
                       @getmemberID="getmemberID"
                       @changeMemberIDnull="changeMemberIDnull"
                       :details="Object.keys(selmember).length > 0 ? selmember : new Object()"
+                      :isCloseMemer="closeMember"
                     ></dropdown>
                     <el-form label-width="80px" class="fastc_top">
                       <el-row style="padding-top: 10px">
@@ -236,6 +237,7 @@ export default {
   mixins: [MIXINS_CHECKOUT.CHOOSE_MEMBER, MIXINS_MONEY.MONEY_MENU, MIXINS_CLEAR.LOGOUT],
   data() {
     return {
+      closeMember: true,
       payType: "0",
       VipId: "",
       options: [],
@@ -256,7 +258,7 @@ export default {
       splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
       IsUseVipPassword: getUserInfo().CompanyConfig.ISUSEVIPPASSWORD,
       memberInfo: {},
-      checkedreceipt: true,
+      checkedreceipt: false,
       submitLoading: false
     };
   },
@@ -273,14 +275,17 @@ export default {
   },
   watch: {
     fastPayMoneyState(data) {
-       this.submitLoading = false
+      this.submitLoading = false;
       if (data.success) {
         this.$store.dispatch("selectingMember", {});
         this.$message({ message: "消费成功", type: "success" });
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print3");
         let jsonPrintData = JSON.parse(printRules);
 
-        if (jsonPrintData.autoPrint || this.checkedreceipt) {
+        jsonPrintData.autoPrint = this.checkedreceipt ? true : false;
+        localStorage.setItem(SYSTEM_INFO.PREFIX + "Print3", JSON.stringify(jsonPrintData));
+
+        if (this.checkedreceipt) {
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.resetData();
@@ -357,7 +362,7 @@ export default {
         { saleInfo: saleInfo }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-      getDayindata(printData, "print3", qresurl);
+      getDayindata(printData, "Print3", qresurl);
 
       this.resetData();
     },
@@ -503,7 +508,7 @@ export default {
       }
     },
     CashPayok() {
-       this.submitLoading = true
+      this.submitLoading = true;
       let sendData = {
         VipId: this.VipId,
         SaleEmpId: this.form.SaleEmpId,
@@ -523,6 +528,10 @@ export default {
   },
   //钩子函数
   mounted() {
+    let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print3");
+    let jsonPrintData = JSON.parse(printRules);
+    this.checkedreceipt = jsonPrintData.autoPrint;
+
     this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID });
   }
 };

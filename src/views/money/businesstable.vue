@@ -58,18 +58,6 @@
               <div class="content-center-btb">
                 <div class="xdtime">
                   <span>下单时间</span>
-                  <!-- <el-date-picker
-                    size="small"
-                    v-model="dateBE"
-                    @change="chooseDate2"
-                    type="daterange"
-                    value-format="timestamp"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    class="m-left-sm"
-                  ></el-date-picker> -->
-
                   <el-date-picker
                     v-model="beginTime"
                     type="datetime"
@@ -291,6 +279,7 @@
               </div>
               <div v-show="moneyName.length > 0" class="m-top-smts clearfix elpagination">
                 <el-pagination
+                  background
                   @size-change="handlePageChange"
                   @current-change="handlePageChange"
                   :current-page.sync="pagination.PN"
@@ -303,6 +292,7 @@
             </div>
           </div>
         </div>
+
         <el-dialog :title="title" :visible.sync="dialogVisible" width="70%">
           <detailedPage
             @closeModal="
@@ -461,13 +451,17 @@ export default {
       };
     },
     exportBusinessDerive(data) {
-      let newArr = [];
-      for (var i in data) {
-        newArr.push(data[i]);
+       this.loadingst = false;
+      if (data.success) {
+        let param = data.data.PageData.DataArr;
+        if (param.length != 0) {
+          this.exportExcel(data.data.PageData.DataArr);
+        } else {
+          this.$message({ message: "无导出数据！", type: "error" });
+        }
+      } else {
+        this.$message({ message: data.message, type: "error" });
       }
-      console.log("导出数", newArr);
-      this.exportExcel(newArr);
-      this.loadingst = false;
     }
   },
   methods: {
@@ -657,13 +651,13 @@ export default {
       }
       beginTime = beginFormat + " " + this.bussinessTime + ":00";
 
-      console.log(beginTime, endTime)
+      console.log(beginTime, endTime);
 
       let firstDate = new Date(beginTime).getTime();
       let lastDate = new Date(endTime).getTime();
       this.beginTime = firstDate;
       this.endTime = lastDate;
-      this.oldTimeBE = [firstDate, lastDate]
+      this.oldTimeBE = [firstDate, lastDate];
 
       this.dateBE = [firstDate, lastDate];
       console.log(this.dateBE);
@@ -671,18 +665,17 @@ export default {
       this.getNewData();
     },
     chooseBegin(v) {
-       this.ruleFrom.BeginDate = dayjs(v).valueOf()
-       this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate]
-       console.log(this.dateBE)
+      this.ruleFrom.BeginDate = dayjs(v).valueOf();
+      this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate];
+      console.log(this.dateBE);
     },
-    chooseEnd(v){
-       this.ruleFrom.EndDate = dayjs(v).valueOf()
-       this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate]
-       console.log(this.dateBE)
+    chooseEnd(v) {
+      this.ruleFrom.EndDate = dayjs(v).valueOf();
+      this.dateBE = [this.ruleFrom.BeginDate, this.ruleFrom.EndDate];
+      console.log(this.dateBE);
     },
-
     getNewData(data) {
-       console.log(this.dateBE)
+      console.log(this.dateBE);
       // 当前数据
       let setDate = Object.assign(
         {},
@@ -699,7 +692,7 @@ export default {
       });
     },
     searchChange() {
-       this.pagination.PN = 1
+      this.pagination.PN = 1;
       this.getNewData();
     }
   },
@@ -720,8 +713,8 @@ export default {
     let lastDate = new Date(endTime).getTime();
     this.beginTime = firstDate;
     this.endTime = lastDate;
-    this.ruleFrom.BeginDate = firstDate
-    this.ruleFrom.EndDate = lastDate
+    this.ruleFrom.BeginDate = firstDate;
+    this.ruleFrom.EndDate = lastDate;
     this.dateBE = [firstDate, lastDate];
 
     this.getNewData();

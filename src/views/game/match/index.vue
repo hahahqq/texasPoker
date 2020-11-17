@@ -13,7 +13,7 @@
 
       <el-container>
         <div class="content-new-fex">
-          <div class="content-eighty" style="height: auto; padding: 16px 0; margin-bottom: 10px">
+          <div class="content-eighty" style="height: auto; padding: 16px 0; margin-bottom: 10px;">
             <div class="content-center">
               <el-row :gutter="10" class="content-center-cont">
                 <el-col :span="6" style="text-align: center">
@@ -80,8 +80,8 @@
             </div>
           </div>
 
-          <div class="content-table4" style="position: initial; padding-bottom: 10px">
-            <div class="content-table-center">
+          <div class="content-table4" style="padding-bottom: 10px; position:initial">
+            <div class="content-table-center" :style="`height:${tableHeight + 116}px`">
               <el-tabs
                 type="card"
                 class="tabsStyle"
@@ -185,15 +185,16 @@
               </el-table>
 
               <!-- 分页 -->
-              <div v-show="tableData.length > 0" class="m-top-sm clearfix elpagination">
+              <div class="m-top-sm clearfix elpagination" v-show="tableData.length>0">
                 <el-pagination
+                background
                   @size-change="handlePageChange"
                   @current-change="handlePageChange"
                   :current-page.sync="pagination.PN"
                   :page-size="pagination.PageSize"
                   layout="total, prev, pager, next, jumper"
                   :total="pagination.TotalNumber"
-                  class="text-center"
+                  class="text-right"
                 ></el-pagination>
               </div>
             </div>
@@ -287,9 +288,9 @@ export default {
       },
       PN: 1,
       title: "",
-      showAddNew: false,
-      showRechargeDialog: false,
       IsIntegralMatch: getUserInfo().CompanyConfig.ISINTEGRALMATCH,
+      showAddNew: false,  /// 新增会员弹窗
+      showRechargeDialog: false, // 会员充值弹窗
       showAddDialog: false, // 新增赛事弹窗
       showDetailsDialog: false, // 报名弹窗
       showVerifyBill: false // 扫码核销弹窗
@@ -310,7 +311,6 @@ export default {
         this.$router.push({
           name: "sngDetails"
         });
-        //   this.showDetailsDialog = true
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -344,13 +344,7 @@ export default {
       }
     },
     addVipFun() {
-      // if (this.isPurViewFun(92100310)) {
         this.showAddNew = true;
-      // }
-      // this.$message({
-      //   message: "暂无新增会员权限！",
-      //   type: "warning"
-      // });
     },
     referData() {},
     signUpHandle(row, event) {
@@ -408,7 +402,6 @@ export default {
         .catch(() => {});
     },
     handleViewItem(row, idx) {
-      console.log(row);
       this.BILLID = row.BILLID;
       this.projectType = row.TYPE;
 

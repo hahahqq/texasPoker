@@ -11,7 +11,7 @@
                         <el-input type="number" v-model.trim="ruleForm.RShareGetQty" min="0" size='small' style="width:110px" :placeholder="`请输入${title}`"></el-input> {{unitName}}
                     </span>
                     <span style='width:100%; float:left'>
-                        被推荐人奖励 
+                        被推荐人奖励
                         <el-select v-model="ruleForm.RVipGetType" @change="curSelect2State(ruleForm.RVipGetType)" size="small" style="width:110px">
                             <el-option v-for='(item, index) in selectList1' :key='index' :label="item.name" :value="item.type"></el-option>
                         </el-select>
@@ -46,7 +46,7 @@
             <el-form-item label="会员消费返利">
                 <div style='border:1px solid #e4e7ed; border-radius: 8px; float:left; padding: 6px 10px; min-height:80px; background:#f4f4f4; width:60%'>
                     <el-row>
-                        会员每消费 
+                        会员每消费
                         <el-input size="small" type="number" v-model="ruleForm.PVipPayMoney" style="width:110px; margin-left:12px" placeholder="请输入金额"></el-input> 元
                     </el-row>
                     <el-row>
@@ -67,7 +67,7 @@
                     </el-row>
 
                     <el-row>
-                        提现规则说明 
+                        提现规则说明
                         <el-input type="textarea" v-model="ruleForm.BrokerageRemark" placeholder="请输入提现规则说明( 不超过 40 字)" maxlength="40" :show-word-limit='showWordLimit' style='width:80%'></el-input>
                     </el-row>
                 </div>
@@ -199,7 +199,7 @@ export default {
             })
             this.pagination = {
                 PN: data.PN,
-                PageNumber: data.PageNumber, 
+                PageNumber: data.PageNumber,
                 PageSize: data.PageSize,
                 TotalNumber: data.TotalNumber
             }
@@ -245,7 +245,7 @@ export default {
                 ShareGetType: data.ShareGetType,
                 BrokerageMoney: data.BrokerageMoney,
                 BrokerageRemark: data.BrokerageRemark,
-                RShareGetQty: data.RShareGetQty,  
+                RShareGetQty: data.RShareGetQty,
                 RVipGetQty: data.RVipGetType == 'coupon' ? JSON.stringify(CouponList) : data.RVipGetQty,
                 ShareGetQty: data.ShareGetQty
             }
@@ -354,7 +354,7 @@ export default {
     margin-right: 20px;
     margin-top: 10px;
 }
-.select-border{ 
+.select-border{
   border: solid 2px #F8493B;
 }
 .select-list-cont{

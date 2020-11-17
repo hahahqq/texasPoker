@@ -41,7 +41,9 @@
                     />
                   </div>
                   <div class="btm-list">
-                    <el-button plain size="small" @click="ExportGoodsData">商品导出</el-button>
+                    <el-button plain size="small" :loading="eLoading" @click="ExportRowFun">
+                      商品导出
+                    </el-button>
                   </div>
                   <div class="btm-list">
                     <el-button plain size="small">
@@ -118,7 +120,10 @@
             </div>
           </div>
           <div class="content-table3" style="overflow: auto; padding-bottom: 10px; height: auto">
-            <div class="content-table-center" :style="`height:${tableHeight + 60}px`">
+            <div
+              class="content-table-center tableCellStyle"
+              :style="`height:${tableHeight + 60}px`"
+            >
               <el-table
                 size="small"
                 highlight-current-row
@@ -136,14 +141,14 @@
                     <el-tooltip placement="right-start">
                       <div slot="content">
                         <img
-                          :src="scope.row.goodsImg != undefined ? scope.row.goodsImg : defaultImg"
+                          :src="scope.row.goodsImg"
                           onerror="this.src='static/images/shopmore.png'"
                           alt=""
                           style="width: 150px; height: 150px"
                         />
                       </div>
                       <img
-                        :src="scope.row.goodsImg != undefined ? scope.row.goodsImg : defaultImg"
+                        :src="scope.row.goodsImg"
                         onerror="this.src='static/images/shopmore.png'"
                         style="
                           float: left;
@@ -151,33 +156,45 @@
                           width: 40px;
                           height: 40px;
                           margin-right: 8px;
-                          margin-top: 3px;
                         "
                       />
                     </el-tooltip>
 
-                    <span style="height: 40px; width: 112px">
+                    <span>
                       <i
-                        class="pull-left inline-block"
-                        style="
-                          color: #2589ff;
-                          width: 92px;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
+                        class="pull-left inline-block text-overflow"
+                        style="color: #2589ff; width: 92px; line-height: 20px"
                       >
                         <span style="cursor: pointer" @click="handleEdit(scope.$index, scope.row)">
                           {{ scope.row.NAME ? scope.row.NAME : " " }}
                         </span>
                       </i>
-                      <i class="" style="width: 92px">{{ scope.row.MOBILENO }}</i>
-                      {{ scope.row.CODE }}
+                      <i class="inline-block text-overflow" style="width: 92px; line-height: 20px">
+                        {{ scope.row.CODE }}
+                      </i>
                     </span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="TYPENAME" label="分类" align="center"></el-table-column>
-                <el-table-column prop="PRICE" label="价格" align="center"></el-table-column>
+                <el-table-column prop="TYPENAME" label="分类" align="center">
+                   <template slot-scope="scope">
+                    {{ scope.row.TYPENAME ? scope.row.TYPENAME : "--" }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="UNITNAME" label="单位" align="center">
+                   <template slot-scope="scope">
+                    {{ scope.row.UNITNAME ? scope.row.UNITNAME : "--" }}
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="SPECS" label="规格" align="center">
+                   <template slot-scope="scope">
+                    {{ scope.row.SPECS ? scope.row.SPECS : "--" }}
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="PRICE" label="售价" align="center"></el-table-column>
+                <el-table-column prop="VIPPRICE" label="会员价" align="center"></el-table-column>
+                <el-table-column prop="PURPRICE" label="进价" align="center"></el-table-column>
                 <el-table-column prop="PURPRICE" label="成本" width="90" align="center">
                   <template slot-scope="scope">
                     {{ isPurViewFun(92100310) ? scope.row.PURPRICE : "****" }}
@@ -187,11 +204,11 @@
                 <el-table-column label="状态" align="center">
                   <template slot-scope="scope">
                     <span style="height: 40px; width: 102px">
-                      {{ scope.row.STATUS == 1 ? "上架" : "下架" }}
+                      {{ scope.row.STATUS == 1 ? "启用" : "停用" }}
                     </span>
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="200" fixed="right" align="right">
+                <el-table-column label="操作" fixed="right" align="right">
                   <template slot-scope="scope">
                     <el-button
                       type="text"
@@ -219,10 +236,10 @@
                     </el-col>
                     <el-col :span="12">
                       <el-pagination
+                        background
                         @size-change="handlePageChange"
                         @current-change="handlePageChange"
                         :current-page.sync="pagination.PN"
-                        :pager-count="5"
                         :page-size="pagination.PageSize"
                         layout="total, prev, pager, next, jumper"
                         :total="pagination.TotalNumber"
@@ -271,88 +288,6 @@
             ></add-new-goods>
           </el-dialog>
 
-          <!-- 出库弹窗 -->
-          <el-dialog title="商品出库" :visible.sync="retrievalShow" width="35%">
-            <div class="retrieval">
-              <div>
-                <el-form ref="form" :rules="rules1" :model="form" label-width="80px">
-                  <el-form-item label="商品名称">
-                    <el-button type="text" style="margin-left: 18px">{{ form.name }}</el-button>
-                  </el-form-item>
-                  <el-form-item label="现有库存">
-                    <el-button type="text" style="margin-left: 18px">{{ form.qty }}</el-button>
-                  </el-form-item>
-                  <el-form-item label="出库数量" prop="retQty">
-                    <el-input v-model="form.retQty" placeholder="请输入出库数量"></el-input>
-                  </el-form-item>
-                  <el-form-item label="出库类型" prop="region">
-                    <el-select
-                      v-model="form.region"
-                      placeholder="请选择出库类型"
-                      style="width: 100%"
-                    >
-                      <el-option label="采购进货" value="1"></el-option>
-                      <el-option label="采购退货" value="2"></el-option>
-                      <el-option label="采购丢损" value="3"></el-option>
-                      <el-option label="采购调整" value="4"></el-option>
-                      <el-option label="采购调拨" value="5"></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="备注说明">
-                    <el-input v-model="form.Remark" placeholder="请输入备注说明"></el-input>
-                  </el-form-item>
-                </el-form>
-              </div>
-              <div style="text-align: center">
-                <span slot="footer" class="dialog-footer">
-                  <el-button @click="retrievalShow = false">取 消</el-button>
-                  <el-button type="primary" @click="setRetrival">保存</el-button>
-                </span>
-              </div>
-            </div>
-          </el-dialog>
-
-          <!-- 入库弹窗 -->
-          <el-dialog title="商品入库" :visible.sync="unretrievalShow" width="35%">
-            <div class="retrieval">
-              <div>
-                <el-form ref="unform" :rules="rules" :model="unform" label-width="80px">
-                  <el-form-item label="商品名称">
-                    <el-button type="text" style="margin-left: 18px">{{ unform.name }}</el-button>
-                  </el-form-item>
-                  <el-form-item label="现有库存">
-                    <el-button type="text" style="margin-left: 18px">{{ unform.qty }}</el-button>
-                  </el-form-item>
-                  <el-form-item label="入库数量" prop="retQty">
-                    <el-input placeholder="请输入入库数量" v-model.trim="unform.retQty"></el-input>
-                  </el-form-item>
-                  <el-form-item label="入库类型" prop="region">
-                    <el-select
-                      v-model="unform.region"
-                      placeholder="请选择入库类型"
-                      style="width: 100%"
-                    >
-                      <el-option label="采购进货" value="1"></el-option>
-                      <el-option label="采购退货" value="2"></el-option>
-                      <el-option label="采购丢损" value="3"></el-option>
-                      <el-option label="采购调整" value="4"></el-option>
-                      <el-option label="采购调拨" value="5"></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="备注说明">
-                    <el-input v-model="unform.Remark" placeholder="请输入备注说明"></el-input>
-                  </el-form-item>
-                </el-form>
-              </div>
-              <div style="text-align: center">
-                <span slot="footer" class="dialog-footer">
-                  <el-button @click="unretrievalShow = false">取 消</el-button>
-                  <el-button type="primary" @click="unSetRetrival">保存</el-button>
-                </span>
-              </div>
-            </div>
-          </el-dialog>
-
           <el-dialog title="记录" :visible.sync="notesShow" width="60%" :before-close="handleClose">
             <recordPage :dataType="dataTypes"></recordPage>
           </el-dialog>
@@ -393,7 +328,6 @@ export default {
     return {
       dataTypes: {},
       activeName: "first",
-      retrievalShow: false,
       unretrievalShow: false,
       notesShow: false,
       dialogVisible: false,
@@ -403,8 +337,8 @@ export default {
         { id: 0, name: "商品" }
       ],
       status: [
-        { id: 1, name: "上架" },
-        { id: 0, name: "下架" }
+        { id: 1, name: "启用" },
+        { id: 0, name: "停用" }
       ],
       value1: "",
       value2: "",
@@ -435,64 +369,11 @@ export default {
       showAddNew: false,
       showItem: false,
       exportLoading: false,
-      form: {
-        name: "",
-        qty: "",
-        retQty: "",
-        region: "",
-        date1: "",
-        date2: "",
-        delivery: false,
-        Remark: "",
-        ID: ""
-      },
-      unform: {
-        name: "",
-        qty: "",
-        retQty: "",
-        region: "",
-        date1: "",
-        date2: "",
-        delivery: false,
-        Remark: "",
-        ID: ""
-      },
       goodsMode: "",
       tableHeight: document.body.clientHeight - 270,
       Goodscode: "",
-      rules: {
-        region: [
-          {
-            required: true,
-            message: "请选择入库类型",
-            trigger: "change"
-          }
-        ],
-        retQty: [
-          {
-            required: true,
-            message: "请选择入库数量",
-            trigger: "blur"
-          }
-        ]
-      },
-      rules1: {
-        region: [
-          {
-            required: true,
-            message: "请选择出库类型",
-            trigger: "change"
-          }
-        ],
-        retQty: [
-          {
-            required: true,
-            message: "请选择出库数量",
-            trigger: "blur"
-          }
-        ]
-      },
-      exportData: { show: false }
+      exportData: { show: false },
+      eLoading: false
     };
   },
   computed: {
@@ -540,9 +421,12 @@ export default {
       }
     },
     exportGoodsState(data) {
-      this.exportLoading = false;
+      this.eLoading = false;
+      console.log(data)
       if (data.success) {
-        this.exportExcel(data.data.PageData);
+        this.exportExcel(data.data.PageData.DataArr);
+      }else{
+         this.$message.error(data.message)
       }
     },
     dgoodsdeleteState(data) {
@@ -594,7 +478,6 @@ export default {
           message: "操作成功",
           type: "success"
         });
-        this.retrievalShow = false;
         this.unretrievalShow = false;
         this.getNewData();
       } else {
@@ -610,6 +493,17 @@ export default {
     }
   },
   methods: {
+    ExportRowFun() {
+      this.$store
+        .dispatch("getExportGoodsData", {
+          FilterStr: this.searchText,
+          TypeID: this.value2,
+          Status: this.value3
+        })
+        .then(() => {
+          this.eLoading = true;
+        });
+    },
     handleClose() {
       this.notesShow = false;
     },
@@ -628,21 +522,9 @@ export default {
     },
     exportExcel(arr) {
       // 导出到excel
-      this.getgoodsIMGURL = GOODS_IMGURL;
       var list = [...arr];
       for (var i in list) {
-        list[i].GOODIMG = this.getgoodsIMGURL + list[i].ID + ".png";
-        if (list[i].STATUS == 1) {
-          list[i].STATUS = "上架";
-        } else {
-          list[i].STATUS = "下架";
-        }
-
-        if (list[i].GOODSMODE == 1) {
-          list[i].GOODSMODE = "服务";
-        } else {
-          list[i].GOODSMODE = "商品";
-        }
+        list[i].STATUS = list[i].STATUS == 1 ? "启用" : "停用";
       }
       var head = [
         "商品名称",
@@ -655,10 +537,8 @@ export default {
         "单位",
         "商品规格",
         "状态",
-        "类型",
         "商品预警",
-        "备注",
-        "图片链接"
+        "备注"
       ];
       var val = [
         "NAME",
@@ -671,10 +551,8 @@ export default {
         "UNITNAME",
         "SPECS",
         "STATUS",
-        "GOODSMODE",
         "MINSTOCKNUMBER",
-        "REMARK",
-        "GOODIMG"
+        "REMARK"
       ];
       var title = "商品导出" + this.getNowDateTime();
       this.export2Excel(head, val, list, title);
@@ -691,12 +569,6 @@ export default {
           }
         }
 
-        //   if (
-        //     arr[i].__EMPTY_1 == "商品" ||
-        //     arr[i].__EMPTY_1 == "服务" ||
-        //     arr[i].__EMPTY_1 == 1 ||
-        //     arr[i].__EMPTY_1 == 0
-        //   ) {
         let item = {
           Code: strCode,
           Name: arr[i].__EMPTY == undefined ? "" : arr[i].__EMPTY,
@@ -711,103 +583,10 @@ export default {
           VipPrice: arr[i].__EMPTY_8 == undefined ? "" : arr[i].__EMPTY_8
         };
         newData.push(item);
-        //   } else {
-        //     this.$message.error("导入的商品编码填写错误,请重新填写再导入");
-        //     this.importLoading = false;
-        //     return;
-        //   }
       }
-      // console.log(newData); return;
       this.$store.dispatch("getImportGoodsData", newData).then(() => {
         // this.importLoading = true;
       });
-    },
-    retrievalChange(e, event) {
-      let agentPermission = getUserInfo().List;
-      let arr = agentPermission.filter((element) => element.MODULECODE == "210040102");
-      if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
-        this.$message.warning("您还没有获得相关权限!");
-      } else {
-        this.form.name = event.NAME;
-        this.form.qty = event.STOCKQTY;
-        this.form.ID = event.ID;
-        this.retrievalShow = true;
-      }
-    },
-    UnRetrievalChange(e, event) {
-      let agentPermission = getUserInfo().List;
-      let arr = agentPermission.filter((element) => element.MODULECODE == "210040102");
-      if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
-        this.$message.warning("您还没有获得相关权限!");
-      } else {
-        this.unform.name = event.NAME;
-        this.unform.qty = event.STOCKQTY;
-        this.unform.ID = event.ID;
-        this.unretrievalShow = true;
-      }
-    },
-    setRetrival() {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          let setDate = Object.assign(
-            {},
-            {
-              id: this.form.ID,
-              QTY: this.form.retQty,
-              BillType: this.form.region,
-              Remark: this.form.Remark,
-              movemode: -1
-            }
-          );
-          this.$store.dispatch("setGoodsMoving", setDate);
-          this.form = {
-            name: "",
-            qty: "",
-            retQty: "",
-            region: "",
-            date1: "",
-            date2: "",
-            delivery: false,
-            Remark: "",
-            ID: ""
-          };
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
-    unSetRetrival() {
-      this.$refs.unform.validate((valid) => {
-        if (valid) {
-          let setDate = Object.assign(
-            {},
-            {
-              id: this.unform.ID,
-              QTY: this.unform.retQty,
-              BillType: this.unform.region,
-              Remark: this.unform.Remark,
-              movemode: 1
-            }
-          );
-          this.$store.dispatch("setGoodsMoving", setDate);
-          this.unform = {
-            name: "",
-            qty: "",
-            retQty: "",
-            region: "",
-            date1: "",
-            date2: "",
-            delivery: false,
-            Remark: "",
-            ID: ""
-          };
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-      // this.retrievalShow=false
     },
     notesChange(e, event) {
       this.notesShow = true;
@@ -929,6 +708,9 @@ export default {
 };
 </script>
 <style scoped>
+.tableCellStyle >>> .el-table .cell {
+  line-height: normal !important;
+}
 .member-header {
   display: flex;
   align-items: center;
@@ -1050,5 +832,10 @@ export default {
   left: 10px;
   right: 10px;
   background: #fff;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

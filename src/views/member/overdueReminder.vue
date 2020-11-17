@@ -8,7 +8,7 @@
          </div>
 
          <div class="content-table4">
-            <div class="content-table-center">
+            <div class="content-table-center tableCellStyle">
                <el-table
                   size='small'
                   :data="tableData"
@@ -21,12 +21,12 @@
                   <el-table-column prop="NAME" label="会员信息" width="160">
                      <template slot-scope="scope">
                            <img :src="scope.row.IMAGEURL" alt="" style='float:left; border-radius:8px; width:40px; height:40px; margin-right:8px'>
-                           <span style='height:40px;width:102px'>
-                              <i class="pull-left inline-block" style="color:#2589FF;width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap;">
+                           <span>
+                              <i class="pull-left inline-block text-overflow" style="color:#2589FF; width:92px; line-height:20px">
                                  {{scope.row.NAME ? scope.row.NAME : ' '}}
                                  &nbsp;&nbsp;<img :src="scope.row.SEX == 0 ? 'static/images/icon_man.png' : 'static/images/icon_woman.png'" style="width:13px;height:13px; vertical-align: middle">
                                  </i>
-                              <i class="pull-left inline-block" style="width:92px;overflow: hidden; text-overflow:ellipsis;white-space: nowrap ">{{scope.row.CODE}}</i>
+                              <i class="pull-left inline-block text-overflow" style="width:92px; line-height:20px ">{{scope.row.MOBILENO}}</i>
                            </span>
                      </template>
                   </el-table-column>
@@ -262,7 +262,16 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.tableCellStyle >>> .el-table .cell {
+  line-height: normal !important;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .infoTitle{
    width: 100px; float:left
 }

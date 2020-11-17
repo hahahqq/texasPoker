@@ -117,7 +117,9 @@ export default {
 	},
 	methods: {
 		getNewData() {
-			// 匹配对应的接口
+         // 匹配对应的接口
+         console.log(this.dataType.index, this.pageData)
+         return
 			this.$store
 				.dispatch("getExportData", { index: this.dataType.index, data: this.pageData })
 				.then(() => {

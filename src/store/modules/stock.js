@@ -227,7 +227,7 @@ const actions = {
          PN: data.PN
       };
       commonSend.commonSend(
-         "post",
+         "get",
          data => {
             commit(GET_STOCK_TOTAl, { data });
          },

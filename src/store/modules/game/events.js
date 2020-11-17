@@ -127,14 +127,11 @@ const actions = {
         let arr = data.RewardList, newArr = []
         if(arr.length != 0){
             for(var i in arr){
-                if(data.RewardType == 0){
-                    arr[i].Integral = 0
-                    arr[i].Rate = arr[i].RewardRate / 100
-                }else{
-                    arr[i].Integral = arr[i].RewardRate
-                    arr[i].Rate = 0
-                }
-                newArr.push(arr[i])
+               let name = arr[i].Name.substr(1)
+               arr[i].Name = name.substr(0, name.length - 1);  // 去掉名次中的 “第”、“名”
+               arr[i].Integral = data.RewardType == 0 ? 0 : arr[i].RewardRate
+               arr[i].Rate = data.RewardType == 0 ? arr[i].RewardRate / 100 : 0
+               newArr.push(arr[i])
             }
         }
 

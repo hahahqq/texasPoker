@@ -36,8 +36,7 @@ const getDayindata = function(printData, printType, qresurl) {
    console.log(printData.title);
    if (printData.title.isShow) {
       // 标题
-      console.log(COMPANYNAME);
-      PrintLODOP_Text(hPos, 0, printW, rowHeight, COMPANYNAME, {
+      PrintLODOP_Text(hPos, 0, printW, rowHeight, printData.title.value, {
          FontSize: fontSize + 2,
          Alignment: 2,
          Bold: 1
@@ -47,17 +46,17 @@ const getDayindata = function(printData, printType, qresurl) {
 
    let typename = "";
 
-   if (printType == "print1") {
+   if (printType == "Print1") {
       typename = "充值小票";
-   } else if (printType == "print2") {
+   } else if (printType == "Print2") {
       typename = "销售小票";
-   } else if (printType == "print3") {
+   } else if (printType == "Print3") {
       typename = "消费小票";
-   } else if (printType == "print4") {
+   } else if (printType == "Print4") {
       typename = "报名小票";
-   } else if (printType == "print5") {
+   } else if (printType == "Print5") {
       typename = "领奖小票";
-   } else if (printType == "print6") {
+   } else if (printType == "Print6") {
       typename = "奖励小票";
    }
 
@@ -77,22 +76,23 @@ const getDayindata = function(printData, printType, qresurl) {
    }
 
    hPos = dividingLine(hPos, pageWidth);
+   console.log(printType)
 
-   if (printType == "print2" || printType == "print5") {
+   if (printType == "Print2" || printType == "Print5") {
       // 销售小票 -- 商品
       let leftw0 = 1,
          leftw1 = 70,
          leftw2 = 100,
          leftw3 = 130;
-      PrintLODOP_Text(hPos, leftw0, pageWidth, rowHeight, printType == "print2" ? "商品" : "奖品", {
+      PrintLODOP_Text(hPos, leftw0, pageWidth, rowHeight, printType == "Print2" ? "商品" : "奖品", {
          Bold: 1
       });
-      PrintLODOP_Text(hPos, leftw1, gw2, rowHeight, printType == "print2" ? "单价" : "积分", {
+      PrintLODOP_Text(hPos, leftw1, gw2, rowHeight, printType == "Print2" ? "单价" : "积分", {
          Alignment: 2,
          Bold: 1
       });
       PrintLODOP_Text(hPos, leftw2 + 8, gw2, rowHeight, "数量", { Alignment: 2, Bold: 1 });
-      PrintLODOP_Text(hPos, leftw3 + 8, gw2, rowHeight, printType == "print2" ? "金额" : "小计", {
+      PrintLODOP_Text(hPos, leftw3 + 8, gw2, rowHeight, printType == "Print2" ? "金额" : "小计", {
          Alignment: 2,
          Bold: 1
       });
@@ -118,28 +118,8 @@ const getDayindata = function(printData, printType, qresurl) {
    }
 
    for (var i in printData.saleInfo) {
-      if (i < 3) {
-         hPos = PrintLODOPcommon(printData.saleInfo[i].label, printData.saleInfo[i].value, hPos);
-      } else {
-         // 扣减方式
-         PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, printData.saleInfo[i].label, {});
-         PrintLODOP_Text(
-            hPos,
-            pageLabel + pageLeft,
-            printValueW - 10,
-            rowHeight,
-            printData.saleInfo[i].value,
-            {
-               TextNeatRow: true,
-               LineSpacing: 0.5
-            }
-         );
-         let height = String(printData.address.value).length / 9;
-         hPos += rowHeight * Math.ceil(height);
-      }
+      hPos = PrintLODOPcommon(printData.saleInfo[i].label, printData.saleInfo[i].value, hPos);
    }
-
-   hPos += rowHeight;
 
    hPos = dividingLine(hPos, pageWidth);
 
@@ -154,8 +134,10 @@ const getDayindata = function(printData, printType, qresurl) {
    }
    hPos = dividingLine(hPos, pageWidth);
 
-   hPos = PrintLODOPcommon(printData.remark.label + "：", printData.remark.value, hPos);
-   hPos = dividingLine(hPos, pageWidth);
+   if (printData.remark.isShow) {
+      hPos = PrintLODOPcommon(printData.remark.label + "：", printData.remark.value, hPos);
+      hPos = dividingLine(hPos, pageWidth);
+   }
 
    //联系电话
    if (printData.phone.isShow) {
@@ -165,11 +147,11 @@ const getDayindata = function(printData, printType, qresurl) {
    //联系地址
    if (printData.address.isShow) {
       PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, "联系地址:", {});
-      PrintLODOP_Text(hPos, pageLabel + pageLeft, printValueW, rowHeight, printData.address.value, {
+      PrintLODOP_Text(hPos, pageLabel + pageLeft, 130, rowHeight, printData.address.value, {
          TextNeatRow: true,
          LineSpacing: 0.5
       });
-      let height = String(printData.address.value).length / 9;
+      let height = String(printData.address.value).length / 8;
       hPos += rowHeight * Math.ceil(height);
    }
    hPos += rowHeight;
@@ -197,8 +179,8 @@ const getDayindata = function(printData, printType, qresurl) {
    let printNum = printData.setupPrintnum;
 
    LODOP.SET_PRINT_COPIES(printNum); // 打印份数
-   // LODOP.PRINT();
-   LODOP.PREVIEW();
+   LODOP.PRINT();
+   // LODOP.PREVIEW();
 };
 
 // 增加纯文本打印项

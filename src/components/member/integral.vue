@@ -41,7 +41,7 @@
       <el-table-column prop="BILLTYPE" width="150px" align="center" label="类型"></el-table-column>
       <el-table-column prop="INTEGRAL" width="150px" align="center" label="变动积分">
         <template slot-scope="scope">
-          <span :style="`color:${scope.row.INTEGRAL >= 0 ? '#ff6655' : '#008000'}`">
+          <span :style="`color:${scope.row.INTEGRAL >= 0 ? '#ff6655' : ''}`">
             {{ scope.row.INTEGRAL }}
           </span>
         </template>

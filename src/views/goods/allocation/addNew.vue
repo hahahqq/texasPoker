@@ -108,7 +108,7 @@
               align="center"
               width="180"
             ></el-table-column>
-            <el-table-column label="数量" align="center" width="180">
+            <el-table-column label="数量" align="center" width="190">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.QTY }}</span>
                 <el-input-number
@@ -246,7 +246,7 @@ export default {
       goodsListData: [],
       constGOODSLIST: [],
       vCheckGoodsTimeOut: undefined,
-      tableHeight: document.body.clientHeight - 300,
+      tableHeight: document.body.clientHeight - 280,
       showUploadDialog: false
     };
   },

@@ -1,9 +1,10 @@
 <template>
-  <div class="vue-dropdown default-theme">
+  <div class="vue-dropdown default-theme" v-clickOutSide="handleCloseMember">
     <div class="search-module clearfix">
       <input
         class="search-text"
         v-model="searchText"
+        style="color:#333"
         placeholder="输入会员手机号/卡号"
         v-show="inputShow"
       />
@@ -16,18 +17,22 @@
         <div class="ssmemberul-massge">
           <div>
             <span class="ssmemberul-cont-name">{{ memberdetails.NAME }}</span>
-            <span class="ssmemberul-cont-phone">{{ memberdetails.MOBILENO }}</span>
             <span class="ssmemberul-cont-ka">{{ memberdetails.LEVELNAME }}</span>
           </div>
           <div class="ssmemberul-cont-text">
-            <span>储值积分 : {{ memberdetails.MONEY }}</span>
-            <span style="margin-left: 20px" v-if="splitIntegral">竞技积分 : {{ memberdetails.INTEGRAL }}</span>
+            <span style="width:120px; float:left">卡号 : {{ memberdetails.CODE }} </span>
+            <span style="margin-left: 20px">手机号 : {{ memberdetails.MOBILENO }} </span>
+          </div>
+
+          <div class="ssmemberul-cont-text">
+            <span style="width:120px; float:left">储值积分 : <i style="color:#409eff"> {{ memberdetails.MONEY }} </i></span>
+            <span style="margin-left: 20px" v-if="splitIntegral">竞技积分 : <i style="color:#409eff"> {{ memberdetails.INTEGRAL }} </i> </span>
           </div>
         </div>
         <i class="el-icon-delete" @click="delClick"></i>
       </div>
     </div>
-    <ul class="list-module" v-if="searchText != ''">
+    <ul class="list-module" v-if="loadingMember == false">
       <li
         v-for="(item, index) in datalist"
         @click="appClick(item)"
@@ -53,6 +58,10 @@
         </div>
       </li>
     </ul>
+
+    <div class="list-module" style="line-height: 60px; width: 100%; color: #888; text-align: center" v-if="loadingMember">
+      数据加载中...
+      </div>
   </div>
 </template>
 <script>
@@ -81,7 +90,8 @@ export default {
         PageNumber: 0,
         PageSize: 20,
         PN: 0
-      }
+      },
+      loadingMember: false
     };
   },
   props: ["details"],
@@ -95,6 +105,7 @@ export default {
       this.search_mb();
     },
     getssmemberdListState(data) {
+       this.loadingMember = false;
       this.loading = false;
       if (data.success) {
         if (this.isshowtatus) {
@@ -129,6 +140,11 @@ export default {
     }
   },
   methods: {
+     handleCloseMember(){
+        this.loadingMember = false
+        this.searchText = ''
+        this.datalist = []
+     },
     delClick() {
       this.$emit("changeMemberIDnull", 1);
       this.$store.dispatch("selectingMember", {});
@@ -147,14 +163,11 @@ export default {
         this.loading = true;
       });
     },
-    // searchfun: _.debounce(function() {
-    //   this.searchfun2();
-    // }, 1000),
     searchfun2() {
       if (!this.searchText) {
         return;
       }
-      console.log(this.pageData.Filter);
+      this.loadingMember = true
       this.pageData.Filter = this.searchText;
       this.getNewData();
     },
@@ -300,11 +313,9 @@ export default {
 }
 
 .ssmemberul {
-  height: 50px;
   width: 100%;
   background: #fff;
-  height: 60px;
-  //  border: solid 1px #00a0e9;
+  padding: 10px 0
 }
 .ssmemberul-cont {
   width: 92%;
@@ -340,9 +351,10 @@ export default {
   color: rgba(255, 255, 255, 1);
   background: rgba(37, 137, 255, 1);
   border-radius: 4px;
-  padding: 3px 6px;
-  position:absolute;
-  right: 50px
+  padding: 2px 4px;
+  margin-left: 15px
+//   position:absolute;
+//   right: 50px
 }
 .ssmemberul-cont-text {
   font-size: 12px;

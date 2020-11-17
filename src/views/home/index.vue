@@ -185,7 +185,7 @@
 						class="bgwhitecolor home-border-r"
 						style="padding: 0; height: 170px; margin: 0 8px 0 4px"
 					>
-						<img :src="banner" style="width: 100%; height: 170px; border-radius: 2px" />
+						<img src="static/images/banner.png" style="width: 100%; height: 170px; border-radius: 2px" />
 					</div>
 				</el-col>
 			</el-row>
@@ -201,7 +201,7 @@
 									style="padding-bottom: 0px"
 								>
 									<el-dropdown trigger="click" @command="handleCommand">
-										<span class="el-dropdown-link">
+										<span class="el-dropdown-link" style='color:#000'>
 											{{ curDateType == 0 ? "近七天" : "本月" }}赛事盈利情况
 											<i class="el-icon-arrow-down el-icon--right"></i>
 										</span>
@@ -269,21 +269,22 @@
 				</el-col>
 
 				<el-col :span="5">
-					<div class="wxInfoList padding-sm bg-white relative" style="margin: 0 8px 0 4px;">
+					<div class="wxInfoList padding-sm bg-white relative" style="margin: 0 8px 0 4px; padding-bottom:28px !important">
 						<!-- 商城 -->
-						<div class="p-bottom-sm" style="font-size: 18px; margin-top: 10px; font-weight:bold">待办事项</div>
+						<div class="p-bottom-sm font-14 m-top-sm" style="font-weight:bold">商城通知</div>
 						<el-row :gutter="10">
 							<el-col :span="12" v-for="(item, i) in wxInfoList" :key="i">
-								<div class="bg-F1F2F3 m-bottom-sm" style="padding: 14px 10px; border-radius: 6px">
-									<div class="font-12">{{ item.label }}</div>
-									<div class="text-black m-top-sm" style="font-size: 20px; font-weight:bold">{{ item.value }}</div>
+								<div class="bg-F1F2F3 m-bottom-sm" style="padding: 12px 10px; border-radius: 6px">
+									<div class="font-14" style="color:#7d7d7d; font-weight:bold">{{ item.label }}</div>
+									<div class="text-black m-top-sm com_fontsize">{{ item.value }}</div>
 								</div>
 							</el-col>
 						</el-row>
 					</div>
+
 					<el-row
 						class="rightSmallTitle"
-						style="margin-top:8px; margin-left: 4px; margin-right: 8px"
+						style="margin-top:11px; margin-left: 4px; margin-right: 8px"
 					>
 						<div class="bgwhitecolor home-border-r toolItem" >
 							<el-popover
@@ -350,6 +351,10 @@
 							</el-popover>
 						</div>
 					</el-row>
+
+               <div class="bg-white relative" :style="`height: ${noticeHeight}px; margin: 8px 8px 0 4px; background:#fff `">
+                  <!-- 右下角空白框  -->
+               </div>
 				</el-col>
 			</el-row>
 		</div>
@@ -402,13 +407,9 @@ export default {
 			}, 800);
 		};
 		return {
-			banner: "static/images/" + ROOT_STATE + "/banner1.png",
-			downImg: "static/images/" + ROOT_STATE + "/down.png",
-			gzhImg: "static/images/" + ROOT_STATE + "/gzh.jpg",
 			curDateType: 0,
          loading2: false,
          img10: img10,
-
 			mainloading: false,
 			dialogVisibleReplace: false,
 			visibleMsagess: false,
@@ -494,12 +495,10 @@ export default {
 			}
 			this.loading2 = false;
 		},
-
 		getSaleTableState(data) {
 			this.mainloading = false;
 			if (data.success) {
 				let saletime = data.data.List.map((item) => item.DATENAME);
-
 				let saledate = data.data.List.map((item) => item.SHOPGAINMONEY);
 				this.getweeksaleDate(saledate, saletime);
 			}

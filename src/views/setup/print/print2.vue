@@ -206,7 +206,7 @@ export default {
             },
             {
                label: "结账日期：",
-               value: "2014-06-19 15:04"
+               value: "2020-10-19 11:34"
             }
          ],
          printList: {
@@ -274,7 +274,7 @@ export default {
        testPrint(){
           let printData = Object.assign({}, this.printList, { billInfo: this.billInfo }, { saleInfo: this.saleInfo }, { goodsList: this.goodsList } )
           let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-          getDayindata(printData, 'print2', qresurl)
+          getDayindata(printData, 'Print2', qresurl)
        },
        savePrintRules(){
          localStorage.setItem( SYSTEM_INFO.PREFIX + 'Print2', JSON.stringify(this.printList))

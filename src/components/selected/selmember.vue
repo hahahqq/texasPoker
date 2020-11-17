@@ -4,9 +4,15 @@
       <el-row :gutter="10" class="text-left">
         <el-col :xs="24" :sm="6" :md="8">
           <el-form-item label="会员等级：">
-            <el-select size="small" v-model="pageData.LevelName" clearable placeholder="请选择" class="full-width">
+            <el-select
+              size="small"
+              v-model="pageData.LevelName"
+              clearable
+              placeholder="请选择"
+              class="full-width"
+            >
               <el-option
-                v-for="(item,i) in memberLevelList"
+                v-for="(item, i) in memberLevelList"
                 :key="i"
                 :label="item.NAME"
                 :value="item.NAME"
@@ -16,9 +22,15 @@
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
           <el-form-item label="会员标签：">
-            <el-select size="small" v-model="pageData.VipFlag" clearable placeholder="请选择" class="full-width">
+            <el-select
+              size="small"
+              v-model="pageData.VipFlag"
+              clearable
+              placeholder="请选择"
+              class="full-width"
+            >
               <el-option
-                v-for="(item,j) in flagList"
+                v-for="(item, j) in flagList"
                 :key="j"
                 :label="item.VIPFLAG"
                 :value="item.VIPFLAG"
@@ -28,7 +40,12 @@
         </el-col>
         <el-col :xs="24" :sm="12" :md="8">
           <el-form-item label="号码/姓名：">
-            <el-input size="small" v-model="pageData.Name" placeholder="请输入手机号/卡号/姓名" class="full-width"></el-input>
+            <el-input
+              size="small"
+              v-model="pageData.Name"
+              placeholder="请输入手机号/卡号/姓名"
+              class="full-width"
+            ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -45,7 +62,9 @@
         <el-col :xs="24" :sm="12" :md="16">
           <el-form-item class="text-right full-width">
             <el-button size="small" @click="onSubmit(0)">重设</el-button>
-            <el-button size="small" type="primary" @click="onSubmit(1)" :loading="loading">查询</el-button>
+            <el-button size="small" type="primary" @click="onSubmit(1)" :loading="loading">
+              查询
+            </el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -54,7 +73,7 @@
     <el-table
       v-if="!isArr"
       ref="singleTable"
-      size='small'
+      size="small"
       :data="dataList"
       highlight-current-row
       @current-change="handleCurrentChange"
@@ -62,22 +81,55 @@
       height="230px"
       style="width: 100%"
     >
-      <el-table-column prop="NAME" label="姓名" width="120" sortable fixed="left"></el-table-column>
+      <el-table-column label="会员信息" width="160">
+        <template slot-scope="scope">
+          <img
+            :src="scope.row.IMAGEURL"
+            onerror="this.src='static/images/shopmore.png'"
+            alt=""
+            style="float: left; border-radius: 8px; width: 40px; height: 40px; margin-right: 8px"
+          />
+          <span>
+            <i
+              class="pull-left inline-block text-overflow"
+              style="color: #2589ff; width: 92px; line-height: 20px"
+            >
+              <span>
+                {{ scope.row.NAME ? scope.row.NAME : " " }}
+              </span>
+              &nbsp;&nbsp;
+              <img
+                :src="
+                  scope.row.SEX == 0 ? 'static/images/icon_man.png' : 'static/images/icon_woman.png'
+                "
+                style="width: 13px; height: 13px; vertical-align: middle"
+              />
+            </i>
+            <i class="pull-left inline-block text-overflow" style="width: 92px; line-height: 20px">
+              {{ scope.row.MOBILENO }}
+            </i>
+          </span>
+        </template>
+      </el-table-column>
+
       <el-table-column prop="CODE" label="卡号"></el-table-column>
-      <el-table-column prop="SEX" label="性别" width="80" :formatter="formatSex" align="center"></el-table-column>
-      <el-table-column prop="MOBILENO" label="手机号码" width="120"></el-table-column>
       <el-table-column prop="LEVELNAME" label="等级"></el-table-column>
       <el-table-column prop="VIPFLAG" label="标签"></el-table-column>
       <el-table-column prop="SHOPNAME" label="所属店铺" width="120"></el-table-column>
       <el-table-column prop="INTEGRAL" label="积分"></el-table-column>
       <el-table-column prop="MONEY" label="余额"></el-table-column>
       <el-table-column prop="QWEMONEY" label="欠款"></el-table-column>
-      <el-table-column prop="STATUS" label="状态" :formatter="formatStatus" fixed="right"></el-table-column>
+      <el-table-column
+        prop="STATUS"
+        label="状态"
+        :formatter="formatStatus"
+        fixed="right"
+      ></el-table-column>
     </el-table>
     <!-- 多选 -->
     <el-table
       v-if="isArr"
-       size='small'
+      size="small"
       :data="dataList"
       v-loading="loading"
       @selection-change="handleSelectionChange"
@@ -86,12 +138,39 @@
       style="width: 100%"
     >
       <el-table-column type="selection" width="50" fixed="left"></el-table-column>
-      <el-table-column prop="NAME" label="姓名" width="120" sortable></el-table-column>
+      <el-table-column label="会员信息" width="160">
+        <template slot-scope="scope">
+          <img
+            :src="scope.row.IMAGEURL"
+            onerror="this.src='static/images/shopmore.png'"
+            alt=""
+            style="float: left; border-radius: 8px; width: 40px; height: 40px; margin-right: 8px"
+          />
+          <span>
+            <i
+              class="pull-left inline-block text-overflow"
+              style="color: #2589ff; width: 92px; line-height: 20px"
+            >
+              <span>
+                {{ scope.row.NAME ? scope.row.NAME : " " }}
+              </span>
+              &nbsp;&nbsp;
+              <img
+                :src="
+                  scope.row.SEX == 0 ? 'static/images/icon_man.png' : 'static/images/icon_woman.png'
+                "
+                style="width: 13px; height: 13px; vertical-align: middle"
+              />
+            </i>
+            <i class="pull-left inline-block text-overflow" style="width: 92px; line-height: 20px">
+              {{ scope.row.MOBILENO }}
+            </i>
+          </span>
+        </template>
+      </el-table-column>
+
       <el-table-column prop="CODE" label="卡号"></el-table-column>
-      <el-table-column prop="SEX" label="性别" width="80" :formatter="formatSex" align="center"></el-table-column>
-      <el-table-column prop="MOBILENO" label="手机号码" width="120"></el-table-column>
       <el-table-column prop="LEVELNAME" label="等级"></el-table-column>
-      <el-table-column prop="VIPFLAG" label="标签"></el-table-column>
       <el-table-column prop="SHOPNAME" label="所属店铺"></el-table-column>
       <el-table-column prop="INTEGRAL" label="积分" align="right"></el-table-column>
       <el-table-column prop="MONEY" label="余额" align="right"></el-table-column>
@@ -112,8 +191,9 @@
     </div>
     <!-- handle -->
     <div class="text-right m-top-sm">
-      <div v-if="!isArr" class="m-right-md inline-block pull-left">会员：
-        <el-tag size="medium" class="font-16">{{choseText}}</el-tag>
+      <div v-if="!isArr" class="m-right-md inline-block pull-left">
+        会员：
+        <el-tag size="medium" class="font-16">{{ choseText }}</el-tag>
       </div>
       <el-button @click="closeModal">取 消</el-button>
       <el-button type="primary" @click="handleSubmit" :loading="loading">确 定</el-button>
@@ -166,7 +246,7 @@ export default {
   watch: {
     isShowFirstPopup(value) {
       if (value) {
-        this.defaultData()
+        this.defaultData();
       }
     },
     dataListState(data) {
@@ -178,7 +258,7 @@ export default {
           PageSize: data.paying.PageSize,
           PN: data.paying.PN
         };
-        this.pageData.PN = data.paying.PN
+        this.pageData.PN = data.paying.PN;
       }
     }
   },
@@ -193,11 +273,11 @@ export default {
         this.$emit("closeModal");
       }
     },
-    formatSex: function(row, column) {
+    formatSex: function (row, column) {
       //性别显示转换
       return row.SEX == 0 ? "男" : row.SEX == 1 ? "女" : "未知";
     },
-    formatStatus: function(row, column) {
+    formatStatus: function (row, column) {
       //-1=全部,0=正常，2=挂失
       return row.STATUS == 0 ? "正常" : row.STATUS == 2 ? "挂失" : "未知";
     },
@@ -206,7 +286,7 @@ export default {
         this.loading = true;
       });
     },
-    handlePageChange: function(currentPage) {
+    handlePageChange: function (currentPage) {
       if (this.pageData.PN == currentPage || this.loading) {
         return;
       }
@@ -224,13 +304,18 @@ export default {
       this.multipleSelection = val;
       console.log(this.multipleSelection);
     },
+    cleanSelect(){
+       this.multipleSelection = []
+    },
     handleSubmit() {
-      this.$store.dispatch("selectingMember", {
-        isArr: this.isArr,
-        data: this.isArr ? this.multipleSelection : this.currentRow
-      }).then(() => {
-        this.closeModal();
-      });
+      this.$store
+        .dispatch("selectingMember", {
+          isArr: this.isArr,
+          data: this.isArr ? this.multipleSelection : this.currentRow
+        })
+        .then(() => {
+          this.closeModal();
+        });
     },
     onSubmit(v) {
       if (v == 1) {
@@ -273,3 +358,11 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

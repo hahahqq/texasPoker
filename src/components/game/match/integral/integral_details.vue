@@ -70,10 +70,7 @@
                   {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
                   {{
                     BillObj.CHARGESTYPE == 0
-                      ? BillObj.CHARGESMONEY +
-                        " ( 比例 " +
-                        BillObj.CHARGESRATE * 100 +
-                        "% ) "
+                      ? BillObj.CHARGESMONEY + " ( 比例 " + BillObj.CHARGESRATE * 100 + "% ) "
                       : BillObj.CHARGESMONEY + " 元"
                   }}
                 </el-col>
@@ -231,7 +228,7 @@
                     v-model="BillObj.BUYINNEEDPRICE"
                     placeholder="报名积分"
                     disabled
-                    class="redColor"
+                    class="blackColor"
                     size="small"
                     style="width: 100%; color: #f00"
                   ></el-input>
@@ -278,7 +275,7 @@
                     placeholder="消费积分"
                     disabled
                     size="small"
-                    class="redColor"
+                    :class="formIntegral.money_1 != 0 ? 'redColor' : 'grayColor'"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
@@ -328,7 +325,7 @@
           </el-form>
 
           <!-- 参赛人员 -->
-          <div v-show="tabs == 1">
+          <div v-show="tabs == 1" class="tableCellStyle">
             <el-table
               size="small"
               :data="buyVipList"
@@ -336,7 +333,7 @@
               :height="tableHeight"
               header-row-class-name="bg-F1F2F3"
             >
-              <el-table-column label="会员信息">
+              <el-table-column label="会员信息" width="160">
                 <template slot-scope="scope">
                   <img
                     :src="scope.row.IMAGEURL"
@@ -349,27 +346,14 @@
                       margin-right: 8px;
                     "
                   />
-                  <span style="height: 40px; width: 112px">
+                  <span>
                     <i
-                      class="pull-left inline-block"
-                      style="
-                        width: 102px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                      "
+                      class="pull-left inline-block text-overflow"
+                      style="width: 92px; line-height: 20px"
                     >
                       {{ scope.row.VIPNAME ? scope.row.VIPNAME : " " }}
                     </i>
-                    <i
-                      class="pull-left inline-block"
-                      style="
-                        width: 92px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                      "
-                    >
+                    <i class="inline-block text-overflow" style="width: 92px; line-height: 20px">
                       {{ scope.row.VIPMOBILENO }}
                     </i>
                   </span>
@@ -384,7 +368,23 @@
                 align="center"
                 width="100"
               ></el-table-column>
-              <el-table-column prop="BUYINMONEY" label="买入积分" align="center"></el-table-column>
+              <el-table-column prop="BUYINMONEY" label="买入积分" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.MONEY }}
+                  <el-tooltip
+                    class="item"
+                    effect="dark"
+                    :content="'优惠 ' + scope.row.DISCOUNTMONEY + ' 积分'"
+                    placement="top"
+                  >
+                    <i
+                      class="el-icon-info font-14"
+                      style="color: #409eff"
+                      v-if="scope.row.DISCOUNTMONEY != 0"
+                    ></i>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="REWARDMONEY"
                 label="已兑换积分"
@@ -590,7 +590,7 @@ export default {
       } else if (key == 118) {
         // F7 : 新增会员
         that.showAddNew = true;
-      } else if (key == 119) {
+      } else if (key == 119 && that.memberdetails.ID != undefined) {
         // F8 : 充值
         that.rechargeFun();
       }
@@ -620,6 +620,11 @@ export default {
         data.data.obj.LEVELNAME = data.data.obj.DISCOUNTNAME
           ? data.data.obj.DISCOUNTNAME
           : "无折扣";
+
+          if (this.memberdetails.ID != undefined) {
+          this.memberdetails.MONEY = data.data.obj.MONEY;
+          this.modifyCouponMoney(this.couponIntegral);
+        }
       }
     },
     integralCancelVipRewardState(data) {
@@ -768,7 +773,7 @@ export default {
           { vipInfo: vipInfo }
         );
         let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-        getDayindata(printData, "print4", qresurl);
+        getDayindata(printData, "Print4", qresurl);
       }
     },
     rechargeFun() {
@@ -798,7 +803,11 @@ export default {
     clickCouponNo() {
       if (this.memberdetails.ID != undefined) {
         this.showCouponList = true;
-        this.$store.dispatch("getcouponListState", { VipId: this.memberdetails.ID, PN: 1 });
+        this.$store.dispatch("getcouponListState", {
+          VipId: this.memberdetails.ID,
+          PN: 1,
+          CouponType: 2
+        });
       } else {
         this.$message({ message: "请先选择会员 !", type: "warning" });
       }
@@ -806,6 +815,7 @@ export default {
     isCouponListclick(data) {
       if (JSON.stringify(data) != "{}") {
         this.couponIntegral = data.couponcodemoney;
+        this.modifyCouponMoney(this.couponIntegral);
       }
       this.showCouponList = false;
     },
@@ -888,7 +898,7 @@ export default {
       });
     },
     cancelSignUp() {
-       this.datalist = []
+      this.datalist = [];
       this.memberdetails = {};
       this.couponIntegral = "";
       this.searchText = "";
@@ -978,7 +988,7 @@ export default {
 
       this.formIntegral = {
         money_1: BUYINPRICE,
-        money_2: data.MONEY - BUYINPRICE
+        money_2: (data.MONEY - BUYINPRICE).toFixed(2)
       };
     },
     selectTabFun(tabs) {
@@ -1024,6 +1034,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tableCellStyle >>> .el-table .cell {
+  line-height: normal !important;
+}
 .tabsStyle >>> .el-tabs__header .el-tabs__item {
   color: #aaa !important;
   background: #f2f2f2 !important;
@@ -1061,6 +1074,9 @@ export default {
 .redColor >>> .el-input__inner {
   color: red !important;
 }
+.grayColor >>> .el-input__inner {
+  color: gray !important;
+}
 .blackColor >>> .el-input__inner {
   color: black !important;
 }
@@ -1069,7 +1085,7 @@ export default {
 }
 .coupons >>> .el-input-group__append {
   background: #f5f7fa;
-  color: #606266;
+  color: #409eff;
   border: 1px solid #dcdfe6;
   border-left: none;
 }
@@ -1173,5 +1189,10 @@ input::-webkit-input-placeholder {
 }
 ::-webkit-scrollbar-thumb {
   background-color: #979799;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

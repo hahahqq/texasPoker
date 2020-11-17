@@ -120,7 +120,7 @@
                 {{ isPurViewFun(92100310) ? scope.row.PURPRICE : "****" }}
               </template>
             </el-table-column>
-            <el-table-column label="折扣" align="center" width="120">
+            <el-table-column label="折扣" align="center" width="130">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.DISCOUNT }}</span>
                 <el-input-number
@@ -135,7 +135,7 @@
                 ></el-input-number>
               </template>
             </el-table-column>
-            <el-table-column width="130" label="单价" align="center">
+            <el-table-column width="140" label="单价" align="center">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">
                   {{ isPurViewFun(92100310) ? scope.row.PRICE : "****" }}
@@ -151,7 +151,7 @@
                 ></el-input-number>
               </template>
             </el-table-column>
-            <el-table-column width="120" label="数量" align="center">
+            <el-table-column width="130" label="数量" align="center">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.QTY }}</span>
                 <el-input-number
@@ -188,12 +188,12 @@
           </el-table>
         </div>
         <el-row :gutter="10" class="marginTB-sm">
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
+          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center" style="padding-right: 0">
             <span class="leftLabel">优惠金额</span>
             <el-input
               size="small"
               type="number"
-              style="width: 100%"
+              class="inputWidth"
               v-model.number="pageData.BREAKSMONEY"
               @input="totalfun"
               @keyup.enter.native="totalfun"
@@ -201,11 +201,12 @@
             ></el-input>
           </el-col>
 
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
+          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center" style="margin-left: -6px">
             <span class="leftLabel">其它费用</span>
             <el-input
               size="small"
               type="number"
+              class="inputWidth"
               v-model.number="pageData.OTHERMONEY"
               @input="totalfun"
               @keyup.enter.native="totalfun"
@@ -223,11 +224,11 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center">
+          <el-col :xs="24" :sm="12" :md="6" class="row-flex flex-items-center" style="margin-left: -5px">
             <span class="leftLabel">结算账户</span>
             <el-select
               size="small"
-              style="width: 100%"
+              class="inputWidth"
               v-model="pageData.PAYTYPEID"
               placeholder="选择账户"
             >
@@ -245,6 +246,7 @@
             <el-input
               size="small"
               type="number"
+              class="inputWidth"
               v-model.number="pageData.PAYMONEY"
               placeholder="￥0.00"
             ></el-input>
@@ -330,13 +332,13 @@ export default {
         BILLDATE: "",
         ManualNo: "", //手工单号
         PAYTYPEID: "", // 付款方式ID
-        PAYMONEY: 0,
+        PAYMONEY: '',
         REMARK: "",
         GoodsList: [], // 货号Id,数量,单价,备注
         IsCheck: 1,
         FromBillId: "", // 引用采购单号
-        BREAKSMONEY: 0,
-        OTHERMONEY: 0
+        BREAKSMONEY: '',
+        OTHERMONEY: ''
       },
       zhiDanData: dayjs(new Date()).format("YYYY-MM-DD"),
       theGoodsList: [],
@@ -901,6 +903,9 @@ export default {
   min-width: 70px;
   text-align: right;
   margin-right: 10px;
+}
+.inputWidth >>> .el-input__inner{
+   width: 208px !important
 }
 </style>
 

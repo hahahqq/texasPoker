@@ -70,10 +70,7 @@
                   {{ BillObj.CHARGESTYPE == 0 ? "服务费积分：" : "服务费金额：" }}
                   {{
                     BillObj.CHARGESTYPE == 0
-                      ? BillObj.CHARGESMONEY +
-                        " ( 比例 " +
-                        BillObj.CHARGESRATE * 100 +
-                        "% ) "
+                      ? BillObj.CHARGESMONEY + " ( 比例 " + BillObj.CHARGESRATE * 100 + "% ) "
                       : BillObj.CHARGESMONEY + " 元"
                   }}
                 </el-col>
@@ -139,11 +136,11 @@
                   <div class="ssmemberul-cont-text">
                     <span style="width: 120px; float: left">
                       储值积分 :
-                      <i style="color: #f00">{{ memberdetails.MONEY }}</i>
+                      <i style="color: #409eff">{{ memberdetails.MONEY }}</i>
                     </span>
                     <span style="margin-left: 20px" v-if="splitIntegral">
                       竞技积分 :
-                      <i style="color: #f00">{{ memberdetails.INTEGRAL }}</i>
+                      <i style="color: #409eff">{{ memberdetails.INTEGRAL }}</i>
                     </span>
                   </div>
                 </div>
@@ -233,7 +230,7 @@
                   <el-input
                     v-model="BillObj.BUYINNEEDPRICE"
                     disabled
-                    class="redColor"
+                    class="blackColor"
                     size="small"
                     style="width: 100%; color: #f00"
                   ></el-input>
@@ -263,7 +260,7 @@
                     placeholder="消费竞技积分"
                     v-model="formIntegral.integral_1"
                     disabled
-                    class="redColor"
+                    :class="formIntegral.integral_1 != 0 ? 'redColor' : 'grayColor'"
                     size="small"
                     style="width: 100%"
                   ></el-input>
@@ -292,7 +289,7 @@
                     v-model="formIntegral.money_1"
                     disabled
                     size="small"
-                    class="redColor"
+                    :class="formIntegral.money_1 != 0 ? 'redColor' : 'grayColor'"
                     style="width: 100%"
                   ></el-input>
                 </el-form-item>
@@ -335,7 +332,7 @@
 
           <div>
             <!-- 参赛人员 -->
-            <div v-show="tabs == 1">
+            <div v-show="tabs == 1" class="tableCellStyle">
               <el-table
                 size="small"
                 :data="buyVipList"
@@ -343,7 +340,7 @@
                 :height="tableHeight"
                 header-row-class-name="bg-F1F2F3"
               >
-                <el-table-column label="会员信息">
+                <el-table-column label="会员信息" width="160">
                   <template slot-scope="scope">
                     <img
                       :src="scope.row.IMAGEURL"
@@ -356,27 +353,14 @@
                         margin-right: 8px;
                       "
                     />
-                    <span style="height: 40px; width: 112px">
+                    <span>
                       <i
-                        class="pull-left inline-block"
-                        style="
-                          width: 102px;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
+                        class="pull-left inline-block text-overflow"
+                        style="width: 92px; line-height: 20px"
                       >
                         {{ scope.row.VIPNAME ? scope.row.VIPNAME : " " }}
                       </i>
-                      <i
-                        class="pull-left inline-block"
-                        style="
-                          width: 92px;
-                          overflow: hidden;
-                          text-overflow: ellipsis;
-                          white-space: nowrap;
-                        "
-                      >
+                      <i class="inline-block text-overflow" style="width: 92px; line-height: 20px">
                         {{ scope.row.VIPMOBILENO }}
                       </i>
                     </span>
@@ -392,11 +376,32 @@
                   align="center"
                 ></el-table-column>
                 <el-table-column prop="QTY" label="手数" align="center"></el-table-column>
-                <el-table-column prop="MONEY" label="买入积分" align="center"></el-table-column>
+                <el-table-column prop="MONEY" label="买入积分" align="center">
+                  <template slot-scope="scope">
+                    {{ scope.row.MONEY }}
+                    <el-tooltip
+                      class="item"
+                      effect="dark"
+                      :content="'优惠 ' + scope.row.DISCOUNTMONEY + ' 积分'"
+                      placement="top"
+                    >
+                      <i
+                        class="el-icon-info font-14"
+                        style="color: #409eff"
+                        v-if="scope.row.DISCOUNTMONEY != 0"
+                      ></i>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
                 <el-table-column prop="SIGNMODE" label="报名方式" align="center"></el-table-column>
                 <el-table-column label="操作" width="100px">
                   <template slot-scope="scope">
-                    <el-button size="small" type="text" :disabled="scope.row.ISREWARD == 1" @click="exitMatch(scope.row, scope.$index)">
+                    <el-button
+                      size="small"
+                      type="text"
+                      :disabled="scope.row.ISREWARD == 1"
+                      @click="exitMatch(scope.row, scope.$index)"
+                    >
                       退赛
                     </el-button>
                     <el-button
@@ -421,14 +426,14 @@
                 :height="tableHeight"
                 header-row-class-name="bg-F1F2F3"
               >
-                <el-table-column prop="REWARDNAME" label="名次"></el-table-column>
-                <el-table-column
-                  prop="INTEGRAL"
-                  label="获得积分"
-                  align="center"
-                ></el-table-column>
+                <el-table-column label="名次">
+                  <template slot-scope="scope">第{{ scope.row.REWARDNAME }}名</template>
+                </el-table-column>
+                <el-table-column prop="INTEGRAL" label="获得积分" align="center"></el-table-column>
                 <el-table-column prop="REWARDRATE" label="比例" width="100" align="center">
-                  <template slot-scope="scope">{{ (scope.row.REWARDRATE * 100).toFixed(2) }} %</template>
+                  <template slot-scope="scope">
+                    {{ (scope.row.REWARDRATE * 100).toFixed(2) }} %
+                  </template>
                 </el-table-column>
                 <el-table-column
                   prop="CONTESTQY"
@@ -637,7 +642,7 @@ export default {
       } else if (key == 118) {
         // F7 : 新增会员
         that.showAddNew = true;
-      } else if (key == 119) {
+      } else if (key == 119 && that.memberdetails.ID != undefined) {
         // F8 : 充值
         that.rechargeFun();
       }
@@ -663,6 +668,11 @@ export default {
         data.data.obj.LEVELNAME = data.data.obj.DISCOUNTNAME
           ? data.data.obj.DISCOUNTNAME
           : "无折扣";
+
+        if (this.memberdetails.ID != undefined) {
+          this.memberdetails.MONEY = data.data.obj.MONEY;
+          this.modifyCouponMoney(this.couponIntegral);
+        }
       }
     },
     sngCancelVipRewardState(data) {
@@ -700,10 +710,8 @@ export default {
             }
             newData.push(_data[i]);
           }
-          this.isEmptyData = false;
-        } else {
-          this.isEmptyData = true;
         }
+        this.isEmptyData = _data.length != 0 ? false : true;
         this.datalist = newData;
       }
     },
@@ -744,8 +752,10 @@ export default {
   },
   methods: {
     handleClose() {
-      this.datalist = [];
-      console.log("clear vipList");
+      if (this.showEditDialog == false) {
+        this.datalist = [];
+        console.log("clear vipList");
+      }
     },
     remoteMethod(query) {
       this.pageData.Filter = query;
@@ -823,7 +833,7 @@ export default {
           { vipInfo: vipInfo }
         );
         let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-        getDayindata(printData, "print4", qresurl);
+        getDayindata(printData, "Print4", qresurl);
       }
     },
     rechargeFun() {
@@ -850,7 +860,11 @@ export default {
     clickCouponNo() {
       if (this.memberdetails.ID != undefined) {
         this.showCouponList = true;
-        this.$store.dispatch("getcouponListState", { VipId: this.memberdetails.ID, PN: 1 });
+        this.$store.dispatch("getcouponListState", {
+          VipId: this.memberdetails.ID,
+          PN: 1,
+          CouponType: 2
+        });
       } else {
         this.$message({ message: "请先选择会员 !", type: "warning" });
       }
@@ -858,6 +872,7 @@ export default {
     isCouponListclick(data) {
       if (JSON.stringify(data) != "{}") {
         this.couponIntegral = data.couponcodemoney;
+        this.modifyCouponMoney(this.couponIntegral);
       }
       this.showCouponList = false;
     },
@@ -929,7 +944,7 @@ export default {
       });
     },
     cancelSignUp() {
-       this.datalist = []
+      this.datalist = [];
       this.memberdetails = {};
       this.couponIntegral = "";
       this.searchText = "";
@@ -940,7 +955,7 @@ export default {
         money_1: "",
         money_2: ""
       };
-      this.tabs = 0;
+      this.tabs = "0";
       this.inputShow = true;
     },
     getMemberData() {
@@ -1054,9 +1069,9 @@ export default {
 
       this.formIntegral = {
         integral_1: d1,
-        integral_2: d2,
+        integral_2: d2.toFixed(2),
         money_1: c1,
-        money_2: c2
+        money_2: c2.toFixed(2)
       };
     },
     cancelGame(Type) {
@@ -1096,6 +1111,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tableCellStyle >>> .el-table .cell {
+  line-height: normal !important;
+}
 .tabsStyle >>> .el-tabs__header .el-tabs__item {
   color: #aaa !important;
   background: #f2f2f2 !important;
@@ -1135,12 +1153,15 @@ export default {
 .blackColor >>> .el-input__inner {
   color: black !important;
 }
+.grayColor >>> .el-input__inner {
+  color: gray !important;
+}
 .ruleFormStyle >>> .el-form-item {
   margin-bottom: 0;
 }
 .coupons >>> .el-input-group__append {
   background: #f5f7fa;
-  color: #606266;
+  color: #409eff;
   border: 1px solid #dcdfe6;
   border-left: none;
 }
@@ -1245,5 +1266,10 @@ input::-webkit-input-placeholder {
 }
 ::-webkit-scrollbar-thumb {
   background-color: #979799;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

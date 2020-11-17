@@ -88,7 +88,7 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
          ],
          ddList1: [
             { label: "结账单号：", value: "1000000", isShow: true },
-            { label: "结账日期：", value: "2014-06-19 15:04", isShow: true },
+            { label: "结账日期：", value: "2020-10-19 11:34", isShow: true },
             { label: "收银员：", value: "小张", isShow: true }
          ],
          ddList3: [
@@ -126,14 +126,15 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
    let GOODSMONEY = dealFilterDate(Objvalue.GOODSMONEY);
    let FAVORMONEY = dealFilterDate(Objvalue.FAVORMONEY);
    let PAYMONEY = dealFilterDate(Objvalue.PAYMONEY);
+
    let PAYTYPENAME = dealFilterDate(Objvalue.PAYTYPENAME);
    let VIPCODE = dealFilterDate(Objvalue.VIPCODE);
    let VIPNAME = dealFilterDate(Objvalue.VIPNAME);
-   let CURRMONEY = dealFilterDate(Objvalue.CURRMONEY);
    let REMARK = dealFilterDate(Objvalue.REMARK);
    let SHOPTEL = dealFilterDate(Objvalue.SHOPTEL);
    let SHOPADDRESS = dealFilterDate(Objvalue.SHOPADDRESS);
    let GETINTEGRAL = dealFilterDate(Objvalue.GETINTEGRAL);
+   let VIPMONEY = dealFilterDate(Objvalue.VIPMONEY);
    let VIPINTEGRAL = dealFilterDate(Objvalue.VIPINTEGRAL);
    let SUMSALEMONEY = dealFilterDate(Objvalue.SUMSALEMONEY);
    let ADDMONEY = dealFilterDate(Objvalue.ADDMONEY);
@@ -265,10 +266,11 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
          hPos = PrintLODOPcommon("合计金额:", GOODSMONEY, hPos);
       }
       if (ItemsHeaderType == 3) {
-         hPos = PrintLODOPcommon("消费金额:", ADDSUMMONEY, hPos);
+         hPos = PrintLODOPcommon("消费金额:", PAYMONEY, hPos);
       }
       hPos = PrintLODOPcommon("优惠金额:", FAVORMONEY, hPos);
-      hPos = PrintLODOPcommon("应付金额:", PAYMONEY, hPos);
+      let payMoney = Number(PAYMONEY) + Number(dayinjson.Obj.PAYINTEGRAL)
+      hPos = PrintLODOPcommon("应付金额:", payMoney.toFixed(2), hPos);
       hPos = PrintLODOPcommon("支付方式:", PAYTYPENAME, hPos);
    } else if (ItemsHeaderType == 2) {
       if (pageWidth == 800) {
@@ -373,7 +375,6 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
    } else if (ItemsHeaderType == 6) {
       console.log("积分兑换");
 
-
       PrintLODOP_Text(hPos, 1, pageWidth, rowHeight, "奖品", { Bold: 1 });
       PrintLODOP_Text(hPos, gw1, pageWidth, rowHeight, "积分", { Bold: 1 });
       PrintLODOP_Text(hPos, gw1 + gw2, gw2, rowHeight, "数量", { Alignment: 2, Bold: 1 });
@@ -399,7 +400,6 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
          });
          hPos += rowHeight;
       }
-      hPos = PrintLODOPcommon("积分合计:", dayinjson.Obj.PAYINTEGRAL, hPos);
    } else if (ItemsHeaderType == 14 || ItemsHeaderType == 15 || ItemsHeaderType == 16) {
       // 14：采购入库   15：采购退货   16：库存调拨
       let param = dayinjson.GoodsObj,
@@ -496,14 +496,9 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
       if (!pringInfo || pringInfo.ddList3[1].isShow) {
          hPos = PrintLODOPcommon("会员姓名:", VIPNAME, hPos);
       }
-      if (!pringInfo || pringInfo.ddList3[2].isShow) {
-         hPos = PrintLODOPcommon("储值积分:", CURRMONEY, hPos);
-      }
-      if (ItemsHeaderType != 4) {
-         if (!pringInfo || pringInfo.ddList3[3].isShow) {
-            hPos = PrintLODOPcommon("积分(本次/剩余):", GETINTEGRAL + "/" + VIPINTEGRAL, hPos, 109);
-         }
-      }
+
+      hPos = PrintLODOPcommon("储值积分:", VIPMONEY);
+      hPos = PrintLODOPcommon("竞技积分:", VIPINTEGRAL);
    }
 
    if (String(REMARK).length != 0) {
@@ -603,8 +598,8 @@ const GoodsConsumption = function(dayinjson, ItemsHeaderType) {
    LODOP.SET_PRINT_STYLEA(0, "FontSize", fontSize);
    LODOP.SET_PRINT_COPIES(printnum);
 
-   //   LODOP.PRINT();
-   LODOP.PREVIEW(); //50或者80打印
+     LODOP.PRINT();
+   // LODOP.PREVIEW(); //50或者80打印
 };
 
 //

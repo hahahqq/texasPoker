@@ -241,14 +241,6 @@ import { mapState, mapGetters } from "vuex";
 import { getHomeData, getUserInfo } from "@/api/index";
 
 export default {
-  props: {
-    dataType: {
-      type: Object,
-      default: function () {
-        return { EventId: 1, dealState: "edit", info: {} };
-      }
-    }
-  },
   data() {
     return {
       ruleForm: {
@@ -309,7 +301,6 @@ export default {
     getEventsDetailsState(data) {
       this.pageLoading = false;
       if (data.success) {
-        console.log(data.data);
         let obj = data.data.EventObj;
         this.ruleForm.EventId = obj.ID;
         this.ruleForm.BuyinMoney = obj.BUYINMONEY;
@@ -319,20 +310,16 @@ export default {
         this.ruleForm.ChargesMoney = obj.CHARGESMONEY;
         this.ruleForm.RewardType = 0;
 
-        let param = data.data.RewardObj,
-          newParam = [];
-        for (var i = 0; i < param.length; i++) {
-          newParam.push({
-            Id: param[i].ID,
-            Name: param[i].NAME,
-            ContestQty: param[i].CONTESTQTY,
-            RewardRate: Number(param[i].REWARDRATE) * 100,
-            Integral: 0,
-            Remark: param[i].REMARK != undefined ? param[i].REMARK : "",
-            IsCancel: 0
-          });
-        }
-        this.rewardWayList = newParam;
+        this.rewardWayList = data.data.RewardObj.map((item) => ({
+          Id: item.ID,
+          Name: "第" + item.NAME + "名",
+          ContestQty: item.CONTESTQTY,
+          RewardRate: Number(item.REWARDRATE) * 100,
+          Integral: 0,
+          Remark: item.REMARK != undefined ? item.REMARK : "",
+          IsCancel: 0
+        }));
+
       } else {
         this.$message({ message: data.message, type: "error" });
       }
@@ -367,22 +354,8 @@ export default {
       });
     },
     cleanData() {
-      this.DelArr = [];
-      this.ruleForm = {
-        EventId: "",
-        DeskId: "",
-        Name: "",
-        PlayTime: "",
-        IsOnLine: false,
-        BuyinMoney: "",
-        ChipsQty: "",
-        ChargesType: 0,
-        ChargesRate: "",
-        ChargesMoney: "",
-        Remark: "",
-        RewardType: 0
-      };
-      this.defaultRewardWayList()
+      Object.assign(this.$data, this.$options.data());
+      this.defaultRewardWayList();
     },
     defaultRewardWayList() {
       this.rewardWayList = [
@@ -404,6 +377,7 @@ export default {
       this.$emit("closeModal");
     },
     delCurItem(row, idx) {
+      console.log(row);
       if (row.Id != "") {
         row.IsCancel = 1;
         this.DelArr.push(row);
@@ -411,24 +385,20 @@ export default {
       this.rewardWayList.splice(idx, 1);
 
       let rewardWayList = this.rewardWayList;
-      for (var i = 1; i <= rewardWayList.length; i++) {
+      for (var i = 0; i < rewardWayList.length; i++) {
         rewardWayList[i].Name = "第" + Number(i + 1) + "名";
       }
       this.rewardWayList = rewardWayList;
-      this.$forceUpdate();
     },
     submitBtn() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           let arr = this.rewardWayList.concat(this.DelArr);
-          let newArr = this.rewardWayList.filter(
-            (item) => item.Name != "" && item.RewardRate != ""
-          );
+          let newArr = arr.filter((item) => item.Name != "" && item.RewardRate != "");
 
           let sendData = {
             Name: this.ruleForm.Name,
             Status: 0,
-
             EventId: this.ruleForm.EventId,
             DeskId: this.ruleForm.DeskId,
             PlayTime: dayjs(this.ruleForm.PlayTime).valueOf(),
@@ -458,7 +428,7 @@ export default {
     }
     this.levelList = levelList;
 
-    this.defaultRewardWayList()
+    this.defaultRewardWayList();
   }
 };
 </script>

@@ -32,7 +32,7 @@
 
                     <div class="content-table4">
                         <div class="content-table-center">
-                            <el-table :data='tableData' :height="clientHeight" size='small' style="width: 100%">
+                            <el-table :data='tableData' :height="clientHeight" size='small' style="width: 100%" header-row-class-name="bg-theme2 text-white">
                                <el-table-column type="index" label="序号" align='center' width="80"></el-table-column>
                                 <el-table-column prop="NAME" label="桌台名称"></el-table-column>
                                 <el-table-column prop="SHOPNAME" label="所属店铺"></el-table-column>

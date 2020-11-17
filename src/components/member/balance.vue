@@ -39,7 +39,7 @@
             <el-table-column prop="BILLTYPE" label="类型" width="150px"></el-table-column>
             <el-table-column prop="MONEY" label="变动积分" align="center" width="150px">
                <template slot-scope="scope">
-                  <span :style='`color:${scope.row.MONEY >= 0 ? "#ff6655" : "#008000"}`'>{{scope.row.MONEY }} </span>
+                  <span :style='`color:${scope.row.MONEY >= 0 ? "#ff6655" : ""}`'>{{scope.row.MONEY }} </span>
                </template>
             </el-table-column>
             <el-table-column label="变动后积分" align="center" width="150px">

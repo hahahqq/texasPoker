@@ -1,82 +1,75 @@
 <template>
-	<!--微信活动海报-->
-	<div>
-		<el-table
-			border
-			v-if="dataList"
-			:data="dataList"
-			v-loading="loading"
-			header-row-class-name="bg-theme2 text-white"
-			height="500"
-			style="width: 100%"
-		>
-			<el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
-			<el-table-column prop="CAPTION" label="名称" width="160"></el-table-column>
-			<el-table-column prop="COMPANYNAME" label="公司名"></el-table-column>
-			<el-table-column prop="ADDRESS" label="地址"></el-table-column>
-
-			<el-table-column prop="DATENAME" label="有效时间" width="260"></el-table-column>
-			<el-table-column prop="ISSTOP" label="状态" :formatter="formatStatus"></el-table-column>
-			<el-table-column label="操作" width="170" fixed="right" align="right">
-				<template slot-scope="scope">
-					<el-button
-						type="text"
-						size="small"
-						:disabled="scope.row.ISSTOP"
-						@click="handleStop(scope.$index, scope.row)"
-					>
-						停止
-					</el-button>
-					<el-button
-						type="text"
-						size="small"
-						@click="handleEdit(scope.$index, scope.row)"
-					>
-						编辑
-					</el-button>
-					<div class="hide">{{ scope.row }}</div>
-				</template>
-			</el-table-column>
-		</el-table>
-		<!-- item -->
-	</div>
+   <!--微信活动海报-->
+   <div>
+      <el-table
+         v-if="dataList"
+         :data="dataList"
+         v-loading="loading"
+         header-row-class-name="bg-theme2 text-white"
+         height="500"
+         style="width: 100%"
+      >
+         <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
+         <el-table-column prop="CAPTION" label="名称" width="160"></el-table-column>
+         <!-- <el-table-column prop="COMPANYNAME" label="公司名"></el-table-column>
+			<el-table-column prop="ADDRESS" label="地址"></el-table-column> -->
+         <el-table-column prop="DATENAME" label="有效时间" width="260"></el-table-column>
+         <el-table-column prop="ISSTOP" label="状态" :formatter="formatStatus"></el-table-column>
+         <el-table-column label="操作" width="170" fixed="right" align="right">
+            <template slot-scope="scope">
+               <el-button
+                  type="text"
+                  size="small"
+                  :disabled="scope.row.ISSTOP"
+                  @click="handleStop(scope.$index, scope.row)"
+               >
+                  停止
+               </el-button>
+               <el-button type="text" size="small" @click="handleEdit(scope.$index, scope.row)">
+                  编辑
+               </el-button>
+               <div class="hide">{{ scope.row }}</div>
+            </template>
+         </el-table-column>
+      </el-table>
+      <!-- item -->
+   </div>
 </template>
 <script>
 import { mapState, mapGetters } from "vuex";
 export default {
-	data() {
-		return {
-			loading: false,
-			loadingShop: false,
-			loadingItem: false,
-			showItem: false
-		};
-	},
-	computed: {
-		...mapGetters({
-			dataListState: "marketingListState",
-			dataList: "marketingList",
-			dataState: "marketingState",
-			dataItem: "marketingItem"
-		})
-	},
-	beforeCreate() {
-		this.$store.dispatch("getMarketingListImg", {});
-	},
-	methods: {
-		formatStatus: function (row, column) {
-			return row.ISSTOP ? "已停止" : "已启动";
-		},
-		formatTime: function (row, column) {
-			return row.BEGINDATE ? this.filterTime(new Date(row.BEGINDATE)) : "";
-		},
-		handleStop(idx, row) {
-			this.$emit("handleStop", row);
-		},
-		handleEdit(idx, row) {
-			this.$emit("handleEdit", row);
-		}
-	}
+   data() {
+      return {
+         loading: false,
+         loadingShop: false,
+         loadingItem: false,
+         showItem: false
+      };
+   },
+   computed: {
+      ...mapGetters({
+         dataListState: "marketingListState",
+         dataList: "marketingList",
+         dataState: "marketingState",
+         dataItem: "marketingItem"
+      })
+   },
+   beforeCreate() {
+      this.$store.dispatch("getMarketingListImg", {});
+   },
+   methods: {
+      formatStatus: function(row, column) {
+         return row.ISSTOP ? "已停止" : "已启动";
+      },
+      formatTime: function(row, column) {
+         return row.BEGINDATE ? this.filterTime(new Date(row.BEGINDATE)) : "";
+      },
+      handleStop(idx, row) {
+         this.$emit("handleStop", row);
+      },
+      handleEdit(idx, row) {
+         this.$emit("handleEdit", row);
+      }
+   }
 };
 </script>
-

@@ -10,6 +10,7 @@ import {
    DEAL_CATEGORY_ITEM,
    GOODS_LIST2
 } from "@/store/mutation-types";
+import { data } from "jquery";
 let selected = {};
 
 // initial state
@@ -54,11 +55,10 @@ const getters = {
 const actions = {
    getCategoryList({ commit }) {
       let userInfo = getUserInfo();
-      let pn = parseInt(state.categoryListState.paying.PN) + 1;
       let sendData = {
          InterfaceCode: 21002030104,
          PID: "",
-         PN: pn
+         PN: data.PN ? data.PN : 1
       };
       commonSend.commonSend(
          "get",

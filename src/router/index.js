@@ -126,7 +126,7 @@ let routes = [
                title: "赛事中心"
             },
             hidden: true
-         },
+         }
       ]
    },
 
@@ -504,6 +504,7 @@ let routes = [
             },
             hidden: true
          },
+
          {
             path: "/marketing/bespeakList",
             component: () => import("@/views/marketing/index.vue"),
@@ -515,21 +516,42 @@ let routes = [
             }
          },
          {
-            path: "/marketing/:type",
-            component: () => import("@/views/marketing/list"),
+            path: "/gameGoodsCoupon",
+            component: () => import("@/views/marketing/gameGoodsCoupon"),
             name: "优惠券",
             modulecode: "92100501",
             hidden: true,
             meta: { parent: "marketing", title: "营销中心" }
          },
+
          {
-            path: "/memberCoupon",
-            component: () => import("@/views/marketing/memberCoupon"),
+            path: "/getCouponDetails",
+            component: () => import("@/views/marketing/getCouponDetails"),
+            name: "领券详情",
+            modulecode: "92100501",
+            hidden: true,
+            meta: { parent: "marketing", title: "营销中心" }
+         },
+
+
+         // {
+         //    path: "/memberCoupon",
+         //    component: () => import("@/views/marketing/memberCoupon"),
+         //    name: "定向优惠券",
+         //    modulecode: "92100502",
+         //    hidden: true,
+         //    meta: { parent: "marketing", title: "营销中心" }
+         // },
+
+         {
+            path: "/directionalCoupon",
+            component: () => import("@/views/marketing/directionalCoupon"),
             name: "定向优惠券",
             modulecode: "92100502",
             hidden: true,
             meta: { parent: "marketing", title: "营销中心" }
          },
+
          {
             path: "/lotGroup",
             component: () => import("@/views/marketing/lotgroup"),
@@ -561,6 +583,26 @@ let routes = [
             modulecode: "92100507",
             hidden: true,
             meta: { parent: "marketing", title: "营销中心" }
+         },
+         {
+            path: "/weiXinGoods",
+            component: () => import("@/views/marketing/weiXinGoods"),
+            name: "微信优惠商品",
+            hidden: true,
+            meta: {
+               parent: "marketing",
+               title: "营销中心"
+            }
+         },
+         {
+            path: "/weiXinPromotion",
+            component: () => import("@/views/marketing/weiXinPromotion"),
+            name: "微信活动海报",
+            hidden: true,
+            meta: {
+               parent: "marketing",
+               title: "营销中心"
+            }
          },
          {
             path: "/Recharge",
@@ -919,7 +961,7 @@ let routes = [
                         { label: "积分调整", value: "", modulecode: "92100616" },
                         { label: "商品销售", value: "", modulecode: "92100617" },
                         { label: "快速消费", value: "", modulecode: "92100618" },
-                        { label: "会员奖励", value: "", modulecode: "92100619" }
+                        { label: "会员领奖", value: "", modulecode: "92100619" }
                      ]
                   }
                }
@@ -947,7 +989,7 @@ let routes = [
             path: "/setup/myshop",
             component: () => import("@/views/setup/myShop.vue"),
             name: "我的店铺",
-            modulecode: '92100701',
+            modulecode: "92100701",
             meta: {
                name: "myshop",
                parent: "setup",
@@ -958,7 +1000,7 @@ let routes = [
             path: "/setup/shop",
             component: () => import("@/views/setup/shop.vue"),
             name: "店铺管理",
-            modulecode: '92100701',
+            modulecode: "92100701",
             meta: {
                name: "shop",
                parent: "setup",
@@ -969,7 +1011,7 @@ let routes = [
             path: "/setup/tableSetting",
             component: () => import("@/views/setup/tableSetting.vue"),
             name: "桌台管理",
-            modulecode: '92100702',
+            modulecode: "92100702",
             meta: {
                name: "tableSetting",
                parent: "setup",
@@ -980,7 +1022,7 @@ let routes = [
             path: "/setup/employee",
             component: () => import("@/views/setup/employee.vue"),
             name: "员工管理",
-            modulecode: '92100703',
+            modulecode: "92100703",
             meta: {
                name: "employee",
                parent: "setup",
@@ -991,7 +1033,7 @@ let routes = [
             path: "/setup/user",
             component: () => import("@/views/setup/user"),
             name: "用户管理",
-            modulecode: '92100704',
+            modulecode: "92100704",
             meta: {
                name: "user",
                parent: "setup",
@@ -1013,7 +1055,7 @@ let routes = [
             path: "/setup/payWay",
             component: () => import("@/views/setup/payWay.vue"),
             name: "支付方式",
-            modulecode: '92100705',
+            modulecode: "92100705",
             meta: {
                name: "payWay",
                parent: "setup",
@@ -1026,7 +1068,7 @@ let routes = [
             path: "/setup/print",
             component: () => import("@/views/setup/print/index.vue"),
             name: "打印设置",
-            modulecode: '92100706',
+            modulecode: "92100706",
             meta: {
                name: "print",
                parent: "setup",
@@ -1037,7 +1079,7 @@ let routes = [
             path: "/setup/parameter",
             component: () => import("@/views/setup/parameter.vue"),
             name: "参数设置",
-            modulecode: '92100707',
+            modulecode: "92100707",
             meta: {
                name: "parameter",
                parent: "setup",
@@ -1048,7 +1090,7 @@ let routes = [
             path: "/setup/system",
             component: () => import("@/views/setup/system"),
             name: "系统重置",
-            modulecode: '92100708',
+            modulecode: "92100708",
             meta: {
                name: "system",
                parent: "setup",

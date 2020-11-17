@@ -52,7 +52,6 @@
                </el-button>
                <el-dropdown-menu slot="dropdown">
                      <el-dropdown-item v-if="isAll" :command="-1">全部</el-dropdown-item>
-                     <!-- <el-dropdown-item :command="-1">全部</el-dropdown-item> -->
                      <el-dropdown-item
                         v-for="(item,i) in shopList"
                         :key="i"
@@ -230,7 +229,7 @@ export default {
 </script>
 <style scoped>
 .shopCheckTextClass{
-display:block; width:90px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+/* display:block; width:90px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; */
 }
 .shopCheckTextClasslot{
     display: flex;

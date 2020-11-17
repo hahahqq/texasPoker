@@ -55,7 +55,7 @@
             :highlight-current-row="true"
             header-row-class-name="bg-theme2 text-white"
             empty-text='暂无数据,请点击 "增加行" 或 扫码添加商品'
-            class="full-width m-top-sm"
+            class="full-width"
           >
             <el-table-column
               type="index"
@@ -100,7 +100,7 @@
               </template>
             </el-table-column>
             <el-table-column prop="GOODSCODE" label="条码" align="center"></el-table-column>
-            <el-table-column label="单价" align="center" width="160">
+            <el-table-column label="单价" align="center" width="170">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.PRICE }}</span>
                 <el-input-number
@@ -114,7 +114,7 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="数量" align="center" width="160">
+            <el-table-column label="数量" align="center" width="170">
               <template slot-scope="scope">
                 <span v-if="!scope.row.isEdit">{{ scope.row.QTY }}</span>
                 <el-input-number
@@ -249,7 +249,7 @@ export default {
       goodsListData: [],
       constGOODSLIST: [],
       vCheckGoodsTimeOut: undefined,
-      tableHeight: document.body.clientHeight - 300,
+      tableHeight: document.body.clientHeight - 280,
       showUploadDialog: false
     };
   },

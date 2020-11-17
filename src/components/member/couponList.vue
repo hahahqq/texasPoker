@@ -14,11 +14,17 @@
       header-row-class-name="bg-theme2 text-white"
       style="width: 100%; margin-top: 10px"
     >
-      <!-- <el-table-column prop="" label="类型"></el-table-column> -->
       <el-table-column label="领取时间">
-        <template slot-scope="scope">{{ new Date(scope.row.WRITETIME) | timehf }}</template>
+        <template slot-scope="scope">{{ new Date(scope.row.GETTIME) | timehf }}</template>
       </el-table-column>
-      <el-table-column prop="" label="名称">
+
+      <el-table-column label="类型">
+        <template slot-scope="scope">
+          {{ scope.row.TYPE == 0 ? "商品券" : "赛事券" }}
+        </template>
+      </el-table-column>
+
+      <el-table-column label="名称">
         <template slot-scope="scope">
           满{{ scope.row.LIMITMONEY }} 减 {{ scope.row.MONEY }}元
         </template>
@@ -48,6 +54,7 @@ export default {
   data() {
     return {
       pageData: {
+        CouponType: -1,
         openID: "",
         vipID: "",
         Type: 0,

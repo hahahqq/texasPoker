@@ -262,7 +262,7 @@ export default {
                 },
                 {
                     label: "结账日期：",
-                    value: "2014-06-19 15:04",
+                    value: "2020-10-19 11:34",
                     isShow: true
                 },
                 {

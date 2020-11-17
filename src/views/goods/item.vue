@@ -15,7 +15,7 @@
             <div class="content-center">
               <div>
                 <div>
-                  <el-button size="small" @click="handleDeal({})" type="primary">
+                  <el-button size="small" @click="handleDeal({}, 0)" type="primary">
                     新增分类
                   </el-button>
                   <div class="hide">{{ dataList }}</div>
@@ -32,7 +32,12 @@
                   :height="tableHeight"
                   header-row-class-name="bg-F1F2F3"
                 >
-                <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
+                  <el-table-column
+                    type="index"
+                    label="序号"
+                    align="center"
+                    width="80"
+                  ></el-table-column>
                   <el-table-column
                     prop="NAME"
                     label="分类名称"
@@ -47,7 +52,7 @@
                           style="margin-right: 8px"
                           size="small"
                           type="text"
-                          @click="handleDeal(scope.row)"
+                          @click="handleDeal(scope.row, 1)"
                           icon="el-icon-edit"
                         >
                           编辑
@@ -84,20 +89,6 @@
                     </div>
                 </div> -->
           <!-- add -->
-          <el-dialog title="商品分类" :visible.sync="dialogVisible" width="400px">
-            <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-              <el-form-item label="名称" prop="Name">
-                <el-input v-model="form.Name" placeholder="请输入名称"></el-input>
-              </el-form-item>
-              <el-form-item label="备注">
-                <el-input type="textarea" v-model="form.Remark"></el-input>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="dealData">保存</el-button>
-                <el-button @click="dialogVisible = false">取消</el-button>
-              </el-form-item>
-            </el-form>
-          </el-dialog>
         </div>
       </el-container>
     </el-container>
@@ -158,21 +149,6 @@ export default {
         PN: 0
       },
       pageData: { PN: 1 },
-      dialogVisible: false,
-      form: {
-        Name: "",
-        Remark: ""
-      },
-      rules: {
-        Name: [
-          {
-            required: true,
-            message: "请输入名称",
-            trigger: "blur"
-          }
-        ]
-      },
-      dealType: "add",
       tableHeight: document.body.clientHeight - 220
     };
   },
@@ -208,7 +184,6 @@ export default {
         message: data.message,
         type: data.success ? "success" : "error"
       });
-      this.dialogVisible = false;
     }
   },
   methods: {
@@ -225,37 +200,26 @@ export default {
       this.getNewData();
     },
     getCategoryItem() {},
-    handleDeal(item) {
-      if (this.$refs.form) this.$refs.form.resetFields();
-      if (Object.keys(item).length > 0) {
-        this.form = Object.assign({}, item, {
-          ID: item.ID,
-          Name: item.NAME,
-          Remark: item.REMARK
-        });
-        this.dealType = "edit";
-      } else {
-        this.form = {
-          Name: "",
-          Remark: ""
-        };
-        this.dealType = true;
-      }
-      this.dialogVisible = true;
-    },
-    dealData() {
-      var _this = this;
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          _this.loading = true;
-          _this.$store.dispatch("dealCategoryItem", _this.form).then(() => {
-            _this.loading = true;
+    handleDeal(item, type) {
+      let title = type == 0 ? "新增" : "编辑";
+      this.$prompt("", title + "商品分类", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue: type == 0 ? "" : item.NAME,
+        inputPattern: /\S/,
+        inputErrorMessage: "分类名称不能为空 ！"
+      })
+        .then(({ value }) => {
+          let sendData = {
+            ID: type == 0 ? "" : item.ID,
+            Name: value,
+            Remark: ""
+          };
+          this.$store.dispatch("dealCategoryItem", sendData).then(() => {
+            this.loading = true;
           });
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
+        })
+        .catch(() => {});
     },
     handleDel(index, item) {
       console.log(item);
@@ -272,19 +236,13 @@ export default {
             })
             .then(() => {
               this.loading = true;
-              this.dealType = "del";
             });
         })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除"
-          });
-        });
+        .catch(() => {});
     }
   },
   mounted() {
-   this.getNewData();
+    this.getNewData();
   },
   components: {
     headerPage: () => import("@/components/header")

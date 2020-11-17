@@ -147,6 +147,7 @@
 				</span>
 			</el-col>
 		</el-row>
+
 		<el-dialog
 			title="请选择门店"
 			:visible.sync="isShowShop"

@@ -209,11 +209,10 @@ const actions = {
       let pn = parseInt(state.memberListState.paying.PN) + 1;
       if (data.Filter) pn = 1;
       let sendData = Object.assign({}, data, {
-         InterfaceCode: "210020104_1_3",
+         InterfaceCode: "9204051",
          Name: data.Name ? data.Name : "",
-         ShopId: data.ShopId ? data.ShopId : homeInfo.shop.ID,
+         ShopId: data.ShopId ? data.ShopId : '',
          VipFlag: data.VipFlag ? data.VipFlag : "",
-         LevelName: data.LevelName ? data.LevelName : "",
          birthday: -1,
          PayCount: -1,
          LossVip: -1,
@@ -222,7 +221,6 @@ const actions = {
          SaleEmpId: data.SaleEmpId ? data.SaleEmpId : "",
          Status: data.Status ? data.Status : -1, // -1=全部,0=正常，2=挂失
          CompanyId: homeInfo.shop.COMPANYID,
-         ShowMoney: 0, // 0=全部,1=余额大于0
          OweMoney: 0 // 0=全部,1=余额大于0
       });
       commonSend.commonSend(
@@ -262,7 +260,6 @@ const actions = {
          sendData
       );
    },
-
    eitMemberPromotionList({ commit, state }, data) {
       let userInfo = getUserInfo();
       let homeInfo = getHomeData();

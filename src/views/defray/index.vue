@@ -25,7 +25,7 @@
                       plain
                       @click="exportChange"
                     >
-                      导出表格
+                      导 出
                     </el-button>
 
 
@@ -123,18 +123,20 @@
                     </template>
                   </el-table-column>
                 </el-table>
-              </div>
+
               <!-- 分页 -->
               <div v-show="dataList.length > 0" class="m-top-sm clearfix elpagination">
                 <el-pagination
+                  background
                   @size-change="handlePageChange"
                   @current-change="handlePageChange"
                   :current-page.sync="pagination.PN"
                   :page-size="pagination.PageSize"
                   layout="total,prev, pager, next, jumper"
                   :total="pagination.TotalNumber"
-                  class="text-center"
+                  class="text-right"
                 ></el-pagination>
+              </div>
               </div>
             </div>
             <!-- item -->
@@ -190,7 +192,7 @@ export default {
       },
       dateBE: [new Date(this.getCustomDay(-7)).getTime(), new Date().getTime()],
       paywayList: [],
-      tableHeight: document.body.clientHeight - 240
+      tableHeight: document.body.clientHeight - 230
     };
   },
   computed: {
@@ -242,10 +244,10 @@ export default {
       this.loading = false;
       if (data.success) {
         this.pagination = {
-          TotalNumber: data.paying.TotalNumber,
-          PageNumber: data.paying.PageNumber,
-          PageSize: data.paying.PageSize,
-          PN: data.paying.PN
+          TotalNumber: data.data.PageData.TotalNumber,
+          PageNumber: data.data.PageData.PageNumber,
+          PageSize: data.data.PageData.PageSize,
+          PN: data.data.PageData.PN
         };
       }
     },
@@ -341,9 +343,9 @@ export default {
         this.$store.dispatch("getPaywayList");
       }
 
-      if (this.dataList.length == 0) {
+      // if (this.dataList.length == 0) {
         this.getNewData(1);
-      }
+      // }
       this.pageData.ShopId = getHomeData().shop.ID;
     }
   },

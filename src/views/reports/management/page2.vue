@@ -85,23 +85,15 @@
 					<el-table-column label="占比">
 						<template slot-scope="props">
 							<span>
-								{{
-									props.row.FRATE == 1
-										? "100%"
-										: parseInt(props.row.FRATE * 100) + "%"
-								}}
+								{{ Math.round(props.row.FRATE * 100) / 100 + "%" }}
 							</span>
 							<el-progress
-								:text-inside="true"
-								:stroke-width="18"
-								:percentage="
-									props.row.FRATE > 0
-										? props.row.FRATE < 1
-											? props.row.FRATE * 100
-											: 100
-										: 0
-								"
+								:text-inside="false"
+								:stroke-width="12"
+								:percentage="props.row.FRATE * 100"
 								:color="getColor(props.row.FRATE * 100)"
+								class="aa"
+								style="max-width: 400px"
 							></el-progress>
 						</template>
 					</el-table-column>
@@ -294,4 +286,7 @@ export default {
 };
 </script>
 <style scoped>
+.aa >>> .el-progress__text {
+	display: none;
+}
 </style>

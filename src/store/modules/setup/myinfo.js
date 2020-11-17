@@ -1,11 +1,12 @@
 import commonSend from '@/api/api'
-import { 
+import {
   MY_INFO,
   EDIT_MY_INFO,
   GET_INDUSTRY,
   GET_MY_SHOP,
+  GET_SHOP_VIPQTY
 } from '@/store/mutation-types'
-import { getHomeData,setHomeData} from '@/api/index'
+import { getHomeData, getUserInfo, setHomeData} from '@/api/index'
 let selected={}
 
 // init state
@@ -13,7 +14,8 @@ const state = {
   myinfo: {},
   myinfoState: {},
   industryList:[],
-  getMyShop:{}
+  getMyShop:{},
+  getShopVipQtyState: {}
 }
 // getters
 const getters = {
@@ -21,10 +23,23 @@ const getters = {
   myinfoState: state => state.myinfoState,
   industryList: state=>state.industryList,
   getMyShop: state => state.getMyShop,
+  getShopVipQtyState: state => state.getShopVipQtyState
 }
 
 // actions
 const actions = {
+   getShopsVipQty({commit}, {}){  // 店铺会员数
+      let userInfo = getUserInfo()
+      let homeInfo = getHomeData()
+      let sendData = {
+         'InterfaceCode': '21002060905',
+         'UserId': userInfo.UserID,
+         'CompanyId': homeInfo.shop.COMPANYID,
+      }
+      commonSend.commonSend('get',data=>{
+         commit(GET_SHOP_VIPQTY,{data})
+       },sendData)
+   },
   getMyInfo({commit}){ // 获取商家信息
     let homeInfo = getHomeData();
     let sendData= {
@@ -36,8 +51,7 @@ const actions = {
     },sendData)
   },
   // 获取店铺信息
-  getShopInfo({commit}){ 
-
+  getShopInfo({commit}){
     let homeInfo = getHomeData().shop;
     console.log("homeInfo")
     console.log(homeInfo)
@@ -54,7 +68,7 @@ const actions = {
     let homeInfo = getHomeData();
     let sendData= Object.assign({},data,{
       'InterfaceCode' :'2100112',
-      'Companyid': homeInfo.shop.COMPANYID, 
+      'Companyid': homeInfo.shop.COMPANYID,
     })
     commonSend.commonSend('get',data=>{
       commit(EDIT_MY_INFO,{data})
@@ -74,31 +88,34 @@ const actions = {
     state.industryList=[]
   }
 
-  
+
 }
 
 const mutations = {
-  [MY_INFO] (state, { data }) { 
+  [MY_INFO] (state, { data }) {
     if(data.success){
       state.myinfo = Object.assign({}, data.data);
     }
     state.myinfoState = Object.assign({}, data);
     selected={}
   },
-  [GET_MY_SHOP] (state, { data }) { 
+  [GET_MY_SHOP] (state, { data }) {
     console.log(data.data)
     if(data.success){
       state.getMyShop = Object.assign({}, data.data.obj);
     }
   },
-  [EDIT_MY_INFO] (state, { data }) { 
+  [EDIT_MY_INFO] (state, { data }) {
     state.myinfoState = Object.assign({}, data);
   },
-  [GET_INDUSTRY] (state, { data }) { 
+  [GET_INDUSTRY] (state, { data }) {
     if(data.success){
       state.industryList = [...data.data.List]
     }
-  }
+  },
+  [GET_SHOP_VIPQTY](state, { data }) {
+   state.getShopVipQtyState = Object.assign({}, data);
+ },
 }
 
 export default{

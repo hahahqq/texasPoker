@@ -20,7 +20,7 @@
 							<el-row>
 								<el-col :span="12">
 									<el-button size="small" @click="handleNew" type="primary">
-										新增{{ buttonGroup[1].label }}
+										新增{{ buttonGroup[1].title }}
 									</el-button>
 								</el-col>
 								<el-col :span="12" style="text-align: right">
@@ -73,13 +73,16 @@
 					<el-dialog
 						:title="dealType == 'add' ? '新增' + title : '编辑' + title"
 						:visible.sync="showItem"
-						width="70%"
+						width="600px"
 						style="max-width: 100%"
 					>
 						<component
 							:is="componentName2"
 							@closeModal="showItem = false"
-							@resetList="showItem = false"
+							@resetList="
+								showItem = false;
+								getNewData(1);
+							"
 							:dealType="{ type: dealType, state: showItem }"
 						></component>
 					</el-dialog>
@@ -238,25 +241,34 @@ export default {
 		}
 	},
 	created() {
-		this.obj = this.$route.params.type;
+		let obj = this.$route.params.type;
+		this.obj = obj;
+		this.componentName = obj + "Page";
+		this.componentName2 = obj + "Item";
 		this.buttonGroup = [
 			{ label: "拓客工具", value: "/marketing/bespeakList" },
 			{ label: "", value: "" }
 		];
-		switch (this.obj) {
+		switch (obj) {
 			case "goods":
 				this.buttonGroup[1].label = "微信优惠商品";
+				this.buttonGroup[1].title = "优惠商品";
 				break;
 			case "promotion":
 				this.buttonGroup[1].label = "微信活动海报";
+				this.buttonGroup[1].title = "活动海报";
 				break;
 			default:
 				// coupon
 				this.buttonGroup[1].label = "优惠券";
+				this.buttonGroup[1].title = "优惠券";
 		}
-		this.componentName = this.obj + "Page";
-		this.componentName2 = this.obj + "Item";
-		this.title = this.dataArr[this.obj].title;
+		// this.title = this.dataArr[this.obj].title;
+		this.title = this.buttonGroup[1].title;
+
+		let theData = this.$store.state.marketing.marketingListARR[obj];
+		this.pagination = theData.paying;
+		console.log(obj, theData);
 	},
 	components: {
 		couponPage: () => import("@/components/marketing/coupon"),

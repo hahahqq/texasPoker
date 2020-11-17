@@ -99,6 +99,7 @@
             header-row-class-name="bg-theme2 text-white"
             :row-class-name="tableRowClassName"
             show-summary
+            ref="table"
             :summary-method="getSummaries1"
             style="width: 100%"
           >
@@ -134,16 +135,18 @@
             ></el-table-column>
             <el-table-column label="退货店铺" prop="SHOPNAME" align="center"></el-table-column>
             <el-table-column label="退货数量" prop="GOODSQTY" align="right"></el-table-column>
-            <el-table-column label="退款金额" prop="PAYMONEY" align="right">
-              <template slot-scope="scope">
-                {{ isPurViewFun(92100310) ? scope.row.PAYMONEY : "****" }}
-              </template>
-            </el-table-column>
-            <el-table-column label="退货金额" align="right">
-              <template slot-scope="scope">
-                {{ isPurViewFun(92100310) ? scope.row.GOODSMONEY : "****" }}
-              </template>
-            </el-table-column>
+            <el-table-column
+              label="退款金额"
+              prop="PAYMONEY"
+              align="right"
+              :formatter="formatPAYMONEY"
+            ></el-table-column>
+            <el-table-column
+              label="退货金额"
+              align="right"
+              prop="GOODSMONEY"
+              :formatter="formatGOODSMONEY"
+            ></el-table-column>
             <el-table-column label="优惠金额" prop="BREAKSMONEY" align="right"></el-table-column>
             <el-table-column label="其它费用" prop="OTHERMONEY" align="right"></el-table-column>
             <el-table-column label="备注" prop="REMARK" show-overflow-tooltip></el-table-column>
@@ -172,7 +175,7 @@
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <div class="m-top-smts clearfix elpagination">
+          <div class="m-top-sm clearfix elpagination">
             <el-pagination
               background
               @size-change="handlePageChange"
@@ -197,9 +200,10 @@
         size="small"
         :data="theGoodsListInfo"
         height="300"
-        header-row-class-name="bg-theme text-white"
+        header-row-class-name="bg-theme2 text-white"
         class="full-width m-top-sm"
         show-summary
+        ref="table1"
         :summary-method="getSummaries"
         v-loading="loadingInfo"
       >
@@ -224,11 +228,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="QTY" label="数量" align="center"></el-table-column>
-        <el-table-column label="金额" align="center">
-          <template slot-scope="scope">
-            {{ isPurViewFun(92100310) ? scope.row.PRICE * scope.row.QTY : "****" }}
-          </template>
-        </el-table-column>
+        <el-table-column label="金额" align="center" :formatter="formatTotal"></el-table-column>
       </el-table>
 
       <el-row :gutter="24" class="marginTB-sm">
@@ -362,7 +362,7 @@ export default {
       editStatu: "",
       isPrintStatu: "",
       totalPrice: "",
-      tableHeight: document.body.clientHeight - 270
+      tableHeight: document.body.clientHeight - 230
     };
   },
   computed: {
@@ -487,10 +487,19 @@ export default {
       this.$store.dispatch("getSupplierList", { IsStop: 0, IsCurr: 0 });
     }
     if (this.shopList.length == 0) {
-      this.$store.dispatch("getShopList",{});
+      this.$store.dispatch("getShopList", {});
     }
   },
   methods: {
+    formatPAYMONEY: function (row, column) {
+      return this.isPurViewFun(92100310) ? row.PAYMONEY : "****";
+    },
+    formatGOODSMONEY: function (row, column) {
+      return this.isPurViewFun(92100310) ? row.GOODSMONEY : "****";
+    },
+    formatTotal: function (row, column) {
+      return this.isPurViewFun(92100310) ? row.PRICE * row.QTY : "****";
+    },
     getSummaries1(param) {
       const { columns, data } = param;
       const sums = [];
@@ -530,6 +539,10 @@ export default {
         }
       });
 
+      this.$nextTick(() => {
+        this.$refs["table"].doLayout();
+      });
+
       return sums;
     },
     getSummaries(param) {
@@ -540,20 +553,11 @@ export default {
           sums[index] = "合计";
           return;
         }
-        if (index > 0 && index < 7) {
+        if (index > 0 && index < 3) {
           sums[index] = "";
           return;
         }
-        if (index == 7) {
-          if (!this.isPurViewFun(92100310)) {
-            sums[index] = "****";
-            return;
-          }
-        }
-        if (index == 9) {
-          sums[index] = this.isPurViewFun(92100310) ? this.tableSum : "****";
-          return;
-        }
+
         const values = data.map((item) => Number(item[column.property]));
         if (!values.every((value) => isNaN(value))) {
           sums[index] = values.reduce((prev, curr) => {
@@ -568,6 +572,10 @@ export default {
         } else {
           sums[index] = "";
         }
+      });
+
+      this.$nextTick(() => {
+        this.$refs["table1"].doLayout();
       });
 
       return sums;

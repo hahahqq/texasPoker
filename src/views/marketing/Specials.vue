@@ -1,7 +1,8 @@
 <template>
+	<!-- 限时特价 -->
 	<el-container>
 		<el-header style="height: 50px; padding: 0">
-			<headerPage></headerPage>
+			<headerPage :pageList="buttonGroup"></headerPage>
 		</el-header>
 		<el-container>
 			<el-aside width="100px">
@@ -19,14 +20,8 @@
 						<div class="content-center">
 							<el-row :gutter="10">
 								<el-col :span="8">
-									<el-button
-										icon="el-icon-plus"
-										size="small"
-										type="primary"
-										@click="handleNew"
-										plain
-									>
-										创建活动
+									<el-button size="small" type="primary" @click="handleNew">
+										新增活动
 									</el-button>
 								</el-col>
 								<el-col :span="10" class="text-right">
@@ -126,85 +121,98 @@
 						title="新增限时特价"
 						:visible.sync="showNewForm"
 						append-to-body
-						width="60%"
+						width="700px"
 					>
-						<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="90px">
+						<el-form
+							:model="ruleForm"
+							:rules="rules"
+							ref="ruleForm"
+							label-width="100px"
+						>
 							<el-form-item label="活动名称" prop="Name">
 								<el-input
 									size="small"
 									v-model="ruleForm.Name"
-									style="width: 60%"
 									placeholder="请输入活动名称"
 								></el-input>
 							</el-form-item>
 							<el-form-item label="活动时间" prop="dateBE">
 								<el-date-picker
-									size="small"
-									v-model="ruleForm.dateBE"
-									type="daterange"
+									v-model="ruleForm.dateBE[0]"
 									value-format="timestamp"
-									range-separator="至"
-									start-placeholder="开始日期"
-									end-placeholder="结束日期"
-									style="width: 60%"
+									align="right"
+									type="date"
+									size="small"
+									placeholder="选择开始日期"
+									style="width: 47%; margin-right: -4px"
+								></el-date-picker>
+								<span class="text-muted inline-block text-center" style="width: 6%">
+									至
+								</span>
+								<el-date-picker
+									v-model="ruleForm.dateBE[1]"
+									value-format="timestamp"
+									align="right"
+									type="date"
+									size="small"
+									placeholder="选择结束日期"
+									style="width: 47%; margin-left: -4px"
 								></el-date-picker>
 							</el-form-item>
-							<el-form-item label="活动店铺">
-								<el-select
-									v-model="ShopNameList"
-									multiple
-									size="small"
-									style="width: 60%"
-									clearable
-									:multiple-limit="3"
-									placeholder="请选择活动店铺"
-									class="full-width"
+							<el-form-item label="参与店铺">
+								<el-radio-group
+									v-model="ShopNameListState"
+									@change="selectShopState"
 								>
-									<el-option
-										size="small"
-										v-for="(item, i) in shopList"
-										:key="i"
-										:label="item.NAME"
-										:value="item.NAME"
-									></el-option>
-								</el-select>
+									<el-radio :label="true">全部店铺</el-radio>
+									<el-radio :label="false">部分店铺</el-radio>
+								</el-radio-group>
+								<div v-if="!ShopNameListState">
+									<el-checkbox-group v-model="ShopNameList" size="small">
+										<el-checkbox
+											border
+											v-for="(item, i) in shopList"
+											:key="i"
+											:label="item.NAME"
+										>
+											{{ item.NAME }}
+										</el-checkbox>
+									</el-checkbox-group>
+								</div>
 							</el-form-item>
-							<el-form-item label="会员折上折">
-								<el-tooltip
-									class="item"
-									effect="dark"
-									content="启用之后，商品 会在优惠价的基础上继续执行会员折扣"
-									placement="top-start"
-								>
-									<el-button
-										type="text"
-										style="color: #999"
-										icon="el-icon-question"
-									></el-button>
-								</el-tooltip>
-								<el-switch
-									v-model="ruleForm.IsVipDiscount"
-									active-color="#fb789a"
-									inactive-color="#cccccc"
-								></el-switch>
+							<el-form-item label="">
+								<template slot="label">
+									<div>
+										<span>会员折上折</span>
+										<el-tooltip
+											class="item"
+											effect="dark"
+											content="启用之后，商品 会在优惠价的基础上继续执行会员折扣"
+											placement="top-start"
+										>
+											<i class="el-icon-question"></i>
+										</el-tooltip>
+									</div>
+								</template>
+
+								<el-radio-group v-model="ruleForm.IsVipDiscount">
+									<el-radio :label="true">启用</el-radio>
+									<el-radio :label="false">不启用</el-radio>
+								</el-radio-group>
 							</el-form-item>
 							<el-form-item label="是否启用">
-								<span style="width: 20px; height: 10px; float: left"></span>
-								<el-switch
-									v-model="ruleForm.IsStart"
-									active-color="#fb789a"
-									inactive-color="#cccccc"
-								></el-switch>
+								<el-radio-group v-model="ruleForm.IsStart">
+									<el-radio :label="1">启用</el-radio>
+									<el-radio :label="0">停用</el-radio>
+								</el-radio-group>
 							</el-form-item>
-							<el-form-item label="价格设置">
+							<el-form-item label="商品信息">
 								<el-button
 									size="small"
-									type="primary"
-									plain
-									icon="el-icon-plus"
+									type="text"
 									@click="showAddserversgoods = true"
 								>
-									选择商品
+									添加商品+
 								</el-button>
 							</el-form-item>
 							<el-form-item>
@@ -214,19 +222,26 @@
 									v-if="ruleForm.GoodsList.length > 0"
 									:data="ruleForm.GoodsList"
 									:highlight-current-row="true"
-									header-row-class-name="bg-theme text-white"
+									header-row-class-name="bg-theme2 text-white"
 									style="width: 100%"
+									height="260px"
 								>
 									<el-table-column
 										prop="GoodsName"
 										label="商品"
+										align="center"
 									></el-table-column>
-									<el-table-column label="原价">
+									<el-table-column label="原价" align="center">
 										<template slot-scope="scope">
 											{{ `￥${scope.row.GoodsPrice}` }}
 										</template>
 									</el-table-column>
-									<el-table-column prop="Discount" label="折扣">
+									<el-table-column
+										prop="Discount"
+										label="折扣"
+										align="center"
+										width="130px"
+									>
 										<template slot-scope="scope">
 											<el-input-number
 												size="mini"
@@ -240,7 +255,12 @@
 											></el-input-number>
 										</template>
 									</el-table-column>
-									<el-table-column prop="DisPrice" label="优惠价">
+									<el-table-column
+										prop="DisPrice"
+										label="优惠价"
+										align="center"
+										width="140px"
+									>
 										<template slot-scope="scope">
 											<el-input-number
 												size="mini"
@@ -253,7 +273,12 @@
 											></el-input-number>
 										</template>
 									</el-table-column>
-									<el-table-column label="操作" width="100" fixed="right">
+									<el-table-column
+										label="操作"
+										width="80px"
+										align="center"
+										fixed="right"
+									>
 										<template slot-scope="scope">
 											<el-button
 												size="small"
@@ -278,12 +303,11 @@
 						:visible.sync="showAddserversgoods"
 						append-to-body
 					>
-						<add-servers-goods
+						<selGoodsPage
+							v-if="handlerclickadd"
 							@closeModal="showAddserversgoods = false"
-							@resetList="showAddserversgoods = false"
-							:curListData="ruleForm.GoodsList"
 							@handlerClickadd="handlerclickadd"
-						></add-servers-goods>
+						></selGoodsPage>
 					</el-dialog>
 				</div>
 			</el-container>
@@ -299,8 +323,8 @@ export default {
 	mixins: [MIXINS_MARKETING.MARKETING_MENU],
 	data() {
 		return {
+			ShopNameListState: true,
 			ShopNameList: [],
-			showShopDialog: false,
 			showAddserversgoods: false,
 			choseList: [
 				{ id: 0, name: "全 部" },
@@ -320,7 +344,7 @@ export default {
 				ShopNameList: "",
 				ShopIdList: "",
 				BillId: "",
-				IsStart: false
+				IsStart: 1
 			},
 			rules: {
 				Name: [{ required: true, message: "请输入活动名称", trigger: "blur" }],
@@ -334,7 +358,11 @@ export default {
 				PageSize: 20,
 				PN: 1
 			},
-			DelArr: []
+			DelArr: [],
+			buttonGroup: [
+				{ label: "拓客工具", value: "/marketing/bespeakList" },
+				{ label: "限时特价", value: "" }
+			]
 		};
 	},
 	computed: {
@@ -378,7 +406,7 @@ export default {
 				this.ruleForm.ShopNameList = obj.SHOPNAMELIST;
 				this.ruleForm.dateBE = [obj.BEGINDATE, obj.ENDDATE];
 				this.ruleForm.IsVipDiscount = obj.ISVIPDISCOUNT;
-				this.ruleForm.IsStart = obj.ISSTART;
+				this.ruleForm.IsStart = obj.ISSTART ? 1 : 0;
 				this.ruleForm.BillId = obj.BILLID;
 				this.ShopNameList = this.ruleForm.ShopNameList.split(",");
 			}
@@ -403,46 +431,33 @@ export default {
 	},
 	methods: {
 		curChoseShop() {
-			let arrS = this.shopList,
-				arr1 = this.ShopNameList,
-				new1 = [],
-				new2 = [];
-			for (var i in arrS) {
-				for (var j in arr1) {
-					if (arrS[i].NAME == arr1[j]) {
-						new1.push(arrS[i].NAME);
-						new2.push(arrS[i].ID);
+			let arr1 = [],
+				arr2 = [];
+			if (this.ShopNameListState) {
+				// all
+				this.shopList.forEach((element) => {
+					arr1.push(element.ID);
+					arr2.push(element.NAME);
+				});
+			} else {
+				this.shopList.forEach((element) => {
+					let idx = this.ShopNameList.findIndex((v) => v == element.NAME);
+					if (idx > -1) {
+						arr1.push(element.ID);
 					}
-				}
+				});
+				arr2 = [...this.ShopNameList];
 			}
 
-			let str = "",
-				id = "";
-			for (let i in new1) {
-				str += new1[i] + ",";
-			}
-			if (str.length > 0) {
-				//去掉最后一个逗号
-				str = str.substring(0, str.length - 1);
-			}
-			this.ruleForm.ShopNameList = str;
-
-			for (let i in new2) {
-				id += new2[i] + ",";
-			}
-			if (id.length > 0) {
-				//去掉最后一个逗号
-				id = id.substring(0, id.length - 1);
-			}
-			this.ruleForm.ShopIdList = id;
-			this.showShopDialog = false;
+			this.ruleForm.ShopIdList = arr1.length > 0 ? arr1.join() : "";
+			this.ruleForm.ShopNameList = arr2.length > 0 ? arr2.join() : "";
 		},
 		saveAddSpecials() {
 			this.$refs.ruleForm.validate((valid) => {
 				if (valid) {
 					this.curChoseShop();
-					if (this.ShopNameList.length == 0) {
-						this.$message.warning("请选择活动店铺 !");
+					if (!this.ruleForm.ShopIdList || !this.ruleForm.ShopNameList) {
+						this.$message.warning("请选择参与店铺 !");
 						return;
 					}
 					let arr = this.ruleForm.GoodsList,
@@ -460,7 +475,7 @@ export default {
 						Name: this.ruleForm.Name,
 						BeginDate: this.ruleForm.dateBE[0],
 						EndDate: this.ruleForm.dateBE[1],
-						IsStart: this.ruleForm.IsStart == false ? 0 : 1,
+						IsStart: this.ruleForm.IsStart,
 						IsVipDiscount: this.ruleForm.IsVipDiscount == false ? 0 : 1,
 						Remark: "",
 						GoodsList: JSON.stringify(newArr),
@@ -509,6 +524,7 @@ export default {
 					IsCancel: 0
 				});
 			}
+			this.showAddserversgoods = false;
 		},
 		curRadioStatus() {
 			let IsValid = "";
@@ -542,8 +558,13 @@ export default {
 				ShopNameList: "",
 				ShopIdList: "",
 				BillId: "",
-				IsStart: true
+				IsStart: 1
 			};
+		},
+		selectShopState(v) {
+			if (!v) {
+				this.ShopNameList = [];
+			}
 		}
 	},
 	mounted() {
@@ -555,8 +576,8 @@ export default {
 		});
 	},
 	components: {
-		addServersGoods: () => import("@/components/goods/addserversgoods"),
-		headerPage: () => import("@/components/header")
+		selGoodsPage: () => import("@/components/goods/addserversgoods.vue"),
+		headerPage: () => import("@/components/header/headBC")
 	}
 };
 </script>

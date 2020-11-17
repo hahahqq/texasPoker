@@ -3,7 +3,6 @@
 		<!-- 微信优惠商品 -->
 		<!--列表-->
 		<el-table
-			v-if="dataList"
 			:data="dataList"
 			v-loading="loading"
 			header-row-class-name="bg-theme2 text-white"
@@ -12,10 +11,17 @@
 		>
 			<el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
 			<el-table-column prop="GOODSNAME" label="名称" width="160"></el-table-column>
-			<el-table-column prop="COMPANYNAME" label="公司名"></el-table-column>
+			<el-table-column prop="DISPRICE" label="优惠价"></el-table-column>
 			<el-table-column prop="PRICE" label="价格"></el-table-column>
-
-			<el-table-column prop="DATENAME" label="有效时间" width="260"></el-table-column>
+			<el-table-column prop="" label="有效时间" width="300">
+				<template slot-scope="scope">
+					<div>
+						<span>{{ new Date(scope.row.BEGINDATE) | formatTime }}</span>
+						<span>至</span>
+						<span>{{ new Date(scope.row.ENDDATE) | formatTime }}</span>
+					</div>
+				</template>
+			</el-table-column>
 			<el-table-column prop="ISSTOP" label="状态" :formatter="formatStatus"></el-table-column>
 			<el-table-column label="操作" width="170" fixed="right" align="right">
 				<template slot-scope="scope">

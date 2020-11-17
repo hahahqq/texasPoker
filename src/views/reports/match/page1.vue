@@ -74,7 +74,7 @@
 						align="right"
 						width="90px"
 					></el-table-column>
-					<el-table-column prop="GAINMONEY" align="right">
+					<el-table-column prop="" align="right">
 						<template slot="header">
 							<div class="relative">
 								<span>盈利</span>
@@ -88,6 +88,14 @@
 									<i slot="reference" class="el-icon-warning font-14 pointer"></i>
 								</el-popover>
 							</div>
+						</template>
+						<template slot-scope="props">
+							<span>
+								{{
+									parseFloat(props.row.NOTEXCHANGEMONEY) +
+									parseFloat(props.row.CHARGESMONEY)
+								}}
+							</span>
 						</template>
 					</el-table-column>
 					<el-table-column prop="DESKNAME" label="桌号"></el-table-column>

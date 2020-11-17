@@ -25,7 +25,7 @@
                   style="height: 100%; position: relative; padding-right: 0px; padding-left: 0px"
                 >
                   <div class="commodityc-top">
-                    <span class="title">会员清单</span>
+                    <span class="title">会员充值</span>
                     <span class="commodityc-top-text" @click="closeModal">清空页面</span>
                   </div>
                   <div>
@@ -217,7 +217,7 @@
 
                             <div
                               v-if="curtab == index"
-                              :class="{ 'selected': curtab == index }"
+                              :class="{ selected: curtab == index }"
                               style="
                                 border-bottom: 30px solid #137deb;
                                 width: 0;
@@ -333,14 +333,16 @@ export default {
       }
     },
     saveVipRechargeState(data) {
-       this.submitLoading = false
+      this.submitLoading = false;
       if (data.success) {
         this.$message.success("充值成功");
 
         let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print1");
         let jsonPrintData = JSON.parse(printRules);
+        jsonPrintData.autoPrint = this.checkedreceipt ? true : false;
+        localStorage.setItem(SYSTEM_INFO.PREFIX + "Print1", JSON.stringify(jsonPrintData));
 
-        if (jsonPrintData.autoPrint || this.checkedreceipt) {
+        if (this.checkedreceipt) {
           this.testPrint(data.data.BillId, jsonPrintData);
         } else {
           this.closeModal();
@@ -350,13 +352,10 @@ export default {
       }
     },
     employeeList(data) {
-      this.options = [];
-      for (var i in data) {
-        this.options.push({
-          value: data[i].ID,
-          label: data[i].NAME
-        });
-      }
+      this.options = data.map((item) => ({
+        value: item.ID,
+        label: item.NAME
+      }));
     }
   },
   created() {
@@ -417,7 +416,7 @@ export default {
         { saleInfo: saleInfo }
       );
       let qresurl = this.$store.state.commodityc.saveQRcodeIMG;
-      getDayindata(printData, "print1", qresurl);
+      getDayindata(printData, "Print1", qresurl);
 
       this.closeModal();
     },
@@ -425,7 +424,7 @@ export default {
       this.payMoney = item.ADDMONEY;
       this.giveMoney = item.MONEY;
       this.curtab = index;
-      this.totalMoney = item.ADDMONEY + item.MONEY
+      this.totalMoney = item.ADDMONEY + item.MONEY;
     },
     handleClose(done) {
       this.isShowShop = false;
@@ -470,15 +469,10 @@ export default {
       if (userInfo.CODE2 == "boss") {
         this.theshopList = [...this.shopList];
       } else {
-        this.theshopList = [];
-        for (let i = 0; i < userInfo.ShopList.length; i++) {
-          if (userInfo.ShopList[i].ISPURVIEW == 1) {
-            this.theshopList.push({
-              ID: userInfo.ShopList[i].SHOPID,
-              NAME: userInfo.ShopList[i].SHOPNAME
-            });
-          }
-        }
+         this.theshopList = userInfo.ShopList.filter(item => item.ISPURVIEW == 0).map((element) => ({
+            value: element.SHOPID,
+            label: element.SHOPNAME
+         }));
       }
       this.isShowShop = true;
     },
@@ -561,9 +555,8 @@ export default {
       this.showRecharge = true;
     },
     CashRecharge(data) {
-      console.log(data);
       this.checkedreceipt = data.checkedreceipt;
-      let {checkedreceipt, ...newData} = data;
+      let { checkedreceipt, ...newData } = data;
 
       let param = this.value,
         str = ""; // 销售员
@@ -575,7 +568,7 @@ export default {
         str = str.substring(0, str.length - 1);
       }
 
-      this.submitLoading = true
+      this.submitLoading = true;
 
       this.showRecharge = false;
       this.payName = newData.payName;
@@ -596,13 +589,11 @@ export default {
   components: {
     recharge
   },
-  beforeCreate() {
-    let list1 = this.$store.state.employee.employeeList;
-    if (list1.length == 0) {
-      this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID });
-    }
-  },
   mounted() {
+    let printRules = localStorage.getItem(SYSTEM_INFO.PREFIX + "Print1");
+    let jsonPrintData = JSON.parse(printRules);
+    this.checkedreceipt = jsonPrintData.autoPrint;
+
     this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID });
     this.$store.dispatch("getstoragevaluerroyaltyState", {});
   }
@@ -640,9 +631,8 @@ export default {
   right: 0px;
   border-bottom: 30px solid #137deb;
   border-left: 30px solid transparent;
-   width: 0;
-   height: 0;
-
+  width: 0;
+  height: 0;
 }
 .rechargeWayItem .selected i {
   position: absolute;

@@ -83,6 +83,25 @@
           </el-form-item>
         </el-col>
 
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="商品单位">
+            <el-select v-model="ruleForm.Unitid" placeholder="请选择单位" class="full-width">
+                <el-option v-for="(item,i) in unitList" :key="i" :label="item.NAME" :value="item.ID"></el-option>
+              </el-select>
+          </el-form-item>
+        </el-col>
+
+
+        <el-col :xs="24" :sm="12">
+          <el-form-item label="商品规格">
+            <el-input
+              v-model="ruleForm.Specs"
+              clearable
+              placeholder="请输入商品规格"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+
         <el-col :xs="24" :sm="24">
           <el-form-item label="商品描述" class="clearfix">
             <el-input v-model="ruleForm.Remark" clearable placeholder="请输入商品描述"></el-input>
