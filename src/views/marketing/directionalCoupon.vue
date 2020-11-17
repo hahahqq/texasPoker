@@ -279,13 +279,11 @@ export default {
   },
   methods: {
     isEmptyData() {
-      console.log(this.selmemberArr);
       if (this.selmemberArr.length != 0) {
         this.checkList = [];
       }
     },
     choseShopFun() {
-      console.log(this.checkList);
       if (this.checkList.length != 0) {
         this.$store.dispatch("selectingMember", {
           isArr: false,
@@ -319,6 +317,8 @@ export default {
       sendData.ShopList = this.checkList.length != 0 ? this.checkList.join(",") : "";
       sendData.LitmitVipList = this.checkList.length == 0 ? JSON.stringify(marr) : "[]";
       sendData.AllVip = this.checkList.length != 0 ? 1 : 0;
+      sendData.AllVipType = this.checkList.length != 0 ? 1 : 0;
+      sendData.ShopId = this.checkList.length != 0 ? this.checkList.join(",") : getHomeData().shop.ID;
 
       if (this.checkList.length != 0) {
         let sameData = this.shopVipQtyList.filter(
@@ -330,12 +330,8 @@ export default {
         });
         totalQty = totalQty.reduce((n, m) => n + m);
         sendData.VipQty = totalQty;
-        sendData.AllVipType = 1;
-        sendData.ShopId = this.checkList.join(",");
       } else {
-        sendData.ShopId = getHomeData().shop.ID;
         sendData.VipQty = this.selmemberArr.length;
-        sendData.AllVipType = 0;
       }
 
       this.$store.dispatch("addMCoyponAction", sendData).then(() => {
