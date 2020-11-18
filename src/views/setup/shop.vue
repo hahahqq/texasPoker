@@ -31,14 +31,5 @@ export default {
 .el-header{
   padding: 0 !important;
 }
-.member-main-top{
-  width: 100%;
-  height: 100px;
-  background: #fff;
-}
-.member-main-table{
-  width: 100%;
-  height: 600px;
-  background: #fff;
-}
+
 </style>

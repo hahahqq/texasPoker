@@ -63,9 +63,19 @@
                      <!-- DATESTR -->
                   </template>
                </el-table-column>
-               <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+               <el-table-column
+                  prop="SHOPNAME"
+                  label="店铺"
+                  width="175px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="VIPCODE" label="卡号" width="110px"></el-table-column>
-               <el-table-column prop="VIPNAME" label="姓名"></el-table-column>
+               <el-table-column
+                  prop="VIPNAME"
+                  label="姓名"
+                  width="90px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="MOBILENO" label="手机" width="110px"></el-table-column>
                <el-table-column
                   prop="MONEY"
@@ -80,7 +90,12 @@
 						align="right"
 					></el-table-column> -->
                <el-table-column prop="USERNAME" label="操作人"></el-table-column>
-               <el-table-column prop="REMARK" label="备注" width="140px"></el-table-column>
+               <el-table-column
+                  prop="REMARK"
+                  label="备注"
+                  width="210px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="" label="操作" fixed="right" align="center" width="70px">
                   <template slot-scope="scope">
                      <el-button-group>
@@ -205,6 +220,7 @@ export default {
                pager = 42;
             this.$nextTick(() => {
                this.tableHeight = window.innerHeight - top - marginSpace - pager;
+               this.$refs.contentTable.doLayout();
             });
          }
       }

@@ -418,7 +418,7 @@ let routes = [
          {
             path: "/good/stockQuery",
             component: () => import("@/views/goods/stockQuery.vue"),
-            name: "库存查询",
+            name: "库存统计",
             modulecode: "92100309",
             meta: {
                name: "shop",
@@ -532,7 +532,6 @@ let routes = [
             hidden: true,
             meta: { parent: "marketing", title: "营销中心" }
          },
-
 
          // {
          //    path: "/memberCoupon",
@@ -752,13 +751,25 @@ let routes = [
                {
                   path: "goods",
                   component: () => import("@/views/mall/goods"),
-                  name: "商品上架",
+                  name: "商品管理",
                   meta: {
                      name: "goods",
                      parent: "malls",
                      title: "商城管理",
                      line: true
                   }
+               },
+               {
+                  path: "goodsItem",
+                  component: () => import("@/views/mall/goods/item"),
+                  name: "商品详情",
+                  meta: {
+                     name: "goodsItem",
+                     parent: "malls",
+                     title: "商城管理",
+                     breadcrumb: [{ label: "商品管理", value: "/mall/goods" }]
+                  },
+                  hidden: true
                },
                {
                   path: "setting",

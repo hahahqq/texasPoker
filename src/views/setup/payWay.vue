@@ -155,7 +155,7 @@ export default {
       dataList: [],
       dialogTitle: "",
       value1: true,
-      clientHeight: document.body.clientHeight - 200
+      clientHeight: document.body.clientHeight - 190
     };
   },
   computed: {

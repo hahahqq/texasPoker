@@ -48,12 +48,27 @@
                      <span>{{ new Date(scope.row.BILLDATE) | formatTime }}</span>
                   </template>
                </el-table-column>
-               <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
-               <el-table-column prop="MATCHNAME" label="赛事名称" width="130px"></el-table-column>
+               <el-table-column
+                  prop="SHOPNAME"
+                  label="店铺"
+                  width="175px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
+               <el-table-column
+                  prop="MATCHNAME"
+                  label="赛事名称"
+                  width="175px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="TYPENAME" label="比赛类型" width="100px"></el-table-column>
                <el-table-column prop="DESKNAME" label="比赛桌号"></el-table-column>
                <el-table-column prop="VIPCODE" label="会员卡号" width="110px"></el-table-column>
-               <el-table-column prop="VIPNAME" label="会员姓名"></el-table-column>
+               <el-table-column
+                  prop="VIPNAME"
+                  label="会员姓名"
+                  width="90px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="VIPMOBILENO" label="手机号" width="110px"></el-table-column>
                <el-table-column prop="REWARDNAME" label="比赛名次" align="left"></el-table-column>
                <el-table-column
@@ -81,7 +96,12 @@
                      <span>{{ new Date(scope.row.BILLDATE) | formatTime }}</span>
                   </template>
                </el-table-column>
-               <el-table-column prop="REMARK" label="备注" width="140px"></el-table-column>
+               <el-table-column
+                  prop="REMARK"
+                  label="备注"
+                  width="210px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
                <el-table-column prop="" label="操作" align="center" fixed="right" width="70px">
                   <template slot-scope="scope">
                      <el-button-group>
@@ -204,6 +224,7 @@ export default {
                pager = 42;
             this.$nextTick(() => {
                this.tableHeight = window.innerHeight - top - marginSpace - pager;
+               this.$refs.contentTable.doLayout();
             });
          }
       }

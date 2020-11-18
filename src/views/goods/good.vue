@@ -763,14 +763,6 @@ export default {
 .member-main-top {
   background: #fff;
 }
-.member-main-table {
-  margin-top: 8px;
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 600px;
-  background: #fff;
-}
 .member-main-top-buttom {
   /* margin-top: 5px; */
   display: flex;

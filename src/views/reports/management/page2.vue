@@ -1,292 +1,281 @@
 <template>
-	<!-- 收支结余 -->
-	<section v-loading="loading">
-		<div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 73px">
-			<div class="marginLR-md">
-				<filtePage
-					:isAll="true"
-					:isExport="true"
-					@getNewData="getNewData_fun"
-					@exportState="exportState_fun"
-				></filtePage>
-			</div>
-		</div>
-		<div class="bg-white m-bottom-sm">
-			<div class="marginLR-md">
-				<!-- page -->
-				<div class="row-flex paddingTB-sm flex-items-center">
-					<div class style="min-width: 510px">
-						<div
-							v-for="(item, i) in pageList"
-							:key="i"
-							v-show="i < 6"
-							class="inline-block m-right-md marginTB-sm padding-sm border"
-							style="width: 150px"
-						>
-							<span>{{ item.label }}</span>
-							<el-button
-								type="text"
-								@click="getNewList(item)"
-								class="pull-right no-padding"
-							>
-								详情
-							</el-button>
-							<div class="text-left p-top-sm">
-								<span class="font-600">{{ item.value }}</span>
-							</div>
-						</div>
-					</div>
-					<div class="full-width relative">
-						<div
-							class="inline-block border-top border-right border-bottom paddingTB-lg paddingLR-md"
-						>
-							<span class="block paddingTB-sm"></span>
-						</div>
-						<div
-							class="inline-block padding-sm border translateY-center marginLR-md"
-							style="width: 150px"
-						>
-							<div class="p-bottom-sm">{{ pageList[6].label }}</div>
-							<div>
-								<span class="font-600 font-16">{{ pageList[6].value }}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="bg-white paddingTB-md">
-			<div class="marginLR-md">
-				<!-- table-->
-				<el-table
-					border
-					:data="tableList"
-					header-row-class-name="bg-F1F2F3"
-					class="full-width"
-					ref="contentTable"
-					:height="tableHeight"
-				>
-					<el-table-column
-						prop="PAYTYPENAME"
-						label="支付方式"
-						width="180"
-					></el-table-column>
-					<el-table-column label="金额" align="right" width="100px">
-						<template slot-scope="props">
-							<span>&yen;{{ props.row.MONEY }}</span>
-						</template>
-					</el-table-column>
-					<el-table-column
-						prop="FCOUNT"
-						label="笔数"
-						align="right"
-						width="100px"
-					></el-table-column>
-					<el-table-column label="占比">
-						<template slot-scope="props">
-							<span>
-								{{ Math.round(props.row.FRATE * 100) / 100 + "%" }}
-							</span>
-							<el-progress
-								:text-inside="false"
-								:stroke-width="12"
-								:percentage="props.row.FRATE * 100"
-								:color="getColor(props.row.FRATE * 100)"
-								class="aa"
-								style="max-width: 400px"
-							></el-progress>
-						</template>
-					</el-table-column>
-					<el-table-column label="操作" align="center" width="70px">
-						<template slot-scope="props">
-							<el-button
-								type="text"
-								@click="getNewList(props.row, 7)"
-								class="no-padding"
-							>
-								详情
-							</el-button>
-						</template>
-					</el-table-column>
-				</el-table>
-			</div>
-		</div>
-		<!-- 详情 -->
-		<el-dialog :title="itemData.title + '详情'" :visible.sync="itemData.show" width="980px">
-			<itemPage @closeModal="closeModalFun" :typeData="itemData"></itemPage>
-		</el-dialog>
-		<!-- 数据导出 -->
-		<el-dialog
-			append-to-body
-			:close-on-click-modal="false"
-			:close-on-press-escape="false"
-			:show-close="false"
-			title="数据导出"
-			:visible.sync="exportData.show"
-			width="400px"
-		>
-			<exportPage
-				:dataType="exportData"
-				:isPage="true"
-				@closeModal="exportData.show = false"
-			></exportPage>
-		</el-dialog>
-	</section>
+   <!-- 收支结余 -->
+   <section v-loading="loading">
+      <div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 73px">
+         <div class="marginLR-md">
+            <filtePage
+               :isAll="true"
+               :isExport="true"
+               @getNewData="getNewData_fun"
+               @exportState="exportState_fun"
+            ></filtePage>
+         </div>
+      </div>
+      <div class="bg-white m-bottom-sm">
+         <div class="marginLR-md">
+            <!-- page -->
+            <div class="row-flex paddingTB-sm flex-items-center">
+               <div class style="min-width: 510px">
+                  <div
+                     v-for="(item, i) in pageList"
+                     :key="i"
+                     v-show="i < 6"
+                     class="inline-block m-right-md marginTB-sm padding-sm border"
+                     style="width: 150px"
+                  >
+                     <span>{{ item.label }}</span>
+                     <el-button type="text" @click="getNewList(item)" class="pull-right no-padding">
+                        详情
+                     </el-button>
+                     <div class="text-left p-top-sm">
+                        <span class="font-600">{{ item.value }}</span>
+                     </div>
+                  </div>
+               </div>
+               <div class="full-width relative">
+                  <div
+                     class="inline-block border-top border-right border-bottom paddingTB-lg paddingLR-md"
+                  >
+                     <span class="block paddingTB-sm"></span>
+                  </div>
+                  <div
+                     class="inline-block padding-sm border translateY-center marginLR-md"
+                     style="width: 150px"
+                  >
+                     <div class="p-bottom-sm">{{ pageList[6].label }}</div>
+                     <div>
+                        <span class="font-600 font-16">{{ pageList[6].value }}</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="bg-white paddingTB-md">
+         <div class="marginLR-md">
+            <!-- table-->
+            <el-table
+               border
+               :data="tableList"
+               header-row-class-name="bg-F1F2F3"
+               class="full-width"
+               ref="contentTable"
+               :height="tableHeight"
+            >
+               <el-table-column prop="PAYTYPENAME" label="支付方式" width="180"></el-table-column>
+               <el-table-column label="金额" align="right" width="100px">
+                  <template slot-scope="props">
+                     <span>&yen;{{ props.row.MONEY }}</span>
+                  </template>
+               </el-table-column>
+               <el-table-column
+                  prop="FCOUNT"
+                  label="笔数"
+                  align="right"
+                  width="100px"
+               ></el-table-column>
+               <el-table-column label="占比">
+                  <template slot-scope="props">
+                     <span>
+                        {{ Math.round(props.row.FRATE * 100) / 100 + "%" }}
+                     </span>
+                     <el-progress
+                        :text-inside="false"
+                        :stroke-width="12"
+                        :percentage="props.row.FRATE * 100"
+                        :color="getColor(props.row.FRATE * 100)"
+                        class="aa"
+                        style="max-width: 400px"
+                     ></el-progress>
+                  </template>
+               </el-table-column>
+               <el-table-column label="操作" align="center" width="70px">
+                  <template slot-scope="props">
+                     <el-button type="text" @click="getNewList(props.row, 7)" class="no-padding">
+                        详情
+                     </el-button>
+                  </template>
+               </el-table-column>
+            </el-table>
+         </div>
+      </div>
+      <!-- 详情 -->
+      <el-dialog :title="itemData.title + '详情'" :visible.sync="itemData.show" width="980px">
+         <itemPage @closeModal="closeModalFun" :typeData="itemData"></itemPage>
+      </el-dialog>
+      <!-- 数据导出 -->
+      <el-dialog
+         append-to-body
+         :close-on-click-modal="false"
+         :close-on-press-escape="false"
+         :show-close="false"
+         title="数据导出"
+         :visible.sync="exportData.show"
+         width="400px"
+      >
+         <exportPage
+            :dataType="exportData"
+            :isPage="true"
+            @closeModal="exportData.show = false"
+         ></exportPage>
+      </el-dialog>
+   </section>
 </template>
 <script>
 import { mapState, mapGetters } from "vuex";
 import { getHomeData } from "@/api/index";
 import { indexQuery } from "@/store/modules2/report/indexFun.js";
 export default {
-	data() {
-		return {
-			loading: false,
-			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
-			pageList: [
-				{
-					label: "商品销售",
-					value: 0,
-					methodName: "balanceA"
-				},
-				{ label: "充值", value: 0, methodName: "balanceC" },
-				{ label: "还款", value: 0, methodName: "balanceE" },
-				{
-					label: "会员消费",
-					value: 0,
-					methodName: "balanceB"
-				},
-				{ label: "支出", value: 0, methodName: "balanceD" },
-				{ label: "欠款", value: 0, methodName: "balanceF" },
-				{ label: "收支结余", value: 0 }
-			],
-			dataData: {},
-			tableList: [],
-			itemData: {
-				title: "",
-				show: false,
-				data: {}
-			},
-			exportData: { show: false },
-			tableHeight: 300
-		};
-	},
-	computed: {
-		...mapGetters({}),
-		dataState() {
-			return this.$store.getters.cReportDataState.balance;
-		}
-	},
-	watch: {
-		dataState(data) {
-			if (this.loading) {
-				if (data.success) {
-					let dd = data.data;
-					this.$nextTick(() => {
-						this.pageList[0].value = dd.SaleMoney ? dd.SaleMoney : 0;
-						this.pageList[1].value = dd.AddMoney ? dd.AddMoney : 0;
-						this.pageList[2].value = dd.PayOweMoney ? dd.PayOweMoney : 0;
-						this.pageList[3].value = dd.SaleVipMoney ? dd.SaleVipMoney : 0;
-						this.pageList[4].value = dd.ExpMoney ? dd.ExpMoney : 0;
-						this.pageList[5].value = dd.OweMoney ? dd.OweMoney : 0;
-						this.pageList[6].value = dd.GainMoney ? dd.GainMoney : 0;
-						this.tableList = dd.PayList ? dd.PayList : [];
-					});
-				} else {
-					this.$message.error(data.message);
-				}
-			}
-			this.loading = false;
-		}
-	},
-	methods: {
-		exportState_fun(data) {
-			this.exportData = {
-				show: true,
-				data: {},
-				index: 1
-			};
-		},
-		getNewData_fun(data) {
-			this.formData = Object.assign({}, data);
-			this.getNewData();
-		},
-		getNewData() {
-			indexQuery.balance(this, "balance", this.formData);
-			this.loading = true;
-		},
-		getNewList(item, index) {
-			let methodName = "",
-				title = "";
-			if (index == 7) {
-				methodName = "balanceG";
-				title = "支付方式";
-			} else {
-				// a~f
-				methodName = item.methodName;
-				title = item.label;
-			}
-			this.itemData = {
-				title: title,
-				show: true,
-				methodName: methodName,
-				data: Object.assign(
-					{
-						PN: 1
-					},
-					this.formData
-				)
-			};
-		},
-		closeModalFun(v) {
-			if (v) {
-				this.getNewData();
-			}
-			this.itemData.show = false;
-		},
-		getColor: function (v) {
-			if (v > 75) {
-				return "#67c23a";
-			} else if (v > 50) {
-				return "rgba(142, 113, 199, 0.7)";
-			} else if (v > 25) {
-				return "#409eff";
-			} else {
-				return "#f56c6c";
-			}
-		},
-		defaultData() {},
-		setHeight() {
-			if (this.$refs.contentTable) {
-				let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
-				let marginSpace = 10 * 3,
-					pager = 42;
-				this.$nextTick(() => {
-					this.tableHeight = window.innerHeight - top - marginSpace;
-				});
-			}
-		}
-	},
+   data() {
+      return {
+         loading: false,
+         formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1 },
+         pageList: [
+            {
+               label: "商品销售",
+               value: 0,
+               methodName: "balanceA"
+            },
+            { label: "充值", value: 0, methodName: "balanceC" },
+            { label: "还款", value: 0, methodName: "balanceE" },
+            {
+               label: "会员消费",
+               value: 0,
+               methodName: "balanceB"
+            },
+            { label: "支出", value: 0, methodName: "balanceD" },
+            { label: "欠款", value: 0, methodName: "balanceF" },
+            { label: "收支结余", value: 0 }
+         ],
+         dataData: {},
+         tableList: [],
+         itemData: {
+            title: "",
+            show: false,
+            data: {}
+         },
+         exportData: { show: false },
+         tableHeight: 300
+      };
+   },
+   computed: {
+      ...mapGetters({}),
+      dataState() {
+         return this.$store.getters.cReportDataState.balance;
+      }
+   },
+   watch: {
+      dataState(data) {
+         if (this.loading) {
+            if (data.success) {
+               let dd = data.data;
+               this.$nextTick(() => {
+                  this.pageList[0].value = dd.SaleMoney ? dd.SaleMoney : 0;
+                  this.pageList[1].value = dd.AddMoney ? dd.AddMoney : 0;
+                  this.pageList[2].value = dd.PayOweMoney ? dd.PayOweMoney : 0;
+                  this.pageList[3].value = dd.SaleVipMoney ? dd.SaleVipMoney : 0;
+                  this.pageList[4].value = dd.ExpMoney ? dd.ExpMoney : 0;
+                  this.pageList[5].value = dd.OweMoney ? dd.OweMoney : 0;
+                  this.pageList[6].value = dd.GainMoney ? dd.GainMoney : 0;
+                  this.tableList = dd.PayList ? dd.PayList : [];
+               });
+            } else {
+               this.$message.error(data.message);
+            }
+         }
+         this.loading = false;
+      }
+   },
+   methods: {
+      exportState_fun(data) {
+         this.exportData = {
+            show: true,
+            data: {},
+            index: 1
+         };
+      },
+      getNewData_fun(data) {
+         this.formData = Object.assign({}, data);
+         this.getNewData();
+      },
+      getNewData() {
+         indexQuery.balance(this, "balance", this.formData);
+         this.loading = true;
+      },
+      getNewList(item, index) {
+         let methodName = "",
+            title = "";
+         if (index == 7) {
+            methodName = "balanceG";
+            title = "支付方式";
+         } else {
+            // a~f
+            methodName = item.methodName;
+            title = item.label;
+         }
+         this.itemData = {
+            title: title,
+            show: true,
+            methodName: methodName,
+            data: Object.assign(
+               {
+                  PN: 1
+               },
+               this.formData
+            )
+         };
+      },
+      closeModalFun(v) {
+         if (v) {
+            this.getNewData();
+         }
+         this.itemData.show = false;
+      },
+      getColor: function(v) {
+         if (v > 75) {
+            return "#67c23a";
+         } else if (v > 50) {
+            return "rgba(142, 113, 199, 0.7)";
+         } else if (v > 25) {
+            return "#409eff";
+         } else {
+            return "#f56c6c";
+         }
+      },
+      defaultData() {},
+      setHeight() {
+         if (this.$refs.contentTable) {
+            let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
+            let marginSpace = 10 * 3,
+               pager = 42;
+            this.$nextTick(() => {
+               this.tableHeight = window.innerHeight - top - marginSpace;
+               this.$refs.contentTable.doLayout();
+            });
+         }
+      }
+   },
 
-	mounted() {
-		let homeInfo = getHomeData();
-		this.formData = {
-			ShopId: homeInfo.shop.ID,
-			BeginDate: this.getTimeStamp(),
-			EndDate: new Date().getTime()
-		};
-		this.getNewData();
-		this.setHeight();
-	},
-	components: {
-		echartLine: () => import("@/components/other/echartLine.vue"),
-		filtePage: () => import("@/views/reports/filtePage.vue"),
-		itemPage: () => import("./item2.vue"),
-		exportPage: () => import("@/components/export/common.vue")
-	}
+   mounted() {
+      let homeInfo = getHomeData();
+      this.formData = {
+         ShopId: homeInfo.shop.ID,
+         BeginDate: this.getTimeStamp(),
+         EndDate: new Date().getTime()
+      };
+      this.getNewData();
+      this.setHeight();
+   },
+   components: {
+      echartLine: () => import("@/components/other/echartLine.vue"),
+      filtePage: () => import("@/views/reports/filtePage.vue"),
+      itemPage: () => import("./item2.vue"),
+      exportPage: () => import("@/components/export/common.vue")
+   }
 };
 </script>
 <style scoped>
 .aa >>> .el-progress__text {
-	display: none;
+   display: none;
 }
 </style>

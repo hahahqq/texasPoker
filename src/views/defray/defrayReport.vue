@@ -274,13 +274,6 @@ export default {
   background: #fff;
   margin-bottom: 20px;
 }
-.member-main-table {
-  margin-top: 8px;
-  width: 98%;
-  margin-left: 1%;
-  margin-right: 1%;
-  background: #fff;
-}
 .member-main-top-buttom {
   height: 70px;
   width: 100%;

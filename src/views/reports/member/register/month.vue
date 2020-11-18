@@ -144,6 +144,7 @@ export default {
                pager = 42;
             this.$nextTick(() => {
                this.tableHeight = window.innerHeight - top - marginSpace - pager;
+               this.$refs.contentTable.doLayout();
             });
          }
       }

@@ -84,40 +84,10 @@
               </span>
             </div>
 
-            <ul class="integralMoney">
-              <li>
-                <div>储值积分</div>
-                <div>{{ memberItem.MONEY }}</div>
-              </li>
-
-              <li v-if="splitIntegral">
-                <div>竞技积分</div>
-                <div>{{ memberItem.INTEGRAL }}</div>
-              </li>
-
-              <li>
-                <div>欠款金额</div>
-                <div>{{ memberItem.OWEMONEY }}</div>
-              </li>
-
-              <li>
-                <div>优惠券</div>
-                <div>{{ memberItem.COUPONNUM }}</div>
-              </li>
-
-              <li>
-                <div>大师分</div>
-                <div>{{ memberItem.CONTESTQTY }}</div>
-              </li>
-
-              <li>
-                <div>参赛次数</div>
-                <div>{{ memberItem.MATCHCOUNT }}</div>
-              </li>
-
-              <li>
-                <div>累计参赛积分</div>
-                <div>{{ memberItem.MATCHMONEY }}</div>
+            <ul class="colNavGroup">
+              <li v-for="(item, index) in navGroup" :key="index" v-show="item.show">
+                <div>{{ item.title }}</div>
+                <div @click="linkAnchorPoint(item.activeName)" :class="`${item.activeName != '' ? 'pointerColor' : ''}`">{{ memberItem[item.field] ? memberItem[item.field] : 0 }}</div>
               </li>
             </ul>
           </div>
@@ -139,74 +109,78 @@
                     编辑
                   </el-button>
                 </div>
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="4">
-                    <i style="width: 66px; float: left">卡 &nbsp;&nbsp;号:</i>
+
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 200px">
+                    <i class="basicInfoTitle">卡 &nbsp;&nbsp;号:</i>
                     {{ memberItem.CODE }}
-                  </el-col>
-                  <el-col :span="6">
-                    <i style="width: 66px; float: left">等 &nbsp;&nbsp;级：</i>
+                  </span>
+
+                  <span style="float: left">
+                    <i class="basicInfoTitle">等 &nbsp;&nbsp;级：</i>
                     {{ memberItem.DISCOUNTNAME }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
 
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="4">
-                    <i style="width: 66px; float: left">顾 &nbsp;&nbsp;问：</i>
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 200px">
+                    <i class="basicInfoTitle">顾 &nbsp;&nbsp;问：</i>
                     {{ memberItem.SALEEMPNAME ? memberItem.SALEEMPNAME : "--" }}
-                  </el-col>
-                  <el-col :span="6">
-                    <i style="width: 66px; float: left">身份证：</i>
+                  </span>
+
+                  <span style="float: left">
+                    <i class="basicInfoTitle">身份证：</i>
                     {{ memberItem.IDCARDNO ? memberItem.IDCARDNO : "--" }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
 
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="4">
-                    <i style="width: 66px; float: left">性 &nbsp;&nbsp;别：</i>
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 200px">
+                    <i class="basicInfoTitle">性 &nbsp;&nbsp;别：</i>
                     {{ memberItem.SEX == 0 ? "男" : "女" }}
-                  </el-col>
-                  <el-col :span="6">
-                    <i style="width: 66px; float: left">标 &nbsp;&nbsp;签</i>
-                    {{ memberItem.VIPFLAG != undefined ? memberItem.VIPFLAG : "--" }}
-                  </el-col>
-                </el-row>
+                  </span>
 
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="4">
-                    <i style="width: 66px; float: left">生 &nbsp;&nbsp;日：</i>
+                  <span style="float: left">
+                    <i class="basicInfoTitle">标 &nbsp;&nbsp;签</i>
+                    {{ memberItem.VIPFLAG != undefined ? memberItem.VIPFLAG : "--" }}
+                  </span>
+                </div>
+
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 200px">
+                    <i class="basicInfoTitle">生 &nbsp;&nbsp;日：</i>
                     <span v-if="memberItem.BIRTHDATE != undefined">
                       {{ new Date(memberItem.BIRTHDATE) | time }}
                     </span>
                     <span v-else>--</span>
-                  </el-col>
+                  </span>
 
-                  <el-col :span="6">
-                    <i style="width: 66px; float: left">注册日期：</i>
+                  <span style="float: left">
+                    <i class="basicInfoTitle">注册日期：</i>
                     {{ new Date(memberItem.CREATEDATE) | time }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
 
-                <el-row style="line-height: 40px">
-                  <el-col>
-                    <i style="width: 66px; float: left">有效期：</i>
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 100%">
+                    <i class="basicInfoTitle">有效期：</i>
                     {{ new Date(memberItem.INVALIDDATE) | time }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
 
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="24">
-                    <i style="width: 66px; float: left">地 &nbsp;&nbsp;址：</i>
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 100%">
+                    <i class="basicInfoTitle">地 &nbsp;&nbsp;址：</i>
                     {{ memberItem.ADDRESS != undefined ? memberItem.ADDRESS : "--" }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
 
-                <el-row :gutter="10" style="line-height: 40px">
-                  <el-col :span="24">
-                    <i style="width: 66px; float: left">备 &nbsp;&nbsp;注：</i>
+                <div class="basicInfoItem">
+                  <span style="float: left; width: 100%">
+                    <i class="basicInfoTitle">备 &nbsp;&nbsp;注：</i>
                     {{ memberItem.REMARK ? memberItem.REMARK : "--" }}
-                  </el-col>
-                </el-row>
+                  </span>
+                </div>
               </el-tab-pane>
 
               <el-tab-pane name="second" label="储值积分记录">
@@ -264,6 +238,15 @@ export default {
   mixins: [MIXINS_MEMBER.MEMBER_MENU],
   data() {
     return {
+      navGroup: [
+        { title: "储值积分", field: "MONEY", show: true, activeName: 'second' },
+        { title: "竞技积分", field: "INTEGRAL", show: getUserInfo().CompanyConfig.INTEGRALTYPE, activeName : 'third' },
+        { title: "欠款金额", field: "OWEMONEY", show: true, activeName: 'sixth' },
+        { title: "优惠券", field: "COUPONNUM", show: true, activeName: 'eighth' },
+        { title: "大师分", field: "CONTESTQTY", show: true, activeName: 'seventh' },
+        { title: "参赛次数", field: "MATCHCOUNT", show: true, activeName: 'fouth' },
+        { title: "累计参赛积分", field: "MATCHMONEY", show: true, activeName: '' }
+      ],
       activeName: "first",
       height: window.innerHeight,
       tableHeight: document.body.clientHeight - 268,
@@ -273,7 +256,7 @@ export default {
       memberItem: {},
       vipPassword: "",
       IsUsePasswd: false,
-      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE,
+      splitIntegral: getUserInfo().CompanyConfig.INTEGRALTYPE
     };
   },
   computed: {
@@ -305,6 +288,11 @@ export default {
     }
   },
   methods: {
+     linkAnchorPoint(activeName){
+        if(activeName != ''){
+           this.activeName = activeName
+        }
+     },
     modifyPasswd() {
       this.$prompt("", "请输入密码", {
         confirmButtonText: "确定",
@@ -366,20 +354,33 @@ export default {
 
 
 <style scoped>
-.integralMoney {
+.colNavGroup {
   padding: 16px 20px;
   width: 100%;
   float: left;
 }
-.integralMoney li {
+.colNavGroup li {
   text-align: center;
   float: left;
-  width: 14%;
+  width: 10%;
+  margin: 0 2%;
 }
-.integralMoney li div:last-child {
+.colNavGroup li div:last-child {
   margin-top: 16px;
   color: #409eff;
   font-size: 18px;
   font-weight: bold;
+}
+.basicInfoItem {
+  line-height: 40px;
+  width: 100%;
+  float: left;
+}
+.basicInfoTitle {
+  width: 66px;
+  float: left;
+}
+.pointerColor:hover{
+   cursor: pointer;
 }
 </style>

@@ -34,16 +34,27 @@
                         <span>{{ new Date(scope.row.SIGNTIME) | formatTime }}</span>
                      </template>
                   </el-table-column>
-                  <el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
+                  <el-table-column
+                     prop="SHOPNAME"
+                     label="店铺"
+                     width="175px"
+                     :show-overflow-tooltip="true"
+                  ></el-table-column>
                   <el-table-column
                      prop="MATCHNAME"
                      label="赛事名称"
-                     width="130px"
+                     width="175px"
+                     :show-overflow-tooltip="true"
                   ></el-table-column>
                   <el-table-column prop="TYPENAME" label="比赛类型" width="100px"></el-table-column>
                   <el-table-column prop="DESKNAME" label="比赛桌号"></el-table-column>
                   <el-table-column prop="VIPCODE" label="卡号" width="100px"></el-table-column>
-                  <el-table-column prop="VIPNAME" label="姓名"></el-table-column>
+                  <el-table-column
+                     prop="VIPNAME"
+                     label="姓名"
+                     width="90px"
+                     :show-overflow-tooltip="true"
+                  ></el-table-column>
                   <el-table-column prop="VIPMOBILENO" label="手机" width="110px"></el-table-column>
                   <el-table-column prop="BUYMODE" label="买入方式"></el-table-column>
                   <el-table-column prop="BUYPRICE" label="单手积分" align="right"></el-table-column>
@@ -74,7 +85,12 @@
 								<span>{{ new Date(scope.row.WRITETIME) | formatTime }}</span>
 							</template>
 						</el-table-column> -->
-                  <el-table-column prop="REMARK" label="备注"></el-table-column>
+                  <el-table-column
+                     prop="REMARK"
+                     label="备注"
+                     width="210px"
+                     :show-overflow-tooltip="true"
+                  ></el-table-column>
                   <el-table-column prop="" label="报名方式">
                      <template slot-scope="scope">
                         <span v-text="scope.row.SIGNTYPE == 1 ? '线上' : '线下'"></span>
@@ -207,6 +223,7 @@ export default {
                pager = 42;
             this.$nextTick(() => {
                this.tableHeight = window.innerHeight - top - marginSpace - pager;
+               this.$refs.contentTable.doLayout();
             });
          }
       }

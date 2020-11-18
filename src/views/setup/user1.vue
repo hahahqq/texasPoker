@@ -315,47 +315,4 @@ export default {
 .el-header{
   padding: 0 !important;
 }
-.member-main-top{
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 100px;
-  background: #fff;
-}
-.member-main-table{
-  margin-top: 8px;
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 600px;
-  background: #fff;
-}
-.user-top{
-  width: 98%;
-  margin-left: 1%;
-  margin-right: 1%;
-  background: #fff;
-  height: 80px;
-}
-.user-top-selct{
-  width: 96%;
-  margin-left: 2%;
-  margin-right: 2%;
-  height: 75px;
-  line-height: 60px;
-}
-.user-top-add{
-  width: 96%;
-  margin-left: 2%;
-  margin-right: 2%;
-  height: 75px;
-  line-height: 75px;
-}
-.user-table{
-  width: 98%;
-  margin-left: 1%;
-  margin-right: 1%;
-  background: #fff;
-  margin-top: 20px;
-}
 </style>

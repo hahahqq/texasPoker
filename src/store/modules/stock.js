@@ -122,7 +122,7 @@ const actions = {
          sendData
       );
    },
-   GetAllocationReport({ commit }, data) {
+   getAllocationReport({ commit }, data) {
       // 调拨统计
       let homeInfo = getHomeData();
       let sendData = {
@@ -268,6 +268,7 @@ const mutations = {
       state.getSaleCensusReportState = Object.assign({}, data);
    },
    [GET_Allocation_REPORT](state, { data }) {
+      console.log(data)
       if (data.success) {
          state.AllocationReportList = [...data.data.PageData.DataArr];
       }

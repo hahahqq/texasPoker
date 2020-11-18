@@ -33,11 +33,6 @@
                   <el-table-column prop="SHOPNAME" label="归属店铺"></el-table-column>
                   <el-table-column prop="DISCOUNTTYPENAME" label="折扣类型"></el-table-column>
                   <el-table-column prop="VIPFLAG" label="标签"></el-table-column>
-                  <!-- <el-table-column label="生日时间">
-                     <template slot-scope="scope">
-                        {{new Date(scope.row.BIRTHDATE) | time}}
-                     </template>
-                  </el-table-column> -->
                   <el-table-column prop="SALEEMPNME" label="顾问"></el-table-column>
                   <el-table-column prop="MONEY" label="储值积分"></el-table-column>
                   <el-table-column prop="INTEGRAL" label="竞技积分"></el-table-column>

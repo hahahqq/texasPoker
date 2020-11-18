@@ -247,10 +247,8 @@ export default {
   },
   methods: {
     handleStop(index, row) {
-      console.log(row);
       let type = row.ISSTOP ? 1 : 0;
       let title = row.ISSTOP ? "恢复发行" : "停止发行";
-      //   type 为0 ，点击后就为
       this.$confirm("确认" + title + "该优惠券?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

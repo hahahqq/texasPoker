@@ -1,102 +1,113 @@
 <template>
-	<!-- 快速消费统计 -->
-	<section v-loading="loading">
-		<div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 115px">
-			<div class="marginLR-md">
-				<filtePage :isAll="true" :isExport="false" @getNewData="getNewData_fun"></filtePage>
-				<div class="m-top-sm block">
-					<el-select
-						size="small"
-						v-model="formData.PayTypes"
-						placeholder="请选择"
-						style="width: 136px"
-					>
-						<el-option :value="0" label="全部"></el-option>
-						<el-option
-							v-for="(item, i) in payWayList"
-							:key="i"
-							:label="item.NAME"
-							:value="item.ID"
-						></el-option>
-					</el-select>
+   <!-- 快速消费统计 -->
+   <section v-loading="loading">
+      <div class="bg-white paddingTB-md m-bottom-sm" style="min-height: 115px">
+         <div class="marginLR-md">
+            <filtePage :isAll="true" :isExport="false" @getNewData="getNewData_fun"></filtePage>
+            <div class="m-top-sm block">
+               <el-select
+                  size="small"
+                  v-model="formData.PayTypes"
+                  placeholder="请选择"
+                  style="width: 136px"
+               >
+                  <el-option :value="0" label="全部"></el-option>
+                  <el-option
+                     v-for="(item, i) in payWayList"
+                     :key="i"
+                     :label="item.NAME"
+                     :value="item.ID"
+                  ></el-option>
+               </el-select>
 
-					<el-input
-						placeholder="请输入会员卡号/姓名"
-						size="small"
-						v-model="formData.VipCode"
-						clearable
-						style="width: 401px"
-					>
-						<template slot="append">
-							<el-button size="small" type="primary" @click="getNewData">
-								搜索
-							</el-button>
-						</template>
-					</el-input>
-				</div>
-			</div>
-		</div>
-		<div class="bg-white paddingTB-md">
-			<div class="marginLR-md">
-				<!-- table-->
-				<el-table
-					border
-					:data="tableList"
-					header-row-class-name="bg-F1F2F3"
-					class="full-width"
-					ref="contentTable"
-					:height="tableHeight"
-				>
-					<el-table-column
-						prop="BILLNO"
-						label="单号"
-						width="130px"
-						fixed="left"
-					></el-table-column>
-					<el-table-column prop="" label="日期" width="140px">
-						<template slot-scope="scope">
-							<span>{{ new Date(scope.row.BILLDATE) | formatTime }}</span>
-						</template>
-					</el-table-column>
-					<el-table-column prop="SHOPNAME" label="店铺"></el-table-column>
-					<el-table-column prop="VIPCODE" label="卡号" width="100px"></el-table-column>
-					<el-table-column prop="VIPNAME" label="姓名"></el-table-column>
-					<el-table-column
-						prop="VIPMOBILENO"
-						label="手机"
-						width="110px"
-					></el-table-column>
-					<el-table-column prop="MONEY" label="消费金额" align="right"></el-table-column>
-					<el-table-column prop="PAYTYPENAME" label="付款方式"></el-table-column>
-					<el-table-column prop="" label="销售员？"></el-table-column>
-					<el-table-column prop="USERNAME" label="操作员"></el-table-column>
-					<el-table-column prop="REMARK" label="备注" width="140px"></el-table-column>
-					<el-table-column prop="" label="操作" fixed="right" align="center" width="70px">
-						<template slot-scope="scope">
-							<el-button-group>
-								<el-button type="text" size="small" @click="printFun(scope.row)">
-									打印
-								</el-button>
-							</el-button-group>
-						</template>
-					</el-table-column>
-				</el-table>
-				<!-- 分页 -->
-				<div v-if="tableList.length > 0" class="m-top-sm clearfix">
-					<el-pagination
-						@size-change="handlePageChange"
-						@current-change="handlePageChange"
-						:current-page.sync="pagination.PN"
-						:page-size="pagination.PageSize"
-						layout="total,prev, pager, next, jumper"
-						:total="pagination.TotalNumber"
-						class="text-right"
-					></el-pagination>
-				</div>
-				<div v-else style="height: 42px"></div>
-			</div>
-		</div>
-	</section>
+               <el-input
+                  placeholder="请输入会员卡号/姓名"
+                  size="small"
+                  v-model="formData.VipCode"
+                  clearable
+                  style="width: 401px"
+               >
+                  <template slot="append">
+                     <el-button size="small" type="primary" @click="getNewData">
+                        搜索
+                     </el-button>
+                  </template>
+               </el-input>
+            </div>
+         </div>
+      </div>
+      <div class="bg-white paddingTB-md">
+         <div class="marginLR-md">
+            <!-- table-->
+            <el-table
+               border
+               :data="tableList"
+               header-row-class-name="bg-F1F2F3"
+               class="full-width"
+               ref="contentTable"
+               :height="tableHeight"
+            >
+               <el-table-column
+                  prop="BILLNO"
+                  label="单号"
+                  width="130px"
+                  fixed="left"
+               ></el-table-column>
+               <el-table-column prop="" label="日期" width="140px">
+                  <template slot-scope="scope">
+                     <span>{{ new Date(scope.row.BILLDATE) | formatTime }}</span>
+                  </template>
+               </el-table-column>
+               <el-table-column
+                  prop="SHOPNAME"
+                  label="店铺"
+                  width="175px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
+               <el-table-column prop="VIPCODE" label="卡号" width="100px"></el-table-column>
+               <el-table-column
+                  prop="VIPNAME"
+                  label="姓名"
+                  width="90px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
+               <el-table-column prop="VIPMOBILENO" label="手机" width="110px"></el-table-column>
+               <el-table-column prop="MONEY" label="消费金额" align="right"></el-table-column>
+               <el-table-column prop="PAYTYPENAME" label="付款方式"></el-table-column>
+               <el-table-column prop="SALENAME" label="销售员"></el-table-column>
+               <el-table-column prop="USERNAME" label="操作员"></el-table-column>
+               <el-table-column
+                  prop="REMARK"
+                  label="备注"
+                  width="210px"
+                  :show-overflow-tooltip="true"
+               ></el-table-column>
+               <el-table-column prop="" label="操作" fixed="right" align="center" width="70px">
+                  <template slot-scope="scope">
+                     <el-button-group>
+                        <el-button type="text" size="small" @click="printFun(scope.row)">
+                           打印
+                        </el-button>
+                     </el-button-group>
+                  </template>
+               </el-table-column>
+            </el-table>
+            <!-- 分页 -->
+            <div v-if="tableList.length > 0" class="m-top-sm clearfix">
+               <el-pagination
+                  @size-change="handlePageChange"
+                  @current-change="handlePageChange"
+                  :current-page.sync="pagination.PN"
+                  :page-size="pagination.PageSize"
+                  layout="total,prev, pager, next, jumper"
+                  :total="pagination.TotalNumber"
+                  class="text-right"
+               ></el-pagination>
+            </div>
+            <div v-else style="height: 42px"></div>
+         </div>
+      </div>
+   </section>
 </template>
 
 <script>
@@ -105,99 +116,100 @@ import { getHomeData } from "@/api/index";
 import { indexQuery } from "@/store/modules2/report/indexFun.js";
 
 export default {
-	data() {
-		return {
-			loading: false,
-			formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1, PayTypes: 0, VipCode: "" },
-			tableList: [],
-			pagination: {
-				TotalNumber: 0,
-				PageNumber: 0,
-				PageSize: 20,
-				PN: 0
-			},
-			tableHeight: 300
-		};
-	},
-	computed: {
-		...mapGetters({
-			payWayList: "rechargeListList"
-		}),
-		dataListState() {
-			return this.$store.getters.cReportDataState.fast;
-		}
-	},
-	watch: {
-		dataListState(data) {
-			if (this.loading) {
-				if (data.success) {
-					this.pagination = Object.assign({}, data.paying);
-					this.tableList = [...data.List];
-					console.log(11, data);
-				} else {
-					this.$message.error(data.message);
-				}
-			}
-			this.loading = false;
-		}
-	},
-	methods: {
-		getNewData_fun(data) {
-			this.formData = Object.assign(this.formData, data);
-			this.getNewData();
-		},
-		getNewData() {
-			this.loading = true;
-			indexQuery.consume(this, "fast", this.formData);
-		},
-		handlePageChange: function (currentPage) {
-			if (this.formData.PN == currentPage || this.loading) {
-				return;
-			}
-			this.formData.PN = parseInt(currentPage);
-			this.getNewData();
-		},
-		printFun(item) {
-			this.$message({
-				type: "info",
-				message: "开发中..."
-			});
-		},
-		defaultData() {},
-		setHeight() {
-			if (this.$refs.contentTable) {
-				let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
-				let marginSpace = 10 * 3,
-					pager = 42;
-				this.$nextTick(() => {
-					this.tableHeight = window.innerHeight - top - marginSpace - pager;
-				});
-			}
-		}
-	},
-	mounted() {
-		let homeInfo = getHomeData();
-		this.formData = Object.assign(
-			this.formData,
-			{
-				ShopId: homeInfo.shop.ID,
-				BeginDate: this.getTimeStamp(),
-				EndDate: new Date().getTime()
-			},
-			{
-				PN: 1,
-				PayTypes: 0,
-				VipCode: ""
-			}
-		);
-		this.getNewData();
-		this.setHeight();
-	},
-	components: {
-		filtePage: () => import("@/views/reports/filtePage.vue")
-	},
-	destroyed() {
-		this.loading = false;
-	}
+   data() {
+      return {
+         loading: false,
+         formData: { ShopId: "", BeginDate: "", EndDate: "", PN: 1, PayTypes: 0, VipCode: "" },
+         tableList: [],
+         pagination: {
+            TotalNumber: 0,
+            PageNumber: 0,
+            PageSize: 20,
+            PN: 0
+         },
+         tableHeight: 300
+      };
+   },
+   computed: {
+      ...mapGetters({
+         payWayList: "rechargeListList"
+      }),
+      dataListState() {
+         return this.$store.getters.cReportDataState.fast;
+      }
+   },
+   watch: {
+      dataListState(data) {
+         if (this.loading) {
+            if (data.success) {
+               this.pagination = Object.assign({}, data.paying);
+               this.tableList = [...data.List];
+               console.log(11, data);
+            } else {
+               this.$message.error(data.message);
+            }
+         }
+         this.loading = false;
+      }
+   },
+   methods: {
+      getNewData_fun(data) {
+         this.formData = Object.assign(this.formData, data);
+         this.getNewData();
+      },
+      getNewData() {
+         this.loading = true;
+         indexQuery.consume(this, "fast", this.formData);
+      },
+      handlePageChange: function(currentPage) {
+         if (this.formData.PN == currentPage || this.loading) {
+            return;
+         }
+         this.formData.PN = parseInt(currentPage);
+         this.getNewData();
+      },
+      printFun(item) {
+         this.$message({
+            type: "info",
+            message: "开发中..."
+         });
+      },
+      defaultData() {},
+      setHeight() {
+         if (this.$refs.contentTable) {
+            let top = this.$refs.contentTable.$el.getBoundingClientRect().top;
+            let marginSpace = 10 * 3,
+               pager = 42;
+            this.$nextTick(() => {
+               this.tableHeight = window.innerHeight - top - marginSpace - pager;
+               this.$refs.contentTable.doLayout();
+            });
+         }
+      }
+   },
+   mounted() {
+      let homeInfo = getHomeData();
+      this.formData = Object.assign(
+         this.formData,
+         {
+            ShopId: homeInfo.shop.ID,
+            BeginDate: this.getTimeStamp(),
+            EndDate: new Date().getTime()
+         },
+         {
+            PN: 1,
+            PayTypes: 0,
+            VipCode: ""
+         }
+      );
+      this.getNewData();
+      this.setHeight();
+   },
+   components: {
+      filtePage: () => import("@/views/reports/filtePage.vue")
+   },
+   destroyed() {
+      this.loading = false;
+   }
 };
 </script>

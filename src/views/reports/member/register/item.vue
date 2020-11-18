@@ -5,7 +5,13 @@
          时间：{{ typeData.item.dateStr }}
       </div>
       <div>
-         <el-table border :data="tableList" :height="tHeight" header-row-class-name="bg-F1F2F3">
+         <el-table
+            border
+            :data="tableList"
+            :height="tHeight"
+            ref="contentTable"
+            header-row-class-name="bg-F1F2F3"
+         >
             <el-table-column prop="NAME" label="会员名称"></el-table-column>
             <el-table-column prop="CODE" label="会员编号"></el-table-column>
 
@@ -23,15 +29,12 @@
                </template>
             </el-table-column>
             <el-table-column prop="STATUS" label="状态"></el-table-column>
-            <el-table-column prop="REMARK" label="备注" width="140px"></el-table-column>
-
-            <!-- "YSKFIRSTMONEY": 0, "WRITER": "18007", "DISCOUNTTYPEID": "-266", "ISCANCEL": false,
-				"MATHOD": 0, "DEPOSITMONEY": 0, "MODIFYTIME": 1601359305000, "MODIFYER": "18007",
-				"VISITCOUNT": 0, "WRITETIME": 1598578787000, "ISAGENT": false, "OPENID4": "0",
-				"OPENID3": "0", "OPENID2": "0", "ISFOREVER": true, "VERSION": 8, "CREATEDATE":
-				1598602198000, "ISUSEPASSWD": false, "ADDRESS": "undefined", "ISNODEL": false,
-				"PASSWORD": "e3ceb5881a0a1fdaad01296d7554868d", "PRICEMODE": 0, "OPENID": "0",
-				"INVALIDDATE": 0 -->
+            <el-table-column
+               prop="REMARK"
+               label="备注"
+               width="210px"
+               :show-overflow-tooltip="true"
+            ></el-table-column>
          </el-table>
 
          <!-- 分页 -->
@@ -102,6 +105,9 @@ export default {
             if (data.success) {
                this.pagination = Object.assign({}, data.paying);
                this.tableList = [...data.List];
+               this.$nextTick(() => {
+                  this.$refs.contentTable.doLayout();
+               });
             } else {
                this.$message.error(data.message);
             }

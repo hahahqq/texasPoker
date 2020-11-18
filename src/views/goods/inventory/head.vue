@@ -236,14 +236,7 @@ export default {
   height: 100px;
   background: #fff;
 }
-.member-main-table {
-  margin-top: 8px;
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 600px;
-  background: #fff;
-}
+
 .member-header {
   display: flex;
   align-items: center;

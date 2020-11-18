@@ -1,12 +1,4 @@
 <template>
-  <!-- <div class="setup row-flex flex-start">
-    <section style="min-width:130px;margin-left:-10px;">
-      <sidebarMenu :activePath="activePath" :routesList="routesList" :width="130"></sidebarMenu>
-    </section>
-    <section class="bg-white marginLR-sm paddingTB-sm paddingLR-md full-width">
-      <page></page>
-    </section>
-  </div> -->
   <el-container>
     <el-header style="height:50px;">
       <headerPage></headerPage>
@@ -38,20 +30,5 @@ export default {
 <style scoped>
 .el-header{
   padding: 0 !important;
-}
-.member-main-top{
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 100px;
-  background: #fff;
-}
-.member-main-table{
-  margin-top: 8px;
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 600px;
-  background: #fff;
 }
 </style>

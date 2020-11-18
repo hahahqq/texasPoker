@@ -1,7 +1,80 @@
 <template>
   <el-container>
     <el-header style="height: 50px">
-      <headerPage></headerPage>
+      <template>
+        <div>
+          <el-row>
+            <el-col :span="16" class="member-header">
+              <div class="center-title">{{ $route.meta.title }}</div>
+              <div class="center-cont">
+                <ul class="center-cont-ul">
+                  <li
+                    v-for="(item, index) in businessList"
+                    :key="index"
+                    @click="selctBusinessList(index, item)"
+                    :class="{ selected: index == current }"
+                  >
+                    {{ item.name }}
+                  </li>
+                </ul>
+              </div>
+            </el-col>
+            <el-col :span="8" class="shop">
+              <span class="name">{{ shopInfo.SHOPNAME }}</span>
+              <span class="">
+                <el-popover
+                  placement="bottom"
+                  width="140"
+                  trigger="hover"
+                  popper-class="no-padding"
+                >
+                  <el-button
+                    style="border: none !important"
+                    @click="changeShop()"
+                    class="full-width"
+                    icon="icon-exchange"
+                  >
+                    &nbsp;&nbsp;切换店铺
+                  </el-button>
+                  <el-button
+                    style="border: none !important"
+                    class="full-width no-m-left border-top"
+                    icon="icon-user"
+                  >
+                    &nbsp;&nbsp;账号信息
+                  </el-button>
+                  <el-button
+                    style="border: none !important"
+                    @click="logout()"
+                    class="full-width no-m-left border-top"
+                    icon="icon-signout"
+                  >
+                    &nbsp;&nbsp;退出账号
+                  </el-button>
+
+                  <a slot="reference" class="hitem">
+                    <i class="icon-reorder"></i>
+                  </a>
+                </el-popover>
+              </span>
+            </el-col>
+          </el-row>
+          <el-dialog
+            title="请选择门店"
+            :visible.sync="isShowShop"
+            width="300px"
+            :before-close="handleClose"
+          >
+            <div class="shopListClass">
+              <ul>
+                <li v-for="(item, index) in theshopList" :key="index" @click="setShop(item)">
+                  {{ item.SHOPNAME }}
+                </li>
+              </ul>
+            </div>
+          </el-dialog>
+        </div>
+      </template>
     </el-header>
     <el-container>
       <el-aside width="100px">
@@ -9,141 +82,11 @@
           <memberMenu :activePath="activePath" :routesList="routesList" :width="100"></memberMenu>
         </section>
       </el-aside>
-      <el-container>
-        <div class="content-new-fex">
-          <div class="shopquery">
-            <div class="content-eighty">
-              <div class="content-center">
-                <el-row class="member-main-top-type">
-                  <el-col :span="7">
-                    店铺&nbsp;&nbsp;&nbsp;
-                    <el-select
-                      class="selectStyle"
-                      size="small"
-                      v-model="radio"
-                      @change="submitSearch"
-                      multiple
-                      collapse-tags
-                      placeholder="请选择店铺"
-                    >
-                      <el-option value="所有店铺">所有店铺</el-option>
-                      <el-option
-                        :disabled="radio == '所有店铺'"
-                        v-for="item in shopList"
-                        :key="item.ID"
-                        :label="item.NAME"
-                        :value="item.ID"
-                      ></el-option>
-                    </el-select>
-                  </el-col>
-
-                  <el-col :span="7">
-                    商品分类&nbsp;&nbsp;&nbsp;
-                    <el-select
-                      v-model="TypeId"
-                      placeholder="请选择商品分类"
-                      size="small"
-                      @change="submitSearch"
-                      clearable
-                    >
-                      <el-option
-                        v-for="item in commoditycflList"
-                        :key="item.ID"
-                        :label="item.NAME"
-                        :value="item.ID"
-                      ></el-option>
-                    </el-select>
-                  </el-col>
-
-                  <el-col :span="10" style="text-align: right">
-                    <el-input
-                      v-model="searchText"
-                      placeholder="请输入商品名称或货号"
-                      style="width: 70%"
-                      size="small"
-                    >
-                      <template slot="append">
-                        <span style="font-size: 12px; cursor: default" @click="searchfun2(1)">
-                          搜索
-                        </span>
-                      </template>
-                    </el-input>
-                  </el-col>
-                </el-row>
-              </div>
-            </div>
-            <div class="content-table4">
-              <div class="content-table-center">
-                <el-tabs v-model="activeName" type="card" @tab-click="handleTabClick(activeName)">
-                  <el-tab-pane
-                    :key="item.name"
-                    v-for="item in tableTabs"
-                    :label="item.label"
-                    :name="item.name"
-                  ></el-tab-pane>
-                </el-tabs>
-
-                <el-table
-                  size="small"
-                  :data="tableData"
-                  :height="tableHeight"
-                  header-row-class-name="bg-theme2 text-white"
-                  class="full-width"
-                  v-loading="loading"
-                >
-                  <el-table-column
-                    align="center"
-                    prop="RN"
-                    label="序号"
-                    width="70"
-                  ></el-table-column>
-                  <el-table-column
-                    prop="SHOPNAME"
-                    label="店铺"
-                    v-if="activeName == 'first'"
-                  ></el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="GOODSNAME"
-                    label="商品名称"
-                  ></el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="GOODSCODE"
-                    label="商品编码"
-                  ></el-table-column>
-                  <el-table-column align="center" prop="TYPENAME" label="分类"></el-table-column>
-                  <el-table-column align="center" prop="UNITNAME" label="单位"></el-table-column>
-                  <el-table-column align="center" prop="PRICE" label="商品价格"></el-table-column>
-                  <el-table-column align="center" label="商品成本">
-                    <template slot-scope="scope">
-                      {{ isPurViewFun(92100310) ? scope.row.PURPRICE : "****" }}
-                    </template>
-                  </el-table-column>
-                  <el-table-column
-                    align="center"
-                    prop="QTY"
-                    sortable
-                    label="库存数"
-                  ></el-table-column>
-                </el-table>
-                <!-- 分页 -->
-                <div class="m-top-sm clearfix elpagination">
-                  <el-pagination
-                    background
-                    @size-change="handlePageChange"
-                    @current-change="handlePageChange"
-                    :current-page.sync="pagination.PN"
-                    :page-size="pagination.PageSize"
-                    layout="total, prev, pager, next, jumper"
-                    :total="pagination.TotalNumber"
-                    class="text-right"
-                  ></el-pagination>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <el-container :style="`height:${windowHeight}px; overflow:auto`">
+        <stockCensus1 v-if="current == 0"></stockCensus1>
+        <stockCensus2 v-if="current == 1"></stockCensus2>
+        <stockCensus3 v-if="current == 2"></stockCensus3>
+        <stockCensus4 v-if="current == 3"></stockCensus4>
       </el-container>
     </el-container>
   </el-container>
@@ -151,204 +94,215 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
-import { getHomeData } from "@/api/index";
-import MIXINS_GOOD from "@/mixins/good.js";
+// import MIXINS_REPORT from "@/mixins/report";
+import MIXINS_MEMBER from "@/mixins/member";
+import { getHomeData, getUserInfo } from "@/api/index";
+import MIXINS_CLEAR from "@/mixins/clearAllData";
 export default {
-  props: {
-    dataType: {
-      type: Object,
-      default: function () {
-        return { dealState: "reset" };
-      }
-    }
-  },
-  mixins: [MIXINS_GOOD.GOOD_MENU],
+  mixins: [MIXINS_MEMBER.MEMBER_MENU, MIXINS_CLEAR.LOGOUT],
   data() {
     return {
-      loading: false,
-      searchText: "",
-      pagination: {
-        TotalNumber: 0,
-        PageNumber: 0,
-        PageSize: 20,
-        PN: 1
-      },
-      tableData: [],
-      pageData: {
-        ShopId: getHomeData().shop.SHOPID,
-        CategoryId: "",
-        Filter: "",
-        PN: 1,
-        Type: ""
-      },
-      tableHeight: document.body.clientHeight - 286,
-      activeName: "first",
-      tableTabs: [
-        { name: "first", label: "库存明细" },
-        { name: "second", label: "库存汇总" }
+      windowHeight: window.innerHeight - 80,
+      current: 0,
+      businessList: [
+        { id: "001", name: "库存查询", number: "" },
+        { id: "002", name: "采购统计", number: "" },
+        { id: "003", name: "调拨统计", number: "" },
+        { id: "004", name: "盘点统计", number: "" }
       ],
-      TypeId: "",
-      radio: [getHomeData().shop.ID]
+      shopInfo: getHomeData().shop,
+      isShowShop: false,
+      theshopList: [],
+      activePath: ""
     };
   },
   computed: {
     ...mapGetters({
-      shopList: "shopList",
-      stockqueryList: "stockqueryList",
-      stockDetailsState: "stockDetailsState",
-      stockTotalState: "stockTotalState",
-      commoditycflList: "commoditycflList"
+      shopList: "shopList"
     })
   },
-  watch: {
-    stockTotalState(data) {
-      this.loading = false;
-      if (data.success && this.activeName == "second") {
-        this.tableData = data.data.PageData.DataArr;
-        this.pagination = {
-          TotalNumber: data.data.PageData.TotalNumber,
-          PageNumber: data.data.PageData.PageNumber,
-          PageSize: data.data.PageData.PageSize,
-          PN: data.data.PageData.PN
-        };
-      }
-    },
-    stockDetailsState(data) {
-      this.loading = false;
-      if (data.success && this.activeName == "first") {
-        this.tableData = data.data.PageData.DataArr;
-        this.pagination = {
-          TotalNumber: data.data.PageData.TotalNumber,
-          PageNumber: data.data.PageData.PageNumber,
-          PageSize: data.data.PageData.PageSize,
-          PN: data.data.PageData.PN
-        };
-      }
-    }
-  },
-
+  watch: {},
   methods: {
-    handleTabClick(activeName) {
-      this.pageData.PN = 1;
-      this.pageData.Filter = "";
-      this.getStockData();
-    },
-    submitSearch() {
-      this.pageData.TypeId = this.TypeId;
-
-      let haveAllShop = this.radio.filter((item) => item == "所有店铺"),
-        shopIdList = [];
-      if (haveAllShop.length == 1) {
-        this.radio = ["所有店铺"];
-        shopIdList = this.shopList.map((item) => item.ID);
-      } else if (this.radio.length == 0) {
-        shopIdList = [getHomeData().shop.ID];
-        this.radio = [getHomeData().shop.ID];
+    selctBusinessList(e, item) {
+      let agentPermission = getUserInfo().List;
+      let arr = agentPermission.filter((element) => element.MODULECODE == item.number);
+      if (arr.length > 0 && !this.isPurViewFun(arr[0].MODULECODE)) {
+        this.$message.warning("没有此功能权限，请联系管理员授权!");
       } else {
-        shopIdList = this.radio;
+        this.current = e;
       }
-
-      let str = "",
-        id = "";
-      for (let i in shopIdList) {
-        str += shopIdList[i] + ",";
-      }
-      if (str.length > 0) {
-        //去掉最后一个逗号
-        str = str.substring(0, str.length - 1);
-      }
-      this.pageData.ShopId = str;
-
-      this.pageData.Filter = this.searchText;
-      this.pageData.PN = 1;
-      this.getStockData();
     },
-
-    handlePageChange: function (currentPage) {
-      if (this.pageData.PN == currentPage || this.loading) {
-        return;
-      }
-      this.pageData.PN = parseInt(currentPage);
-      this.getStockData();
+    handleClose(done) {
+      this.isShowShop = false;
     },
-    getStockData() {
-      this.$store
-        .dispatch(this.activeName == "first" ? "GetStockDetails" : "GetStockTotal", this.pageData)
+    logout: function () {
+      //退出登录
+      var _this = this;
+      this.$confirm("确认退出吗?", "提示")
         .then(() => {
-          this.loading = true;
+          _this.$store.dispatch("toLogOut").then(() => {
+            _this.clearAllData();
+            _this.$router.push("/login");
+          });
+        })
+        .catch(() => {
+          console.log("logout");
         });
+    },
+    setShop(item) {
+      //切换店铺
+      this.$store.dispatch("choosingShop", item).then(() => {
+        this.isShowShop = false;
+        this.clearAllData();
+        this.defaultData();
+        this.$router.push({
+          path: "/home"
+        });
+      });
+    },
+    defaultData() {
+      let homeData = getHomeData();
+      if (homeData.shop) {
+        this.shopInfo = Object.assign({}, homeData.shop);
+      }
+      this.UserName = getUserInfo().UserName;
+      if (this.shopList.length == 0) {
+        this.$store.dispatch("getShopList", {});
+      }
+    },
+    changeShop() {
+      let userInfo = getUserInfo();
+      if (userInfo.CODE2 == "boss") {
+        this.theshopList = [...this.shopList];
+      } else {
+        this.theshopList = [];
+        for (let i = 0; i < userInfo.ShopList.length; i++) {
+          if (userInfo.ShopList[i].ISPURVIEW == 1) {
+            this.theshopList.push({
+              ID: userInfo.ShopList[i].SHOPID,
+              NAME: userInfo.ShopList[i].SHOPNAME
+            });
+          }
+        }
+      }
+      this.isShowShop = true;
     }
   },
+  created() {},
   mounted() {
-    this.getStockData();
+    console.log(this.$route.query.current);
+    if (this.$route.query.current != undefined) {
+      this.current = this.$route.query.current;
+    } else {
+      this.current = 0;
+    }
   },
   components: {
-    headerPage: () => import("@/components/header")
-  },
-  beforeCreate() {
-    let list = this.$store.state.commodityc.commoditycflList;
-    if (list.length == 0) {
-      this.$store.dispatch("getcommoditycflList", {}).then(() => {});
-    }
-    this.$store.dispatch("getShopList");
+    stockCensus1: () => import("@/views/goods/stockCensus1.vue"),
+    stockCensus2: () => import("@/views/goods/stockCensus2.vue"),
+    stockCensus3: () => import("@/views/goods/stockCensus3.vue"),
+    stockCensus4: () => import("@/views/goods/stockCensus4.vue")
   }
 };
 </script>
-
 <style scoped>
+.tableStock {
+  height: 400px;
+  border: 1px solid #ddd;
+  border-right: 0;
+  border-bottom: 0;
+}
+.tableStock thead {
+  background: #e4e4e4;
+  color: #333333;
+  height: 36px;
+  line-height: 36px;
+}
+.tableStock thead tr th {
+  border-right: 1px solid #fff;
+}
+.tableStock tbody tr {
+  height: 36px;
+  line-height: 36px;
+}
+
+.tableStock tbody tr:hover {
+  background: #ecf5ff;
+}
+.tableStock tfoot tr {
+  height: 36px;
+  line-height: 36px;
+}
+.el-header {
+  padding: 0 !important;
+}
+.member-main-top {
+  width: 99%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  height: 100px;
+  background: #fff;
+}
 .member-header {
   display: flex;
   align-items: center;
   height: 50px;
+  border-bottom: 1px solid #ebedf0;
+  background: #fff;
 }
 .center-title {
   width: 100px;
   text-align: center;
   height: 50px;
   line-height: 50px;
-  border: solid 1px #d7d7d7;
+  font-weight: bold;
+  border-right: solid 1px #ebedf0;
 }
 .center-cont {
-  width: 100px;
+  /* width: 100px; */
   text-align: center;
-  height: 50px;
-  line-height: 50px;
+  height: 35px;
+  line-height: 35px;
+  margin-left: 20px;
+}
+.center-cont-ul {
+  display: flex;
+}
+.center-cont-ul li {
+  /* width: 74px; */
+  text-align: center;
+  margin-right: 25px;
+  cursor: pointer;
+}
+.center-cont-ul li.selected {
+  color: #2589ff;
+  border-bottom: 2px solid #2589ff;
 }
 .el-header {
   padding: 0 !important;
 }
 .shop {
-  display: flex;
-  align-items: center;
+  line-height: 50px;
   height: 50px;
-  position: relative;
+  text-align: right;
+  padding-right: 20px;
+  border-bottom: 1px solid #ebedf0;
+  background: #fff;
+}
+.el-aside,
+.el-main {
+  overflow: hidden !important;
 }
 .shop .name {
-  position: absolute;
-  right: 50px;
-  height: 50px;
-  line-height: 50px;
-  width: 150px;
-  text-align: center;
-  top: 0;
+  margin-right: 8px;
 }
-.el-header,
-.el-footer {
-  background-color: #fff;
-  color: #333;
+.icon-reorder {
+  color: #2589ff;
 }
-
 .el-aside {
   background-color: #d3dce6;
   color: #333;
   text-align: center;
   line-height: 200px;
-}
-
-.el-main {
-  padding: 5px !important;
-}
-.selectStyle >>> .el-select__tags {
-  max-width: none !important;
 }
 </style>

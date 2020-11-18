@@ -115,7 +115,7 @@ export default {
       options: [],
       value: "",
       input2: "",
-      clientHeight: document.body.clientHeight - 160
+      clientHeight: document.body.clientHeight - 180
     };
   },
   computed: {

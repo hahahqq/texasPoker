@@ -139,7 +139,6 @@ export default {
             this.getNewData();
         },
         chooseDate(i) {
-           console.log(this.bussinessTime)
             this.chooseDateIdx = i;
 
             let bussinessTimeToNumber = Number(this.bussinessTime.replace(":",""));

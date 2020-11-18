@@ -97,23 +97,19 @@
                         </el-form-item>
                         <el-form-item label="背景图片选择">
                            <div style="width: 400px">
-                              <div class="img-bottom">
+                              <div class="img-bottom" v-if="haveNewAddImg.length > 0">
                                  <div class="img-bottom-right" style="text-align: right">
                                     <span
                                        style="cursor: pointer"
-                                       @click="success = true"
-                                       v-if="!success && haveNewAddImg.length > 0"
-                                    >
-                                       <i class="el-icon-edit-outline"></i>
-                                       &nbsp;编辑
-                                    </span>
-                                    <span
-                                       style="cursor: pointer"
                                        @click="success = false"
-                                       v-if="success && haveNewAddImg.length > 0"
+                                       v-if="success"
                                     >
                                        <i class="el-icon-check"></i>
                                        &nbsp;完成
+                                    </span>
+                                    <span v-else style="cursor: pointer" @click="success = true">
+                                       <i class="el-icon-edit-outline"></i>
+                                       &nbsp;编辑
                                     </span>
                                  </div>
                               </div>

@@ -7,7 +7,7 @@
                <el-col :span="16" class="member-header">
                      <div class="center-title">{{$route.meta.title}}</div>
                      <div class="center-cont">
-                     <ul  class="center-cont-ul">
+                     <ul class="center-cont-ul">
                         <li v-for="(item,index) in businessList"
                         :key="index"
                         @click="selctBusinessList(index,item)"
@@ -80,11 +80,6 @@ export default {
     },
     computed: {
         ...mapGetters({
-            dataData: "businessReportData",
-            dataState: "businessReportState",
-            dataList: "businessReportList",
-            dataListState: "businessReportListState",
-            dataListArr: "businessReportListARR",
             shopList: "shopList"
         })
     },
@@ -199,21 +194,7 @@ export default {
 .el-header{
   padding: 0 !important;
 }
-.member-main-top{
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 100px;
-  background: #fff;
-}
-.member-main-table{
-  margin-top: 8px;
-  width: 99%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  height: 600px;
-  background: #fff;
-}
+
 .member-header{
   display: flex;
   align-items: center;
@@ -227,6 +208,7 @@ export default {
   height: 50px;
   line-height: 50px;
   font-weight: bold;
+  border-right: solid 1px #ebedf0;
 }
 .center-cont{
   /* width: 100px; */

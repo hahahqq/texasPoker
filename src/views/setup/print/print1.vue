@@ -267,8 +267,6 @@ export default {
       }else{
          this.printList = JSON.parse(printRules)
       }
-
-      console.log(window.navigator.plugins)
     },
     components: {
       headerPage: () => import("@/components/header")

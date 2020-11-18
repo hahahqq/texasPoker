@@ -91,10 +91,10 @@
                       clearable
                     >
                       <el-option
-                        v-for="item in shopName"
-                        :key="item.SHOPNAME"
-                        :label="item.SHOPNAME"
-                        :value="item.SHOPID"
+                        v-for="item in shopList"
+                        :key="item.ID"
+                        :label="item.NAME"
+                        :value="item.ID"
                       ></el-option>
                     </el-select>
                   </div>
@@ -486,7 +486,6 @@ export default {
         { id: "180", name: "近6个月", isSelect: false }
       ],
       datamemberLeveList: [],
-      shopName: [],
       inportMerberData: false,
       inportMerberDataCard: false,
       value1: "",
@@ -592,10 +591,6 @@ export default {
         VIPFLAG: "全部",
         isSelect: true
       });
-    },
-    memberShop(data) {
-      console.log(data);
-      this.shopName = data;
     },
     employeeList(data) {
       let employeemen = data.map((item) => ({
@@ -1115,10 +1110,19 @@ export default {
     if (this.shopList.length == 0) {
       this.$store.dispatch("getShopList", {});
     }
-    this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID });
-    this.$store.dispatch("getShopName", {});
-    this.$store.dispatch("getMemberLevel");
-    this.$store.dispatch("getMemberFlag");
+    let list1 = this.$store.state.employee.employeeList;
+    let list2 = this.$store.state.member.memberLevelList;
+    let list3 = this.$store.state.member.memberFlagList;
+
+    if (list1.length == 0) {
+      this.$store.dispatch("getEmployeeList", { ShopId: getHomeData().shop.ID }).then(() => {});
+    }
+    if (list2.length != 0) {
+      this.$store.dispatch("getMemberLevel");
+    }
+    if (list3.length == 0) {
+      this.$store.dispatch("getMemberFlag");
+    }
   },
   components: {
     addNewMember: () => import("@/components/member/add"),
@@ -1188,15 +1192,6 @@ export default {
   line-height: 200px;
 }
 .member-main-top {
-  background: #fff;
-}
-.member-main-table {
-  margin-top: 10px;
-  /* width: 99%;
-    margin-left: 0.5%;
-    margin-right: 0.5%; */
-  height: 550px;
-  width: 100%;
   background: #fff;
 }
 .el-main {
